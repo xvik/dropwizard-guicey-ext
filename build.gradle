@@ -1,0 +1,139 @@
+plugins {
+    id 'ru.vyarus.java-lib' version '1.0.4'
+    id 'ru.vyarus.github-info' version '1.1.0'
+    id 'ru.vyarus.quality' version '2.0.0'
+    id 'com.github.kt3k.coveralls' version '2.6.3'             // todo not supported
+    id 'com.jfrog.bintray' version '1.7.1'
+    id 'net.researchgate.release' version '2.4.1'
+    id 'com.github.ben-manes.versions' version '0.13.0'
+    id "io.spring.dependency-management" version "0.6.0.RELEASE"
+}
+
+wrapper {
+    gradleVersion = 3.0
+}
+
+github { // todo not properly handled
+    user = 'xvik'
+    license = 'MIT'
+}
+
+subprojects {
+    apply plugin: 'groovy'
+    apply plugin: 'jacoco'
+    apply plugin: 'project-report'
+    apply plugin: 'ru.vyarus.java-lib'
+    apply plugin: 'ru.vyarus.quality'
+    apply plugin: 'com.github.ben-manes.versions'
+    apply plugin: 'io.spring.dependency-management'
+
+    sourceCompatibility = 1.8
+
+    ext {
+        dropwizard = '1.0.2'
+        guicey = '4.0.0'
+        spock = '1.0-groovy-2.4'
+    }
+
+    repositories { jcenter(); mavenCentral(); mavenLocal() }
+    dependencyManagement {
+        imports {
+            mavenBom "io.dropwizard:dropwizard-bom:$dropwizard"
+        }
+        dependencies {
+            dependency "ru.vyarus:dropwizard-guicey:$guicey"
+            dependency "org.spockframework:spock-core:$spock"
+        }
+    }
+    dependencies {
+        provided 'com.google.code.findbugs:jsr305:3.0.1'
+        provided 'com.google.code.findbugs:annotations:3.0.1'
+
+        compile "ru.vyarus:dropwizard-guicey"
+
+        testCompile "org.spockframework:spock-core"
+        testCompile "io.dropwizard:dropwizard-testing"
+    }
+
+    group = 'ru.vyarus.guicey'
+
+    quality {
+        strict = false
+    }
+
+    pom {
+        developers {
+            developer {
+                id 'xvik'
+                name 'Vyacheslav Rusakov'
+                email 'vyarus@gmail.com'
+            }
+        }
+    }
+
+    bintray {                                           // todo move outside
+        user = findProperty('bintrayUser')
+        key = findProperty('bintrayKey')
+        publications = ['maven']
+        dryRun = false
+        publish = true
+        pkg {
+            repo = 'xvik'
+            name = project.name
+            desc = project.description
+            labels = ['dropwizard', 'guice']
+            publicDownloadNumbers = true
+            version {
+                gpg {
+                    sign = true
+                    passphrase = findProperty('gpgPassphrase')
+                }
+                mavenCentralSync {
+                    sync = false
+                    user = findProperty('sonatypeUser')
+                    password = findProperty('sonatypePassword')
+                }
+            }
+        }
+    }
+
+    test {
+        testLogging {
+            events 'skipped', 'failed', 'standard_error'
+            exceptionFormat 'full'
+        }
+        maxHeapSize = '512m'
+    }
+
+    dependencyUpdates.revision = 'release'
+    jacocoTestReport.reports.xml.enabled = true
+
+    task showDependenciesTree(dependsOn: 'htmlDependencyReport', group: 'help', description:
+            'Generates dependencies tree report and opens it in browser') << {
+        java.awt.Desktop.getDesktop().open(file('/build/reports/project/dependencies/root.html'))
+    }
+}
+
+// fake tasks needed to trigger tasks on sub modules
+
+// dependency on all subprojects required for release validation
+task build(group: 'build', dependsOn: subprojects.collect { it.tasks.build }) << {
+    println "Building project"
+}
+
+task install(group: 'publishing') << {
+    println "Instaling artifacts into local repository"
+}
+
+task publish(group: 'publishing') << {
+    println "Publish artefacts into remote repository"
+}
+
+afterReleaseBuild {
+    // release process manages only root project but publishes all subprojects
+    dependsOn = project.subprojects.collect { it.tasks.publish }   // todo incorrect  (bintrayUpload)
+    doLast {
+        logger.warn "RELEASED $project.group:$project.name:$project.version"
+    }
+}
+

@@ -1,0 +1,26 @@
+
+// main dependenciesManagement section will be generated based on dependenciesManagement declared in root project
+pom {
+    properties {
+        'dropwizard.version' dropwizard
+        'guicey.version' guicey
+        'spock.version' spock
+    }
+}
+
+withPomXml {
+    Node deps = it.dependencyManagement.dependencies[0]
+
+    // add subprojects to bom
+    project.rootProject.subprojects.each {
+        if (it.name != 'bom') {
+            Node dep = deps.appendNode('dependency')
+            dep.appendNode('groupId').value = it.group
+            dep.appendNode('artifactId').value = it.name
+            dep.appendNode('version').value = it.version
+        }
+    }
+
+    // bom does not need dependencies
+    it.remove(it.dependencies[0])
+}
