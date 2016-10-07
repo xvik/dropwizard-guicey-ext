@@ -1,21 +1,23 @@
 plugins {
-    id 'ru.vyarus.java-lib' version '1.0.4'
-    id 'ru.vyarus.github-info' version '1.1.0'
-    id 'ru.vyarus.quality' version '2.0.0'
-    id 'com.github.kt3k.coveralls' version '2.6.3'             // todo not supported
-    id 'com.jfrog.bintray' version '1.7.1'
+    id 'ru.vyarus.java-lib' version '1.0.4' apply false
+    id 'ru.vyarus.github-info' version '1.1.0' apply false
+    id 'ru.vyarus.quality' version '2.0.0' apply false
+    id 'com.jfrog.bintray' version '1.7.1' apply false
+    id 'com.github.ben-manes.versions' version '0.13.0' apply false
+    id "io.spring.dependency-management" version "0.6.0.RELEASE" apply false
+
+    id 'jacoco'
     id 'net.researchgate.release' version '2.4.1'
-    id 'com.github.ben-manes.versions' version '0.13.0'
-    id "io.spring.dependency-management" version "0.6.0.RELEASE"
+    id 'com.github.kt3k.coveralls' version '2.6.3'
 }
 
 wrapper {
     gradleVersion = 3.0
 }
 
-github { // todo not properly handled
-    user = 'xvik'
-    license = 'MIT'
+task testReport(type: TestReport) {
+    description = 'Generates an aggregate test report'
+    destinationDir = file("${buildDir}/reports/allTests")
 }
 
 subprojects {
@@ -24,6 +26,8 @@ subprojects {
     apply plugin: 'project-report'
     apply plugin: 'ru.vyarus.java-lib'
     apply plugin: 'ru.vyarus.quality'
+    apply plugin: 'ru.vyarus.github-info'
+    apply plugin: 'com.jfrog.bintray'
     apply plugin: 'com.github.ben-manes.versions'
     apply plugin: 'io.spring.dependency-management'
 
@@ -61,6 +65,14 @@ subprojects {
         strict = false
     }
 
+    github {
+        user = 'xvik'
+        repository = rootProject.name
+        license = 'MIT'
+        licenseUrl = github.rawFileUrl('LICENSE');
+        changelogFile = 'CHANGELOG.md'
+    }
+
     pom {
         developers {
             developer {
@@ -71,7 +83,7 @@ subprojects {
         }
     }
 
-    bintray {                                           // todo move outside
+    bintray {
         user = findProperty('bintrayUser')
         key = findProperty('bintrayKey')
         publications = ['maven']
@@ -104,9 +116,10 @@ subprojects {
         }
         maxHeapSize = '512m'
     }
+    rootProject.testReport.reportOn test
+    jacocoTestReport.reports.xml.enabled = true
 
     dependencyUpdates.revision = 'release'
-    jacocoTestReport.reports.xml.enabled = true
 
     task showDependenciesTree(dependsOn: 'htmlDependencyReport', group: 'help', description:
             'Generates dependencies tree report and opens it in browser') << {
@@ -117,21 +130,42 @@ subprojects {
 // fake tasks needed to trigger tasks on sub modules
 
 // dependency on all subprojects required for release validation
-task build(group: 'build', dependsOn: subprojects.collect { it.tasks.build }) << {
+task build(group: 'build', dependsOn: subprojects.build) << {
     println "Building project"
 }
 
-task install(group: 'publishing') << {
-    println "Instaling artifacts into local repository"
-}
-
-task publish(group: 'publishing') << {
+task publish(group: 'publishing', dependsOn: subprojects.bintrayUpload) << {
     println "Publish artefacts into remote repository"
 }
 
+task jacocoTestReport(type: JacocoReport) {
+    description = 'Generates an aggregate report from all subprojects'
+    dependsOn = [subprojects.test]
+
+    additionalSourceDirs = files(subprojects.sourceSets.main.allSource.srcDirs)
+    sourceDirectories = files(subprojects.sourceSets.main.allSource.srcDirs)
+    classDirectories = files(subprojects.sourceSets.main.output)
+    executionData = files(subprojects.jacocoTestReport.executionData)
+
+    reports {
+        html.enabled = true
+        xml.enabled = true
+    }
+
+    doFirst {
+        executionData = files(executionData.findAll { it.exists() })
+    }
+}
+
+coveralls {
+    sourceDirs = subprojects.sourceSets.main.allSource.srcDirs.flatten()
+    jacocoReportPath = "${buildDir}/reports/jacoco/jacocoTestReport.xml"
+}
+tasks.coveralls.dependsOn jacocoTestReport
+
 afterReleaseBuild {
     // release process manages only root project but publishes all subprojects
-    dependsOn = project.subprojects.collect { it.tasks.publish }   // todo incorrect  (bintrayUpload)
+    dependsOn = [publish]
     doLast {
         logger.warn "RELEASED $project.group:$project.name:$project.version"
     }
