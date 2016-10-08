@@ -6,6 +6,7 @@ plugins {
     id 'com.github.ben-manes.versions' version '0.13.0' apply false
     id "io.spring.dependency-management" version "0.6.0.RELEASE" apply false
 
+    id 'base'
     id 'jacoco'
     id 'net.researchgate.release' version '2.4.1'
     id 'com.github.kt3k.coveralls' version '2.6.3'
@@ -15,9 +16,8 @@ wrapper {
     gradleVersion = 3.0
 }
 
-task testReport(type: TestReport) {
-    description = 'Generates an aggregate test report'
-    destinationDir = file("${buildDir}/reports/allTests")
+allprojects {
+    repositories { jcenter(); mavenCentral(); mavenLocal() }
 }
 
 subprojects {
@@ -39,7 +39,6 @@ subprojects {
         spock = '1.0-groovy-2.4'
     }
 
-    repositories { jcenter(); mavenCentral(); mavenLocal() }
     dependencyManagement {
         imports {
             mavenBom "io.dropwizard:dropwizard-bom:$dropwizard"
@@ -116,7 +115,6 @@ subprojects {
         }
         maxHeapSize = '512m'
     }
-    rootProject.testReport.reportOn test
     jacocoTestReport.reports.xml.enabled = true
 
     dependencyUpdates.revision = 'release'
@@ -127,47 +125,38 @@ subprojects {
     }
 }
 
-// fake tasks needed to trigger tasks on sub modules
-
 // dependency on all subprojects required for release validation
-task build(group: 'build', dependsOn: subprojects.build) << {
-    println "Building project"
-}
+build.dependsOn subprojects.build
 
-task publish(group: 'publishing', dependsOn: subprojects.bintrayUpload) << {
-    println "Publish artefacts into remote repository"
-}
-
-task jacocoTestReport(type: JacocoReport) {
-    description = 'Generates an aggregate report from all subprojects'
-    dependsOn = [subprojects.test]
-
-    additionalSourceDirs = files(subprojects.sourceSets.main.allSource.srcDirs)
-    sourceDirectories = files(subprojects.sourceSets.main.allSource.srcDirs)
-    classDirectories = files(subprojects.sourceSets.main.output)
-    executionData = files(subprojects.jacocoTestReport.executionData)
-
-    reports {
-        html.enabled = true
-        xml.enabled = true
+afterReleaseBuild {
+    // release process manages only root project but publishes all subprojects
+    dependsOn = subprojects.bintrayUpload
+    doLast {
+        logger.warn "RELEASED $project.group:$project.name:$project.version"
     }
+}
 
+task testReport(type: TestReport, description: 'Generates an aggregate test report') {
+    destinationDir = file("${buildDir}/reports/tests")
+    reportOn subprojects.test
+}
+
+task jacocoMerge(type: JacocoMerge, description: 'Merge coverage results for aggregated report generation') {
+    executionData subprojects.test
     doFirst {
         executionData = files(executionData.findAll { it.exists() })
     }
 }
 
+task jacocoTestReport(type: JacocoReport, description: 'Generates aggregated coverage report') {
+    dependsOn jacocoMerge
+    executionData jacocoMerge.destinationFile
+    sourceDirectories = files(subprojects.sourceSets.main.allSource.srcDirs)
+    classDirectories = files(subprojects.sourceSets.main.output)
+    reports.xml.enabled = true
+}
+
 coveralls {
     sourceDirs = subprojects.sourceSets.main.allSource.srcDirs.flatten()
-    jacocoReportPath = "${buildDir}/reports/jacoco/jacocoTestReport.xml"
-}
-tasks.coveralls.dependsOn jacocoTestReport
-
-afterReleaseBuild {
-    // release process manages only root project but publishes all subprojects
-    dependsOn = [publish]
-    doLast {
-        logger.warn "RELEASED $project.group:$project.name:$project.version"
-    }
 }
 
