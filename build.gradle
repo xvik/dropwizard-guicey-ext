@@ -16,18 +16,33 @@ wrapper {
     gradleVersion = 3.0
 }
 
+description = 'Dropwizard-guicey extensions'
+
 allprojects {
+    apply plugin: 'project-report'
+    apply plugin: 'com.jfrog.bintray'
+
     repositories { jcenter(); mavenCentral(); mavenLocal() }
+
+    bintray {
+        user = findProperty('bintrayUser')
+        key = findProperty('bintrayKey')
+        pkg {
+            repo = 'xvik'
+            name = rootProject.name
+            desc = rootProject.description
+            labels = ['dropwizard', 'guice']
+            publicDownloadNumbers = true
+        }
+    }
 }
 
 subprojects {
     apply plugin: 'groovy'
     apply plugin: 'jacoco'
-    apply plugin: 'project-report'
     apply plugin: 'ru.vyarus.java-lib'
     apply plugin: 'ru.vyarus.quality'
     apply plugin: 'ru.vyarus.github-info'
-    apply plugin: 'com.jfrog.bintray'
     apply plugin: 'com.github.ben-manes.versions'
     apply plugin: 'io.spring.dependency-management'
 
@@ -83,29 +98,7 @@ subprojects {
     }
 
     bintray {
-        user = findProperty('bintrayUser')
-        key = findProperty('bintrayKey')
         publications = ['maven']
-        dryRun = false
-        publish = true
-        pkg {
-            repo = 'xvik'
-            name = project.name
-            desc = project.description
-            labels = ['dropwizard', 'guice']
-            publicDownloadNumbers = true
-            version {
-                gpg {
-                    sign = true
-                    passphrase = findProperty('gpgPassphrase')
-                }
-                mavenCentralSync {
-                    sync = false
-                    user = findProperty('sonatypeUser')
-                    password = findProperty('sonatypePassword')
-                }
-            }
-        }
     }
 
     test {
@@ -125,12 +118,34 @@ subprojects {
     }
 }
 
+/*
+ Each module published separately: subprojects simply upload files to bintray and root project will
+ publish/generate signatures/sync with maven central.
+ Note: plugin will find bintray tasks in submodules and depend on it so order will be always correct.
+ */
+bintray {
+    publish = true
+    pkg {
+        version {
+            gpg {
+                sign = true
+                passphrase = findProperty('gpgPassphrase')
+            }
+            mavenCentralSync {
+                sync = false
+                user = findProperty('sonatypeUser')
+                password = findProperty('sonatypePassword')
+            }
+        }
+    }
+}
+
 // dependency on all subprojects required for release validation
 build.dependsOn subprojects.build
 
+// release manages only root project (subprojects will be checked and released implicitly)
 afterReleaseBuild {
-    // release process manages only root project but publishes all subprojects
-    dependsOn = subprojects.bintrayUpload
+    dependsOn = [bintrayUpload]
     doLast {
         logger.warn "RELEASED $project.group:$project.name:$project.version"
     }
@@ -159,4 +174,6 @@ task jacocoTestReport(type: JacocoReport, description: 'Generates aggregated cov
 coveralls {
     sourceDirs = subprojects.sourceSets.main.allSource.srcDirs.flatten()
 }
+
+htmlDependencyReport.projects = allprojects
 

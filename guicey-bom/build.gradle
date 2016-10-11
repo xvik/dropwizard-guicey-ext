@@ -1,4 +1,6 @@
 
+description = "Guicey extensions BOM"
+
 // main dependenciesManagement section will be generated based on dependenciesManagement declared in root project
 pom {
     properties {
