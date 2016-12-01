@@ -13,7 +13,7 @@ pom {
 withPomXml {
     Node deps = it.dependencyManagement.dependencies[0]
 
-    // add subprojects to bom
+    // add subprojects to the bom
     project.rootProject.subprojects.each {
         if (it.name != 'bom') {
             Node dep = deps.appendNode('dependency')
@@ -23,6 +23,6 @@ withPomXml {
         }
     }
 
-    // bom does not need dependencies
+    // bom does not need dependencies itself
     it.remove(it.dependencies[0])
 }

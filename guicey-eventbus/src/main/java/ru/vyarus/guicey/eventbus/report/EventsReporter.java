@@ -1,8 +1,8 @@
-package ru.vyarus.dropwizard.guicey.eventbus.report;
+package ru.vyarus.guicey.eventbus.report;
 
 import io.dropwizard.lifecycle.Managed;
 import ru.vyarus.dropwizard.guice.module.installer.order.Order;
-import ru.vyarus.dropwizard.guicey.eventbus.module.EventsTracker;
+import ru.vyarus.guicey.eventbus.module.EventsTracker;
 
 import javax.inject.Inject;
 

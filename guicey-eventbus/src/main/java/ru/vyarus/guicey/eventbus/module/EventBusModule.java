@@ -1,4 +1,4 @@
-package ru.vyarus.dropwizard.guicey.eventbus.module;
+package ru.vyarus.guicey.eventbus.module;
 
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;

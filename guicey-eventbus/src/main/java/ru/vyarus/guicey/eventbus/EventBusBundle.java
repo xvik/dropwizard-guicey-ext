@@ -1,9 +1,9 @@
-package ru.vyarus.dropwizard.guicey.eventbus;
+package ru.vyarus.guicey.eventbus;
 
 import ru.vyarus.dropwizard.guice.module.installer.bundle.GuiceyBootstrap;
 import ru.vyarus.dropwizard.guice.module.installer.bundle.GuiceyBundle;
-import ru.vyarus.dropwizard.guicey.eventbus.module.EventBusModule;
-import ru.vyarus.dropwizard.guicey.eventbus.report.EventsReporter;
+import ru.vyarus.guicey.eventbus.module.EventBusModule;
+import ru.vyarus.guicey.eventbus.report.EventsReporter;
 
 /**
  * @author Vyacheslav Rusakov
@@ -17,12 +17,12 @@ public class EventBusBundle implements GuiceyBundle {
         this("main");
     }
 
-    public EventBusBundle(String name) {
+    public EventBusBundle(final String name) {
         this.name = name;
     }
 
     @Override
-    public void initialize(GuiceyBootstrap bootstrap) {
+    public void initialize(final GuiceyBootstrap bootstrap) {
         bootstrap
                 .modules(new EventBusModule(name))
                 .extensions(EventsReporter.class);

@@ -1,4 +1,4 @@
-package ru.vyarus.dropwizard.guicey.eventbus.module;
+package ru.vyarus.guicey.eventbus.module;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
@@ -25,6 +25,7 @@ public class EventsTracker {
     private final Multimap<Class, Class> subscribers = HashMultimap.create();
 
     public void track(final Class<?> type) {
+        // todo use com.google.common.eventbus.SubscriberRegistry.getAnnotatedMethods() to detect methods
         for (Method method : type.getDeclaredMethods()) {
             if (method.isAnnotationPresent(Subscribe.class)) {
                 Class event = method.getParameterTypes()[0];
@@ -36,7 +37,7 @@ public class EventsTracker {
     public void report() {
         final StringBuilder res = new StringBuilder("EventBus subscribers = ")
                 .append(NEWLINE);
-        for (Class event : subscribers.keys()) {
+        for (Class event : subscribers.keySet()) {
             res.append(NEWLINE).append(TAB).append(event.getSimpleName()).append(NEWLINE);
             for (Class subs : subscribers.get(event)) {
                 res.append(TAB).append(TAB).append(subs.getName()).append(NEWLINE);
