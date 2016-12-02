@@ -85,7 +85,7 @@ service will not be created on injector creation and service will not be subscri
 After server start you should see all registered event listeners in log:
 
 ```
-INFO  [2016-12-01 12:31:02,819] ru.vyarus.guicey.eventbus.EventsTracker: EventBus subscribers = 
+INFO  [2016-12-01 12:31:02,819] ru.vyarus.guicey.eventbus.report.EventsReporter: EventBus subscribers = 
 
     MyEvent
         com.foo.something.SomeOtherService        

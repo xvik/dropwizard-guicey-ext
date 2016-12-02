@@ -1,30 +1,115 @@
 package ru.vyarus.guicey.eventbus;
 
+import com.google.common.eventbus.EventBus;
+import com.google.inject.TypeLiteral;
+import com.google.inject.matcher.Matcher;
+import com.google.inject.matcher.Matchers;
+import org.eclipse.jetty.util.component.AbstractLifeCycle;
+import org.eclipse.jetty.util.component.LifeCycle;
+import ru.vyarus.dropwizard.guice.injector.lookup.InjectorLookup;
 import ru.vyarus.dropwizard.guice.module.installer.bundle.GuiceyBootstrap;
 import ru.vyarus.dropwizard.guice.module.installer.bundle.GuiceyBundle;
 import ru.vyarus.guicey.eventbus.module.EventBusModule;
-import ru.vyarus.guicey.eventbus.report.EventsReporter;
+import ru.vyarus.guicey.eventbus.module.TypeLiteralAdapterMatcher;
+import ru.vyarus.guicey.eventbus.report.EventSubscribersReporter;
+import ru.vyarus.guicey.eventbus.service.EventSubscribersInfo;
 
 /**
+ * Binds support for single (!) event bus. {@link EventBus} available for injection (to publish events).
+ * All guice beans with methods annotated with {@link com.google.common.eventbus.Subscribe} are
+ * automatically registered. All listeners subscribed before startup are reported to logs (may be disabled).
+ * <p>
+ * If you want to customize default event bus, configure instance manually and provide instance in constructor:
+ * <code><pre>
+ *     new EventBusBundle(myCustomBus)
+ * </pre></code>
+ * <p>
+ * You can reduce amount of classes checked for listener methods by providing custom types matcher. For example,
+ * <code><pre>
+ *     new EventBusBundle()
+ *          .withMatcher(Matchers.inSubpackage("some.package"))
+ * </pre></code>
+ * <p>
+ * Reflection is used for registered listeners printing (no way otherwise to get registered subscribers).
+ * If there will be any probelms with it, simply disable reporting.
+ *
  * @author Vyacheslav Rusakov
+ * @see <a href="https://github.com/google/guava/wiki/EventBusExplained">eventbus documentation</a>
+ * @see EventSubscribersInfo for subscribers info access
  * @since 12.10.2016
  */
 public class EventBusBundle implements GuiceyBundle {
 
-    private final String name;
+    private final EventBus eventbus;
+    private Matcher<? super TypeLiteral<?>> typeMatcher = Matchers.any();
+    private boolean report = true;
 
+    /**
+     * Register default event bus. Events processing is synchronous.
+     */
     public EventBusBundle() {
-        this("main");
+        this(new EventBus("bus"));
     }
 
-    public EventBusBundle(final String name) {
-        this.name = name;
+    /**
+     * Registers custom event bus. Use this constructor to customize event bus or to switch to
+     * {@link com.google.common.eventbus.AsyncEventBus}.
+     *
+     * @param eventbus event bus instance
+     */
+    public EventBusBundle(final EventBus eventbus) {
+        this.eventbus = eventbus;
+    }
+
+    /**
+     * By default, all registered bean types are checked for listener methods.
+     * Listener check involves all methods in class and subclasses lookup.
+     * If you have too much beans which are not using eventbus, then it makes sense to reduce checked beans scope
+     * For example, check only beans in some package: {@code Matchers.inSubpackage("some.pacjage")}.
+     * <p>
+     * The most restrictive (and faster) approach would be to introduce your annotation (e.g. {@code @EventListener})
+     * and search for listeners only inside annotated classes ({@code Matchers.annotatedWith(EventListener.class)}.
+     *
+     * @param classMatcher class matcher to reduce classes checked for listener methods
+     * @return bundle instance for chained calls
+     */
+    public EventBusBundle withMatcher(final Matcher<? super Class<?>> classMatcher) {
+        this.typeMatcher = new TypeLiteralAdapterMatcher(classMatcher);
+        return this;
+    }
+
+    /**
+     * If you have a lot of listeners or events or simply don't want console reporting use this method.
+     * <p>
+     * Disabling reporting will also disable reflective access to eventbus internals, so disable it if you have
+     * problems (for example, new guava version renamed field).
+     *
+     * @return bundle instance for chained calls
+     */
+    public EventBusBundle noReport() {
+        report = false;
+        return this;
     }
 
     @Override
     public void initialize(final GuiceyBootstrap bootstrap) {
-        bootstrap
-                .modules(new EventBusModule(name))
-                .extensions(EventsReporter.class);
+        bootstrap.modules(new EventBusModule(eventbus, typeMatcher));
+
+        if (report) {
+            registerReport(bootstrap);
+        }
+    }
+
+    private void registerReport(final GuiceyBootstrap bootstrap) {
+        bootstrap.environment().lifecycle().addLifeCycleListener(
+                new AbstractLifeCycle.AbstractLifeCycleListener() {
+                    @Override
+                    public void lifeCycleStarted(final LifeCycle event) {
+                        final EventSubscribersReporter reporter = new EventSubscribersReporter();
+                        InjectorLookup.getInjector(bootstrap.application()).get()
+                                .injectMembers(reporter);
+                        reporter.report();
+                    }
+                });
     }
 }

@@ -4,52 +4,50 @@ import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 import com.google.inject.AbstractModule;
 import com.google.inject.TypeLiteral;
-import com.google.inject.matcher.Matchers;
+import com.google.inject.matcher.Matcher;
 import com.google.inject.spi.InjectionListener;
 import com.google.inject.spi.TypeEncounter;
 import com.google.inject.spi.TypeListener;
+import ru.vyarus.guicey.eventbus.service.EventSubscribersInfo;
 
-import java.lang.reflect.Method;
+import javax.inject.Singleton;
 
 /**
- * Module binds orchestrator {@link EventBus} instance. Publishers should inject event bus for posting.
+ * Module binds provided {@link EventBus} instance. Publishers should inject event bus for posting events.
  * Listeners must only define method with event as argument and annotated with {@link Subscribe}. All guice beans
  * with annotated methods registered automatically.
  *
  * @author Vyacheslav Rusakov
+ * @see EventSubscribersInfo guice bean registered for programmatic subscribers info access
  * @since 12.10.2016
  */
 public class EventBusModule extends AbstractModule {
 
-    private final String name;
+    private final EventBus eventbus;
+    private final Matcher<? super TypeLiteral<?>> typeMatcher;
 
-    public EventBusModule(final String name) {
-        this.name = name;
+    public EventBusModule(final EventBus eventbus,
+                          final Matcher<? super TypeLiteral<?>> typeMatcher) {
+        this.eventbus = eventbus;
+        this.typeMatcher = typeMatcher;
     }
 
     @Override
     protected void configure() {
-        final EventBus eventbus = new EventBus(name);
         bind(EventBus.class).toInstance(eventbus);
+        bind(EventSubscribersInfo.class).in(Singleton.class);
 
-        final EventsTracker tracker = new EventsTracker();
-        bind(EventsTracker.class).toInstance(tracker);
-        bindListener(Matchers.any(), new TypeListener() {
+        bindListener();
+    }
+
+    @SuppressWarnings("unchecked")
+    private void bindListener() {
+        bindListener(typeMatcher, new TypeListener() {
             @Override
             public <I> void hear(final TypeLiteral<I> type, final TypeEncounter<I> encounter) {
-                // todo only first level counted
-                for (Method method : type.getRawType().getDeclaredMethods()) {
-                    if (method.isAnnotationPresent(Subscribe.class)) {
-                        encounter.register(new InjectionListener<I>() {
-                            @Override
-                            public void afterInjection(final I injectee) {
-                                eventbus.register(injectee);
-                                // not method because there may be more than one listeners
-                                tracker.track(type.getRawType());
-                            }
-                        });
-                    }
-                }
+                // register all beans: event bus will introspect each class and register found listeners
+                // duplicate registrations are valid (internal event bus cache will handle it)
+                encounter.register((InjectionListener) eventbus::register);
             }
         });
     }
