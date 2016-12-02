@@ -92,6 +92,18 @@ NOTE: only subscriptions of beans registered at the time of injector startup wil
  For example, if MyBean has subscription method but binding for it not declared (and noone depends on it)
  then JIT binding will be created only somewhere later in time (when bean will be actually used) and 
  so listener registration happen after starver startup and will not be shown in console report.
+
+##### Consuming multiple events
+  
+Note that you can build event hierarchies and subscribe to some base event to receive any derived event.   
+
+To receive all events use:
+
+```java
+@Subscribe
+public void onEvent(Object event){    
+}
+```
   
 ### Event bus 
 
