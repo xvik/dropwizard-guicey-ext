@@ -20,15 +20,15 @@ import ru.vyarus.guicey.eventbus.service.EventSubscribersInfo;
  * automatically registered. All listeners subscribed before startup are reported to logs (may be disabled).
  * <p>
  * If you want to customize default event bus, configure instance manually and provide instance in constructor:
- * <code><pre>
+ * <pre><code>
  *     new EventBusBundle(myCustomBus)
- * </pre></code>
+ * </code></pre>
  * <p>
  * You can reduce amount of classes checked for listener methods by providing custom types matcher. For example,
- * <code><pre>
+ * <pre><code>
  *     new EventBusBundle()
  *          .withMatcher(Matchers.inSubpackage("some.package"))
- * </pre></code>
+ * </code></pre>
  * <p>
  * Reflection is used for registered listeners printing (no way otherwise to get registered subscribers).
  * If there will be any probelms with it, simply disable reporting.
