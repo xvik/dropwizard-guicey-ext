@@ -157,7 +157,7 @@ task testReport(type: TestReport, description: 'Generates an aggregate test repo
 }
 
 task jacocoMerge(type: JacocoMerge, description: 'Merge coverage results for aggregated report generation') {
-    executionData subprojects.test
+    executionData = files(subprojects.collect {it.file('build/jacoco/test.exec')})
     doFirst {
         executionData = files(executionData.findAll { it.exists() })
     }
