@@ -38,7 +38,7 @@ class ReporterMultiTest extends Specification {
     def "Check print"() {
 
         expect: "reported"
-        reporter.renderReport() == """EventBus subscribers = 
+        reporter.renderReport().replaceAll("\r", "") == """EventBus subscribers = 
 
     AbstractEvent
         ru.vyarus.dropwizard.guicey.ReporterMultiTest\$Service

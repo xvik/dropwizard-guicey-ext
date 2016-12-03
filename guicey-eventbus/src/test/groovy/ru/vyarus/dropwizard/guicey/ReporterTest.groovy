@@ -35,7 +35,7 @@ class ReporterTest extends Specification {
     def "Check print"() {
 
         expect: "reported"
-        reporter.renderReport() == """EventBus subscribers = 
+        reporter.renderReport().replaceAll("\r", "") == """EventBus subscribers = 
 
     Event1
         ru.vyarus.dropwizard.guicey.ReporterTest\$Service

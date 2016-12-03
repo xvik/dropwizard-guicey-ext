@@ -173,6 +173,7 @@ task jacocoTestReport(type: JacocoReport, description: 'Generates aggregated cov
 
 coveralls {
     sourceDirs = subprojects.sourceSets.main.allSource.srcDirs.flatten()
+    jacocoReportPath = 'build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml'
 }
 
 htmlDependencyReport.projects = allprojects
