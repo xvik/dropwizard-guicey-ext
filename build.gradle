@@ -137,7 +137,7 @@ bintray {
 }
 
 // dependency on all subprojects required for release validation
-build.dependsOn subprojects.build
+check.dependsOn subprojects.check
 
 // release manages only root project (subprojects will be checked and released implicitly)
 afterReleaseBuild {
