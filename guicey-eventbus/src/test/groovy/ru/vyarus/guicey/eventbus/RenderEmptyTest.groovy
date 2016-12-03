@@ -1,4 +1,4 @@
-package ru.vyarus.dropwizard.guicey
+package ru.vyarus.guicey.eventbus
 
 import io.dropwizard.Application
 import io.dropwizard.Configuration

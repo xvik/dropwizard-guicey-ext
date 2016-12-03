@@ -1,4 +1,4 @@
-package ru.vyarus.dropwizard.guicey.support
+package ru.vyarus.guicey.eventbus.support
 
 /**
  * @author Vyacheslav Rusakov

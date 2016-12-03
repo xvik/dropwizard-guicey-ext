@@ -1,4 +1,4 @@
-package ru.vyarus.dropwizard.guicey
+package ru.vyarus.guicey.eventbus
 
 import com.google.common.eventbus.EventBus
 import com.google.common.eventbus.Subscribe
@@ -8,12 +8,11 @@ import io.dropwizard.setup.Bootstrap
 import io.dropwizard.setup.Environment
 import ru.vyarus.dropwizard.guice.GuiceBundle
 import ru.vyarus.dropwizard.guice.test.spock.UseGuiceyApp
-import ru.vyarus.dropwizard.guicey.support.AbstractEvent
-import ru.vyarus.dropwizard.guicey.support.Event1
-import ru.vyarus.dropwizard.guicey.support.Event2
-import ru.vyarus.dropwizard.guicey.support.Event3
-import ru.vyarus.guicey.eventbus.EventBusBundle
 import ru.vyarus.guicey.eventbus.service.EventSubscribersInfo
+import ru.vyarus.guicey.eventbus.support.AbstractEvent
+import ru.vyarus.guicey.eventbus.support.Event1
+import ru.vyarus.guicey.eventbus.support.Event2
+import ru.vyarus.guicey.eventbus.support.Event3
 import spock.lang.Specification
 
 import javax.inject.Inject

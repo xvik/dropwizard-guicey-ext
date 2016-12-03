@@ -1,4 +1,4 @@
-package ru.vyarus.dropwizard.guicey
+package ru.vyarus.guicey.eventbus
 
 import com.google.common.eventbus.EventBus
 import com.google.common.eventbus.Subscribe
@@ -8,24 +8,20 @@ import io.dropwizard.setup.Bootstrap
 import io.dropwizard.setup.Environment
 import ru.vyarus.dropwizard.guice.GuiceBundle
 import ru.vyarus.dropwizard.guice.test.spock.UseGuiceyApp
-import ru.vyarus.dropwizard.guicey.support.AbstractEvent
-import ru.vyarus.dropwizard.guicey.support.Event1
-import ru.vyarus.dropwizard.guicey.support.Event3
-import ru.vyarus.dropwizard.guicey.support.HasEvents
-import ru.vyarus.guicey.eventbus.EventBusBundle
+import ru.vyarus.guicey.eventbus.support.HasEvents
 import ru.vyarus.guicey.eventbus.report.EventSubscribersReporter
 import ru.vyarus.guicey.eventbus.service.EventSubscribersInfo
+import ru.vyarus.guicey.eventbus.support.Event1
 import spock.lang.Specification
 
 import javax.inject.Inject
-
 
 /**
  * @author Vyacheslav Rusakov
  * @since 02.12.2016
  */
 @UseGuiceyApp(App)
-class ReporterMultiTest extends Specification {
+class ReporterTest extends Specification {
     @Inject
     EventBus bus
     @Inject
@@ -40,14 +36,8 @@ class ReporterMultiTest extends Specification {
         expect: "reported"
         reporter.renderReport().replaceAll("\r", "") == """EventBus subscribers = 
 
-    AbstractEvent
-        ru.vyarus.dropwizard.guicey.ReporterMultiTest\$Service
-
     Event1
-        ru.vyarus.dropwizard.guicey.ReporterMultiTest\$Service
-
-    Event3
-        ru.vyarus.dropwizard.guicey.ReporterMultiTest\$Service
+        ru.vyarus.dropwizard.guicey.ReporterTest\$Service
 """
 
     }
@@ -69,16 +59,11 @@ class ReporterMultiTest extends Specification {
     @HasEvents
     static class Service {
 
+        int event1
+
         @Subscribe
         void onEvent1(Event1 event) {
-        }
-
-        @Subscribe
-        void onEvent3(Event3 event) {
-        }
-
-        @Subscribe
-        void onEvent21(AbstractEvent event) {
+            event1++
         }
     }
 }

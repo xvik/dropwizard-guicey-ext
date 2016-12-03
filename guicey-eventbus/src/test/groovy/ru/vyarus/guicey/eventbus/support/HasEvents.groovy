@@ -1,4 +1,4 @@
-package ru.vyarus.dropwizard.guicey.support
+package ru.vyarus.guicey.eventbus.support
 
 import java.lang.annotation.ElementType
 import java.lang.annotation.Retention
