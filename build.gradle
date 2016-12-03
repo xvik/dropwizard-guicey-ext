@@ -2,18 +2,18 @@ plugins {
     id 'ru.vyarus.java-lib' version '1.0.4' apply false
     id 'ru.vyarus.github-info' version '1.1.0' apply false
     id 'ru.vyarus.quality' version '2.0.0' apply false
-    id 'com.jfrog.bintray' version '1.7.1' apply false
+    id 'com.jfrog.bintray' version '1.7.3' apply false
     id 'com.github.ben-manes.versions' version '0.13.0' apply false
-    id "io.spring.dependency-management" version "0.6.0.RELEASE" apply false
+    id "io.spring.dependency-management" version "0.6.1.RELEASE" apply false
 
     id 'base'
     id 'jacoco'
     id 'net.researchgate.release' version '2.4.1'
-    id 'com.github.kt3k.coveralls' version '2.6.3'
+    id 'com.github.kt3k.coveralls' version '2.7.1'
 }
 
 wrapper {
-    gradleVersion = 3.0
+    gradleVersion = '3.2.1'
 }
 
 description = 'Dropwizard-guicey extensions'
@@ -109,8 +109,10 @@ subprojects {
     dependencyUpdates.revision = 'release'
 
     task showDependenciesTree(dependsOn: 'htmlDependencyReport', group: 'help', description:
-            'Generates dependencies tree report and opens it in browser') << {
-        java.awt.Desktop.getDesktop().open(file('/build/reports/project/dependencies/root.html'))
+            'Generates dependencies tree report and opens it in browser') {
+        doLast {
+            java.awt.Desktop.getDesktop().open(file('/build/reports/project/dependencies/root.html'))
+        }
     }
 }
 
@@ -136,12 +138,15 @@ bintray {
     }
 }
 
+// by default, task depends on subproject tasks directly, which breaks dependencies graph
+bintrayUpload.dependsOn subprojects.collect { ":$it.name:bintrayUpload" }
+
 // dependency on all subprojects required for release validation
 check.dependsOn subprojects.check
 
 // release manages only root project (subprojects will be checked and released implicitly)
 afterReleaseBuild {
-    dependsOn = [bintrayUpload]
+    dependsOn = ['bintrayUpload']
     doLast {
         logger.warn "RELEASED $project.group:$project.name:$project.version"
     }
