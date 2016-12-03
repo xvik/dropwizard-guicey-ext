@@ -75,10 +75,6 @@ subprojects {
 
     group = 'ru.vyarus.guicey'
 
-    quality {
-        strict = false
-    }
-
     github {
         user = 'xvik'
         repository = rootProject.name
