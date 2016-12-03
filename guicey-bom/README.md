@@ -10,6 +10,10 @@ Additionally provides:
 
 ### Setup
 
+[![JCenter](https://img.shields.io/bintray/v/vyarus/xvik/dropwizard-guicey-ext.svg?label=jcenter)](https://bintray.com/vyarus/xvik/dropwizard-guicey-ext/_latestVersion)
+[![Maven Central](https://img.shields.io/maven-central/v/ru.vyarus.guicey/guicey-bom.svg?style=flat)](https://maven-badges.herokuapp.com/maven-central/ru.vyarus.guicey/guicey-bom)
+
+
 Maven:
 
 ```xml
@@ -65,7 +69,7 @@ dependencies {
     // For example, using dropwizard module (without version)
     compile 'io.dropwizard:dropwizard-auth'
     // Example of extension module usage
-    compile 'ru.vyarus.guicey:guicey-evenbus' 
+    compile 'ru.vyarus.guicey:guicey-eventbus' 
 }
     
 ```

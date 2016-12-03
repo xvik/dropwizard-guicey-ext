@@ -91,7 +91,7 @@ INFO  [2016-12-01 12:31:02,819] ru.vyarus.guicey.eventbus.report.EventsReporter:
 NOTE: only subscriptions of beans registered at the time of injector startup will be shown.
  For example, if MyBean has subscription method but binding for it not declared (and noone depends on it)
  then JIT binding will be created only somewhere later in time (when bean will be actually used) and 
- so listener registration happen after starver startup and will not be shown in console report.
+ so listener registration happen after server startup and will not be shown in console report.
 
 ##### Consuming multiple events
   
@@ -107,7 +107,7 @@ public void onEvent(Object event){
   
 ### Event bus 
 
-By default, events will be handled synchronously (bus.push() waits while all subscribers processed).
+By default, events will be handled synchronously (`bus.push()` waits while all subscribers processed).
  
 If you want events to be async use custom eventbus:
  
@@ -117,7 +117,7 @@ new EventBusBundle(
 )
 ``` 
 
-By default, event listeners considered not thread safe and so no parallel events processing (for single method!) 
+By default, event listeners considered not thread safe and so no parallel events processing (for single method) 
 will be performed. To mark subscriber as thread safe use `@AllowConcurrentEvents`:
 
 ```java
@@ -139,7 +139,7 @@ new EventBusBundle(
 ### Listeners recognition
 
 Guice type listener used to intercept all beans instances. Each bean instance is registered in eventbus: 
-it's valid behaviour for event bus and only beans with actual listener methods will be registered.
+it's valid behaviour for eventbus and only beans with actual listener methods will be registered.
 
 But, it means that each bean class is checked: every method in class hierarchy. This is very fast and
  does not make problems for most of the cases. But, if you want, you can reduce the scope for checking by
@@ -175,7 +175,7 @@ Important moment: reporting has to use reflection to get subscribers list. If re
 ### Subscribers info bean
 
 Special guice bean registered and available for injection: `EventSubscribersInfo`.
-With it you can get active listeners and used event types. Reporting using it for console report.
+With it you can get active listeners and used event types. Reporting use it for console report.
 It may be useful for unit tests.
 
 As described above, internally it use reflection to access eventbus listeners map. 

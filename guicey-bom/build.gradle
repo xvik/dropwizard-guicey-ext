@@ -15,7 +15,7 @@ withPomXml {
 
     // add subprojects to the bom
     project.rootProject.subprojects.each {
-        if (it.name != 'bom') {
+        if (it.name != 'guicey-bom') {
             Node dep = deps.appendNode('dependency')
             dep.appendNode('groupId').value = it.group
             dep.appendNode('artifactId').value = it.name

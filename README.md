@@ -5,30 +5,28 @@
 
 ### About
 
-Dropwizard [guicey](https://github.com/xvik/dropwizard-guicey) extensions and integrations. 
+[Dropwizard-guicey](https://github.com/xvik/dropwizard-guicey) extensions and integrations. 
 Provided modules may be used directly and for educational purposes (as examples for custom integrations).
 
-NOTE: Guicey and extension modules use *different* versions, because release cycles are not unified (obviously, extensions would release more often, at least at first).
-But all modules use the same version. Provided BOM simplifies version management even more.
+NOTE: Guicey and extension modules use *different* versions because release cycles are not unified (obviously, extensions would release more often, at least at first).
+But all modules use the same version. Provided [BOM](guicey-bom) simplifies version management.
 
 Also, note that guicey base package (`ru.vyarus.dropwizard.guice`) is different from extensions base package (`ru.vyarus.guicey`)
 
 ### Setup
  
 Releases are published to [bintray jcenter](https://bintray.com/vyarus/xvik/dropwizard-guicey-ext/) and 
-[maven central](https://maven-badges.herokuapp.com/maven-central/ru.vyarus/dropwizard-guicey-ext) 
+[maven central](https://maven-badges.herokuapp.com/maven-central/ru.vyarus.guicey/guicey-bom) 
 
-<!---
 [![JCenter](https://img.shields.io/bintray/v/vyarus/xvik/dropwizard-guicey-ext.svg?label=jcenter)](https://bintray.com/vyarus/xvik/dropwizard-guicey-ext/_latestVersion)
 [![Maven Central](https://img.shields.io/maven-central/v/ru.vyarus.guicey/guicey-bom.svg?style=flat)](https://maven-badges.herokuapp.com/maven-central/ru.vyarus.guicey/guicey-bom)
--->
 
 You can either use [modules](#modules) directly (in this case see module page for setup) or use provided [BOM](guicey-bom)
 to unify versions management.
 
 [BOM usage](guicey-bom#setup) is recommended.
 
-Note that BOM will also provide guice and dropwizard boms, so you can avoid declaring versions of these modules too. 
+Note that BOM will also provide guice and dropwizard BOMs, so you can avoid declaring versions of these modules too. 
 
 <!--
 ##### Snapshots
