@@ -1,15 +1,15 @@
 description = "Guicey extensions BOM"
 
-// main dependenciesManagement section will be generated based on dependenciesManagement declared in root project
-pom {
-    properties {
-        'dropwizard.version' dropwizard
-        'guicey.version' guicey
-        'spock.version' spock
-    }
-}
+def props = ['dropwizard.version': dropwizard,
+             'guicey.version'    : guicey,
+             'spock.version'     : spock]
 
+// main dependenciesManagement section will be generated based on dependenciesManagement declared in root project
 withPomXml {
+    it.appendNode('properties').with {
+        props.each { nm, val -> appendNode(nm, val) }
+    }
+
     Node deps = it.dependencyManagement.dependencies[0]
 
     // add subprojects to the bom
