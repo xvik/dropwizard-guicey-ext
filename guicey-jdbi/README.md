@@ -13,6 +13,10 @@ Features:
     - are normal guice beans, supporting aop and participating in global (thread bound) transaction.
     - no need to compose repositories anymore (e.g. with @CreateSqlObject) to gain single transaction.
 * Automatic installation for custom `ResultSetMapper` 
+
+Added installers:
+* [RepositoryInstaller](src/main/java/ru/vyarus/guicey/jdbi/installer/repository/RepositoryInstaller.java) - sql proxies
+* [MapperInstaller](src/main/java/ru/vyarus/guicey/jdbi/installer/MapperInstaller.java) - result set mappers  
  
 ### Setup
 
@@ -71,7 +75,7 @@ scope is controlled by `@InTransaction` annotation (note that such name was inte
 DBI own's Transaction annotation and more common Transactional annotations).
 
 At the beginning of unit of work, DBI handle is created and bound to thread (thread local).
-All repositories are simply using this bound handle and so where transaction inside unit of work.
+All repositories are simply using this bound handle and so share transaction inside unit of work.
 
 ##### @InTransaction
 
@@ -93,9 +97,8 @@ If exception appears during execution, it's propagated and transaction rolled ba
 
 Nested annotations are allowed (they simply ignored).
 
-Note that unit of work is not the same as transaction scope (transaction scope could be equal or same 
-as unit of work). But, for simplicity, you may think of it as the same things, if you always
-use `@InTransaction` annotation (it actually always create both). 
+Note that unit of work is not the same as transaction scope (transaction scope could be less or equal to unit of work). 
+But, for simplicity, you may think of it as the same things, if you always use `@InTransaction` annotation. 
 
 If required, you may use your own annotation for transaction definition:
 
@@ -104,7 +107,7 @@ JdbiBundle.forDatabase((conf, env) -> conf.getDatabase())
     .withTxAnnotations(MyCustomTransactional.class);
 ```
 
-Note that this will override default annotations support. If you want to support multiple annotation then provide
+Note that this will override default annotation support. If you want to support multiple annotations then specify
 all of them:
 
 ```java
@@ -127,10 +130,10 @@ You may define transaction (with unit of work) without annotation using:
 ```java
 @Inject TransactionTenpate template;
 ...
-template.inTrabsansaction((handle) -> doSomethind())
+template.inTrabsansaction((handle) -> doSomething())
 ```
 
-Note that inside such manual scope you may also call any repository bean, as it's absolutely the same as 
+Note that inside such manual scope you may also call any repository bean, as it's absolutely the same definition as 
 with annotation.
 
 #### Repository
@@ -151,11 +154,11 @@ public interface MyRepository {
 }
 ```
 
-Note that here I put @InTransaction also to be able to call repository methods without extra annotations
+Note the use of `@InTransaction`: it was used to be able to call repository methods without extra annotations
 (the lowest transaction scope it's repository itself). It will make beans "feel the same" as usual DBI on demand
 sql object proxies.
 
-@InTransaction is applied using guice aop! You can use any other features, driven by guice aop!
+`@InTransaction` annotation is handled using guice aop. You can use any other guice aop related features.
 
 You can also use injection inside repositories, but only field injection:
  
@@ -165,13 +168,19 @@ public abstract class MyRepo {
 }
 ``` 
 
-Constructor injection is impossible, because DBI sql proxies are still used internally and DBI will no be able
+Constructor injection is impossible, because DBI sql proxies are still used internally and DBI will not be able
 to construct proxy for class with constructor injection.
 
 *Don't use DBI @Transaction and @CreateSqlObject annotations anymore*: probably they will even work, but they are not
 needed now and may confuse.
 
-All installed repositories are reported into console. 
+All installed repositories are reported into console:
+
+```
+INFO  [2016-12-05 19:42:27,374] ru.vyarus.guicey.jdbi.installer.repository.RepositoryInstaller: repositories = 
+
+    (ru.vyarus.guicey.jdbi.support.repository.SampleRepository)
+```
 
 #### Result set mapper
 
@@ -189,7 +198,7 @@ public class CustomMapper implements ResutlSetMapper<Custom> {
 }
 ```
 
-Ans now Custom type could be used for queries:
+And now Custom type could be used for queries:
 
 ```java
 @JdbiRepository
@@ -203,7 +212,7 @@ public interface CustomRepository {
 
 ### Manual unit of work definition
 
-If, so some reason, you don't need transaction at some place, you can declare raw unit of work and use 
+If, for some reason, you don't need transaction at some place, you can declare raw unit of work and use 
 assigned handle directly:
 
 ```java
