@@ -102,6 +102,6 @@ public final class JdbiBundle implements GuiceyBundle {
      */
     public static <C extends Configuration> JdbiBundle forDatabase(
             final ConfigAwareProvider<PooledDataSourceFactory, C> db) {
-        return new JdbiBundle(new SimpleDbiProvider<C>(db));
+        return forDbi(new SimpleDbiProvider<C>(db));
     }
 }

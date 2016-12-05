@@ -37,7 +37,7 @@ class ReporterTest extends Specification {
         reporter.renderReport().replaceAll("\r", "") == """EventBus subscribers = 
 
     Event1
-        ru.vyarus.dropwizard.guicey.ReporterTest\$Service
+        ru.vyarus.guicey.eventbus.ReporterTest\$Service
 """
 
     }

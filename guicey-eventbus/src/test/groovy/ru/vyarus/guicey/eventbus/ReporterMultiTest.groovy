@@ -40,13 +40,13 @@ class ReporterMultiTest extends Specification {
         reporter.renderReport().replaceAll("\r", "") == """EventBus subscribers = 
 
     AbstractEvent
-        ru.vyarus.dropwizard.guicey.ReporterMultiTest\$Service
+        ru.vyarus.guicey.eventbus.ReporterMultiTest\$Service
 
     Event1
-        ru.vyarus.dropwizard.guicey.ReporterMultiTest\$Service
+        ru.vyarus.guicey.eventbus.ReporterMultiTest\$Service
 
     Event3
-        ru.vyarus.dropwizard.guicey.ReporterMultiTest\$Service
+        ru.vyarus.guicey.eventbus.ReporterMultiTest\$Service
 """
 
     }

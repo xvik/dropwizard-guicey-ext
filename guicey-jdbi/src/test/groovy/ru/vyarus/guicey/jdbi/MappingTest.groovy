@@ -8,7 +8,7 @@ import ru.vyarus.guicey.jdbi.support.repository.SampleRepository
  * @author Vyacheslav Rusakov
  * @since 05.12.2016
  */
-class MappingTest extends AbstractTest {
+class MappingTest extends AbstractAppTest {
 
     @Inject
     SampleRepository repository
