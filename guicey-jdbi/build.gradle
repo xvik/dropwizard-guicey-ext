@@ -4,4 +4,7 @@ dependencies {
     compile 'io.dropwizard:dropwizard-jdbi'
     compile 'com.google.inject.extensions:guice-multibindings'
     compile 'ru.vyarus:guice-ext-annotations'
+
+    testCompile 'io.dropwizard.modules:dropwizard-flyway:1.0.0-1'
+    testCompile 'com.h2database:h2:1.4.193'
 }

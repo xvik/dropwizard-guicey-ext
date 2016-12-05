@@ -2,6 +2,7 @@ package ru.vyarus.guicey.jdbi;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import io.dropwizard.Configuration;
 import io.dropwizard.db.PooledDataSourceFactory;
 import org.skife.jdbi.v2.DBI;
 import ru.vyarus.dropwizard.guice.module.installer.bundle.GuiceyBootstrap;
@@ -30,10 +31,10 @@ import java.util.List;
  * <p>
  * Custom installations:
  * <ul>
- *     <li>Classes annotated with {@link ru.vyarus.guicey.jdbi.installer.repository.JdbiRepository} are installed
- *     as guice beans, but provides usual functionality as JDBI sql proxies (just no need to always combine them).</li>
- *     <li>Classes implementing {@link org.skife.jdbi.v2.tweak.ResultSetMapper} are registered
- *     automatically.</li>
+ * <li>Classes annotated with {@link ru.vyarus.guicey.jdbi.installer.repository.JdbiRepository} are installed
+ * as guice beans, but provides usual functionality as JDBI sql proxies (just no need to always combine them).</li>
+ * <li>Classes implementing {@link org.skife.jdbi.v2.tweak.ResultSetMapper} are registered
+ * automatically.</li>
  * </ul>
  *
  * @author Vyacheslav Rusakov
@@ -45,13 +46,13 @@ import java.util.List;
  */
 public final class JdbiBundle implements GuiceyBundle {
 
-    private final ConfigAwareProvider<DBI> dbi;
+    private final ConfigAwareProvider<DBI, ?> dbi;
     private List<Class<? extends Annotation>> txAnnotations = ImmutableList
             .<Class<? extends Annotation>>builder()
             .add(InTransaction.class)
             .build();
 
-    private JdbiBundle(final ConfigAwareProvider<DBI> dbi) {
+    private JdbiBundle(final ConfigAwareProvider<DBI, ?> dbi) {
         this.dbi = dbi;
     }
 
@@ -71,7 +72,7 @@ public final class JdbiBundle implements GuiceyBundle {
 
     @Override
     public void initialize(final GuiceyBootstrap bootstrap) {
-        final DBI jdbi = this.dbi.get(bootstrap.environment(), bootstrap.configuration());
+        final DBI jdbi = this.dbi.get(bootstrap.configuration(), bootstrap.environment());
 
         bootstrap
                 .installers(
@@ -85,19 +86,22 @@ public final class JdbiBundle implements GuiceyBundle {
      * Builds bundle for custom JDBI instance.
      *
      * @param dbi JDBI instance provider
+     * @param <C> configuration type
      * @return bundle instance
      */
-    public static JdbiBundle forDbi(final ConfigAwareProvider<DBI> dbi) {
+    public static <C extends Configuration> JdbiBundle forDbi(final ConfigAwareProvider<DBI, C> dbi) {
         return new JdbiBundle(dbi);
     }
 
     /**
      * Builds bundle, by using only database factory from configuration.
      *
-     * @param db database configuration provider
+     * @param db  database configuration provider
+     * @param <C> configuration type
      * @return bundle instance
      */
-    public static JdbiBundle forDatabase(final ConfigAwareProvider<PooledDataSourceFactory> db) {
-        return new JdbiBundle(new SimpleDbiProvider(db));
+    public static <C extends Configuration> JdbiBundle forDatabase(
+            final ConfigAwareProvider<PooledDataSourceFactory, C> db) {
+        return new JdbiBundle(new SimpleDbiProvider<C>(db));
     }
 }

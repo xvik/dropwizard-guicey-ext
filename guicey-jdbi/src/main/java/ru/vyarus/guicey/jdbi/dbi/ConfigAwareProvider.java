@@ -8,18 +8,19 @@ import io.dropwizard.setup.Environment;
  * For example, to construct some dropwizard integration object and use it in guice integrations later.
  *
  * @param <T> provided object type
+ * @param <C> configuration type
  * @author Vyacheslav Rusakov
  * @since 05.12.2016
  */
 @FunctionalInterface
-public interface ConfigAwareProvider<T> {
+public interface ConfigAwareProvider<T, C extends Configuration> {
 
     /**
      * Called to provide required object.
      *
-     * @param environment   environment instance
      * @param configuration configuration instance
+     * @param environment   environment instance
      * @return object instance
      */
-    T get(Environment environment, Configuration configuration);
+    T get(C configuration, Environment environment);
 }

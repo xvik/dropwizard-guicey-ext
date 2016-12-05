@@ -1,5 +1,6 @@
 package ru.vyarus.guicey.jdbi.module;
 
+import com.google.inject.Inject;
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.tweak.ResultSetMapper;
 
@@ -16,6 +17,7 @@ import java.util.Set;
  */
 public class MapperBinder {
 
+    @Inject
     public MapperBinder(final DBI dbi, final Set<ResultSetMapper> mappers) {
         mappers.forEach(dbi::registerMapper);
     }

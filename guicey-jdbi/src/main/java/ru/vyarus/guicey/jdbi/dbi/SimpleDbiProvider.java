@@ -9,19 +9,20 @@ import org.skife.jdbi.v2.DBI;
 /**
  * Simple DBI configurer, requiring just database configuration.
  *
+ * @param <C> configuration type
  * @author Vyacheslav Rusakov
  * @since 05.12.2016
  */
-public class SimpleDbiProvider implements ConfigAwareProvider<DBI> {
+public class SimpleDbiProvider<C extends Configuration> implements ConfigAwareProvider<DBI, C> {
 
-    private final ConfigAwareProvider<PooledDataSourceFactory> database;
+    private final ConfigAwareProvider<PooledDataSourceFactory, C> database;
 
-    public SimpleDbiProvider(final ConfigAwareProvider<PooledDataSourceFactory> database) {
+    public SimpleDbiProvider(final ConfigAwareProvider<PooledDataSourceFactory, C> database) {
         this.database = database;
     }
 
     @Override
-    public DBI get(final Environment environment, final Configuration configuration) {
-        return new DBIFactory().build(environment, database.get(environment, configuration), "db");
+    public DBI get(final C configuration, final Environment environment) {
+        return new DBIFactory().build(environment, database.get(configuration, environment), "db");
     }
 }

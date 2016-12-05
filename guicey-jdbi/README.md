@@ -45,7 +45,7 @@ Register bundle:
 
 ```java
 GuiceBundle.builder()        
-        .bundles(JdbiBundle.forDatabase((env, conf) -> conf.getDatabase()))
+        .bundles(JdbiBundle.forDatabase((conf, env) -> conf.getDatabase()))
         ...
 ```
 
@@ -55,7 +55,7 @@ Here default DBI instance will be created from database configuration (much like
 Or build DBI instance yourself:
 
 ```java
-JdbiBundle.forDbi((env, conf) -> locateDbi())
+JdbiBundle.forDbi((conf, env) -> locateDbi())
 ```
 
 #### Unit of work
@@ -100,7 +100,7 @@ use `@InTransaction` annotation (it actually always create both).
 If required, you may use your own annotation for transaction definition:
 
 ```java
-JdbiBundle.forDatabase((env, conf) -> conf.getDatabase())
+JdbiBundle.forDatabase((conf, env) -> conf.getDatabase())
     .withTxAnnotations(MyCustomTransactional.class);
 ```
 
@@ -108,7 +108,7 @@ Note that this will override default annotations support. If you want to support
 all of them:
 
 ```java
-JdbiBundle.forDatabase((env, conf) -> conf.getDatabase())
+JdbiBundle.forDatabase((conf, env) -> conf.getDatabase())
     .withTxAnnotations(InTransaction.class, MyCustomTransactional.class);
 ```
 
