@@ -1,0 +1,221 @@
+# JDBI integration
+
+### About
+
+Integrates [JDBI](http://jdbi.org/) with guice. Based on [dropwizard-jdbi](http://www.dropwizard.io/1.0.5/docs/manual/jdbi.html) integration.
+ 
+Features:
+
+* DBI instance available for injection
+* Introduce unit of work concept, which is managed by annotations and guice aop (very like spring's @Transactional)
+* Repositories (JDBI proxies for interfaces and abstract classes):
+    - installed automatically (when classpath scan enabled)
+    - are normal guice beans, supporting aop and participating in global (thread bound) transaction.
+    - no need to compose repositories anymore (e.g. with @CreateSqlObject) to gain single transaction.
+* Automatic installation for custom `ResultSetMapper` 
+ 
+### Setup
+
+[![JCenter](https://img.shields.io/bintray/v/vyarus/xvik/dropwizard-guicey-ext.svg?label=jcenter)](https://bintray.com/vyarus/xvik/dropwizard-guicey-ext/_latestVersion)
+[![Maven Central](https://img.shields.io/maven-central/v/ru.vyarus.guicey/guicey-jdbi.svg?style=flat)](https://maven-badges.herokuapp.com/maven-central/ru.vyarus.guicey/guicey-jdbi)
+
+Avoid version in dependency declaration below if you use [extensions BOM](../guicey-bom). 
+
+Maven:
+
+```xml
+<dependency>
+  <groupId>ru.vyarus.guicey</groupId>
+  <artifactId>guicey-jdbi</artifactId>
+  <version>0.1.0</version>
+</dependency>
+```
+
+Gradle:
+
+```groovy
+compile 'ru.vyarus.guicey:guicey-jdbi:0.1.0'
+```
+
+See the most recent version in the badge above.
+
+### Usage
+
+Register bundle:
+
+```java
+GuiceBundle.builder()        
+        .bundles(JdbiBundle.forDatabase((env, conf) -> conf.getDatabase()))
+        ...
+```
+
+Here default DBI instance will be created from database configuration (much like it's described in 
+[dropwizard documentation](http://www.dropwizard.io/1.0.5/docs/manual/jdbi.html)).
+
+Or build DBI instance yourself:
+
+```java
+JdbiBundle.forDbi((env, conf) -> locateDbi())
+```
+
+#### Unit of work
+
+Unit of work concept states for: every database related operation must be performed inside unit of work.
+
+In DBI such approach was implicit: you were always tied to initial handle. This lead to cumbersome usage of
+sql object proxies: if you create it on-demand it would always create new handle; if you want to combine
+multiple objects in one transaction, you have to always create them manually for each transaction.
+
+Integration removes these restrictions: dao (repository) objects are normal guice beans and transaction
+scope is controlled by `@InTransaction` annotation (note that such name was intentional to avoid confusion with
+DBI own's Transaction annotation and more common Transactional annotations).
+
+At the beginning of unit of work, DBI handle is created and bound to thread (thread local).
+All repositories are simply using this bound handle and so where transaction inside unit of work.
+
+##### @InTransaction
+
+Annotation on method or class declares transactional scope. For example:
+
+```java
+@Inject MyDAO dao
+
+@InTransaction
+public Result doSomething() {
+   dao.select();
+   ...
+}
+```
+
+Transaction opened before doSomething() method and closed after it. 
+Dao call is also performed inside transaction.
+If exception appears during execution, it's propagated and transaction rolled back.
+
+Nested annotations are allowed (they simply ignored).
+
+Note that unit of work is not the same as transaction scope (transaction scope could be equal or same 
+as unit of work). But, for simplicity, you may think of it as the same things, if you always
+use `@InTransaction` annotation (it actually always create both). 
+
+If required, you may use your own annotation for transaction definition:
+
+```java
+JdbiBundle.forDatabase((env, conf) -> conf.getDatabase())
+    .withTxAnnotations(MyCustomTransactional.class);
+```
+
+Note that this will override default annotations support. If you want to support multiple annotation then provide
+all of them:
+
+```java
+JdbiBundle.forDatabase((env, conf) -> conf.getDatabase())
+    .withTxAnnotations(InTransaction.class, MyCustomTransactional.class);
+```
+
+##### Context Handle
+
+Inside unit of work you may reference current handle by using:
+
+```java
+@Inject Provider<Handle>
+```
+
+##### Manual transaction definition
+
+You may define transaction (with unit of work) without annotation using:
+
+```java
+@Inject TransactionTenpate template;
+...
+template.inTrabsansaction((handle) -> doSomethind())
+```
+
+Note that inside such manual scope you may also call any repository bean, as it's absolutely the same as 
+with annotation.
+
+#### Repository
+
+Declare repository (interface or abstract class) as usual, using DBI annotations. 
+It only must be annotated with `@JdbiRepository` so installer
+could recognize it and register in guice context.
+
+NOTE: singleton scope will be forced for repositories.
+
+```java
+@JdbiRepository
+@InTransaction
+public interface MyRepository {     
+    
+    @SqlQuery("select name from something where id = :id")
+    String findNameById(@Bind("id") int id);
+}
+```
+
+Note that here I put @InTransaction also to be able to call repository methods without extra annotations
+(the lowest transaction scope it's repository itself). It will make beans "feel the same" as usual DBI on demand
+sql object proxies.
+
+@InTransaction is applied using guice aop! You can use any other features, driven by guice aop!
+
+You can also use injection inside repositories, but only field injection:
+ 
+```java
+public abstract class MyRepo {
+    @Inject SomeBean bean;
+}
+``` 
+
+Constructor injection is impossible, because DBI sql proxies are still used internally and DBI will no be able
+to construct proxy for class with constructor injection.
+
+*Don't use DBI @Transaction and @CreateSqlObject annotations anymore*: probably they will even work, but they are not
+needed now and may confuse.
+
+All installed repositories are reported into console. 
+
+#### Result set mapper
+
+If you have custom implementations of `ResultSetMapper`, it may be registered automatically. 
+You will be able to use injections there because mappers become ususal guice beans (singletons).
+When classpath scan is enabled, such classes will be searched and installed automatically.
+
+```java
+public class CustomMapper implements ResutlSetMapper<Custom> {
+    @Override
+    public Cusom map(int row, ResultSet rs, StatementContext ctx) {
+        // mapping here
+        return custom;
+    }
+}
+```
+
+Ans now Custom type could be used for queries:
+
+```java
+@JdbiRepository
+@InTransaction
+public interface CustomRepository {     
+    
+    @SqlQuery("select * from custom where id = :id")
+    Custom findNameById(@Bind("id") int id);
+}
+```
+
+### Manual unit of work definition
+
+If, so some reason, you don't need transaction at some place, you can declare raw unit of work and use 
+assigned handle directly:
+
+```java
+@Inject UnitManager manager;
+
+manager.beginUnit();
+try {
+    Handle handle = manager.get();
+    // logic executed in unit of work but without transaction
+} finally {
+    manager.endUnit();
+}
+```
+
+Repositories could also be called inside such manual unit (as unit of work is correctly started).

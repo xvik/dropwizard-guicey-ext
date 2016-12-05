@@ -13,6 +13,8 @@ But all modules use the same version. Provided [BOM](guicey-bom) simplifies vers
 
 Also, note that guicey base package (`ru.vyarus.dropwizard.guice`) is different from extensions base package (`ru.vyarus.guicey`)
 
+In versions prior to 1.0.0 semantic visioning is not guaranteed (it does not relate to quality, just some breaking changes are possible).
+
 ### Setup
  
 Releases are published to [bintray jcenter](https://bintray.com/vyarus/xvik/dropwizard-guicey-ext/) and 

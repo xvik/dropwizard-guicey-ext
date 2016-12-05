@@ -52,6 +52,7 @@ subprojects {
         dropwizard = '1.0.5'
         guicey = '4.0.1'
         spock = '1.0-groovy-2.4'
+        guiceExtAnn = '1.2.1'
     }
 
     dependencyManagement {
@@ -61,6 +62,7 @@ subprojects {
         dependencies {
             dependency "ru.vyarus:dropwizard-guicey:$guicey"
             dependency "org.spockframework:spock-core:$spock"
+            dependency "ru.vyarus:guice-ext-annotations:$guiceExtAnn"
         }
     }
     dependencies {

@@ -1,8 +1,9 @@
 description = "Guicey extensions BOM"
 
-def props = ['dropwizard.version': dropwizard,
-             'guicey.version'    : guicey,
-             'spock.version'     : spock]
+def props = ['dropwizard.version'           : dropwizard,
+             'guicey.version'               : guicey,
+             'spock.version'                : spock,
+             'guice-ext-annotations.version': guiceExtAnn]
 
 // main dependenciesManagement section will be generated based on dependenciesManagement declared in root project
 withPomXml {
