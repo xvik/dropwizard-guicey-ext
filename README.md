@@ -44,7 +44,12 @@ You can use snapshot versions through [JitPack](https://jitpack.io):
 
 #### [Guava EventBus integration](guicey-eventbus) 
 
-Module provides integration with Guava EventBus: automates subscribtions, report events with subscriptions and registers EventBus for inject.
+Module provides integration with Guava EventBus: automates subscriptions, report events with subscriptions and registers EventBus for inject.
+
+#### [JDBI integration](guicey-jdbi) 
+
+Based on dropwizard integration. Introduce thread bound transactions, defined with annotations. 
+Sql proxies could be used as usual guice beans without extra efforts to use them in the same transaction. 
 
 -
 [![java lib generator](http://img.shields.io/badge/Powered%20by-%20Java%20lib%20generator-green.svg?style=flat-square)](https://github.com/xvik/generator-lib-java)
