@@ -210,6 +210,14 @@ public interface CustomRepository {
 }
 ```
 
+All installed mappers are reported to console:
+
+```
+INFO  [2016-12-05 20:02:25,399] ru.vyarus.guicey.jdbi.installer.MapperInstaller: jdbi mappers = 
+
+    Sample               (ru.vyarus.guicey.jdbi.support.mapper.SampleMapper)
+```
+
 ### Manual unit of work definition
 
 If, for some reason, you don't need transaction at some place, you can declare raw unit of work and use 
