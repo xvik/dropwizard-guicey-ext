@@ -23,7 +23,7 @@ Maven:
         <dependency>
             <groupId>ru.vyarus.guicey</groupId>
             <artifactId>guicey-bom</artifactId>
-            <version>0.2.0</version>
+            <version>0.2.1</version>
             <type>pom</type>
             <scope>import</scope>
         </dependency>
@@ -53,13 +53,13 @@ Gradle:
 
 ```groovy
 plugins {
-    id "io.spring.dependency-management" version "0.6.0.RELEASE"
+    id "io.spring.dependency-management" version "0.6.1.RELEASE"
 }
 
 dependencyManagement {
     // Implicitly imports Dropwizard and Guice BOMs 
     imports {
-        mavenBom "ru.vyarus.guicey:guicey-bom:0.2.0"
+        mavenBom "ru.vyarus.guicey:guicey-bom:0.2.1"
     }
 }
 
