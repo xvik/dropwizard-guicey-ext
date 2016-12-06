@@ -1,7 +1,6 @@
 description = "Guicey extensions BOM"
 
-def props = ['dropwizard.version'           : dropwizard,
-             'guicey.version'               : guicey,
+def props = ['guicey.version'               : guicey,
              'spock.version'                : spock,
              'guice-ext-annotations.version': guiceExtAnn]
 

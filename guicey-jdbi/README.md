@@ -49,7 +49,7 @@ Register bundle:
 
 ```java
 GuiceBundle.builder()        
-        .bundles(JdbiBundle.forDatabase((conf, env) -> conf.getDatabase()))
+        .bundles(JdbiBundle.<ConfType>forDatabase((conf, env) -> conf.getDatabase()))
         ...
 ```
 

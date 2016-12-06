@@ -49,7 +49,6 @@ subprojects {
     sourceCompatibility = 1.8
 
     ext {
-        dropwizard = '1.0.5'
         guicey = '4.0.1'
         spock = '1.0-groovy-2.4'
         guiceExtAnn = '1.2.1'
@@ -57,7 +56,7 @@ subprojects {
 
     dependencyManagement {
         imports {
-            mavenBom "io.dropwizard:dropwizard-bom:$dropwizard"
+            mavenBom "ru.vyarus:dropwizard-guicey:$guicey"
         }
         dependencies {
             dependency "ru.vyarus:dropwizard-guicey:$guicey"

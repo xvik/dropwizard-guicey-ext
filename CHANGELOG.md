@@ -1,3 +1,5 @@
+* Fix jdbi module pom
+
 ### 0.2.0 (2016-12-06)
 * Add JDBI integration module
 
