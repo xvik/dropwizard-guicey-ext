@@ -1,5 +1,7 @@
 # JDBI integration
 
+> [Example app](https://github.com/xvik/dropwizard-guicey-examples/tree/master/jdbi)
+
 ### About
 
 Integrates [JDBI](http://jdbi.org/) with guice. Based on [dropwizard-jdbi](http://www.dropwizard.io/1.0.5/docs/manual/jdbi.html) integration.
