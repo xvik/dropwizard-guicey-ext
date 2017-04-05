@@ -1,0 +1,1 @@
+# Single page applications support

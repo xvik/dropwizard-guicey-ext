@@ -2,5 +2,6 @@ rootProject.name = 'dropwizard-guicey-ext'
 
 include 'guicey-bom',
         'guicey-eventbus',
-        'guicey-jdbi'
+        'guicey-jdbi',
+        'guicey-spa'
 
