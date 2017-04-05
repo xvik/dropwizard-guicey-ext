@@ -19,11 +19,6 @@ public class ResponseWrapper extends HttpServletResponseWrapper {
     }
 
     @Override
-    public void sendError(final int sc, final String msg) throws IOException {
-        error = sc;
-    }
-
-    @Override
     public void sendError(final int sc) throws IOException {
         error = sc;
     }

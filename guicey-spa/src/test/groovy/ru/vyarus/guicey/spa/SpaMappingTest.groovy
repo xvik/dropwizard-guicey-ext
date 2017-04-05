@@ -86,6 +86,35 @@ class SpaMappingTest extends Specification {
         def ex = thrown(HttpResponseException)
         ex.response.status == 404
 
+        when: "calling with unknown content type"
+        http.get(path: '/same', contentType : "abrakadabra")
+
+        then: "no redirect"
+        ex = thrown(HttpResponseException)
+        ex.response.status == 404
+
+        when: "calling with empty type"
+        http.get(path: '/same', contentType : " ")
+
+        then: "no redirect"
+        ex = thrown(HttpResponseException)
+        ex.response.status == 404
+
+
+
+    }
+
+    def "Check non 404 error"() {
+
+        def http = new HTTPBuilder('http://localhost:8080/')
+
+        expect: "calling for cached content"
+        http.get(path: '/index.html', headers: ['If-Modified-Since': 'Wed, 21 Oct 2215 07:28:00 GMT']) {
+            resp, reader ->
+                assert resp.status == 304
+                true
+        }
+
     }
 
     static class App extends Application<Configuration> {
