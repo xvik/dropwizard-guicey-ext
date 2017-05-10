@@ -8,6 +8,7 @@ import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.vyarus.dropwizard.guice.module.installer.bundle.GuiceyBootstrap;
 import ru.vyarus.guicey.spa.filter.SpaRoutingFilter;
 
 import javax.servlet.DispatcherType;
@@ -29,7 +30,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * Bundle is pure dropwizard bundle.
  * <p>
  * Use dropwizard-assets servlet internally, but wraps it with special filter, which reacts on resource not found
- * errors (by default, all calls pass to assets filter!).
+ * errors (by default, all calls pass to assets filter!). Applies no-cache header for index page.
  * <p>
  * You can register multiple SPA applications on main or admin contexts (or both).
  * All applications must have unique names. In case of duplicate names or mapping on the same path, error
@@ -173,10 +174,21 @@ public class SpaBundle implements Bundle {
         }
 
         /**
-         * @return configured bundle instance
+         * @return configured dropwizard bundle instance
          */
         public SpaBundle build() {
             return bundle;
+        }
+
+        /**
+         * Use when spa bundle must be registered withing guicey bundle
+         * (guicey bundle could register custom application, e.g. for administration).
+         *
+         * @param bootstrap guicey bootstrap object
+         */
+        public void register(final GuiceyBootstrap bootstrap) {
+            bundle.initialize(null);
+            bundle.run(bootstrap.environment());
         }
     }
 }

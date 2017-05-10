@@ -7,20 +7,21 @@ handle html5 client routing.
 
 Features:
 
-* Pure dropwizard bundle
+* Pure dropwizard bundle, but can be used with guicey bundles 
 * Build above dropwizard-assets servlet
 * Support registration on main and admin contexts
 * Multiple apps could be registered
+* Sets no-cache headers for index page
 * Regex could be used to tune routes detection
 
 #### Problem
 
-The problem with SPA is html5 routing. For example, suppose yout app base url is `/app`
-and pretty url is `/app/someroute` (before there were no problem because route would
-look like `/app/#!/someroute`). When user hit refresh (or bookmark) such route, serer is actually
+The problem with SPA is html5 routing. For example, suppose your app base url is `/app`
+and client route url is `/app/someroute` (before there were no problem because route would
+look like `/app/#!/someroute`). When user hit refresh (or bookmark) such route, server is actually
 called with route url. Server must recognize it and return index page.
 
-Angular 2 router use html5 mode my default.
+For example, Angular 2 router use html5 mode my default.
 
 #### Solution
 
@@ -37,7 +38,7 @@ If resource is not found - index page returned. To avoid redirection in case of 
 filter will redirect only requests accepting 'text/html'. Additional regexp (configurable) 
 is used to recognize most resource calls and avoid redirection (show correct 404).
 
-From example above, `/app/someroute` will be redirected to `/app/` and `/app/css/some.css` will return css.
+From example above, `/app/someroute` will return index page and `/app/css/some.css` will return css.
 `/app/css/unknown.css` will return 404 as resource call will be recognized and css file is not exists.
 
 ### Setup
@@ -134,3 +135,20 @@ bootstrap.addBundle(SpaBundle.app("app", "/app", "/")
 This regexp implements naive assumption that all app routes does not contain "extension".
 
 Note: regexp is applied with `find` so use `^` or `$` to apply boundaries. 
+
+#### Use with guicey bundle
+
+Bundle could be used inside guicey bundle:
+
+```java
+public class AppBundle implements GuiceyBundle {
+    @Override
+    public void initialize(GuiceyBootstrap bootstrap) {
+        SpaBundle.app("app", "/app", "/").register(bootstrap);
+    }
+}
+```
+
+This allows you to register application from guicey bundles.
+Together with bundles lookup guicey feature it could be used to auto installation of client apps
+(e.g. admin app) when jar appear in classpath.
