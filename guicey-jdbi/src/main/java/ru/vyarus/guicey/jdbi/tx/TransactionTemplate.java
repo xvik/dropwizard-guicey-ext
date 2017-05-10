@@ -44,13 +44,15 @@ public class TransactionTemplate {
      * @param <T>    return type
      * @return action result
      */
+    @SuppressWarnings("PMD.AvoidThrowingRawExceptionTypes")
     public <T> T inTransaction(final TxAction<T> action) {
         if (manager.isUnitStarted()) {
             // already started
             try {
                 return action.execute(manager.get());
             } catch (Throwable th) {
-                throw Throwables.propagate(th);
+                Throwables.throwIfUnchecked(th);
+                throw new RuntimeException(th);
             }
         } else {
             manager.beginUnit();

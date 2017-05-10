@@ -1,6 +1,7 @@
 package org.skife.jdbi.v2.sqlobject;
 
 import org.skife.jdbi.v2.Handle;
+import org.skife.jdbi.v2.SqlObjectContext;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
@@ -30,5 +31,13 @@ public class UnitHandleDing implements HandleDing {
     @Override
     public void retain(final String name) {
         // no need to track it here because unit of work control scope
+    }
+
+    @Override
+    public SqlObjectContext setContext(final SqlObjectContext context) {
+        final Handle handle = getHandle();
+        final SqlObjectContext oldContext = handle.getSqlObjectContext();
+        handle.setSqlObjectContext(context);
+        return oldContext == null ? new SqlObjectContext() : oldContext;
     }
 }

@@ -13,7 +13,7 @@ plugins {
 }
 
 wrapper {
-    gradleVersion = '3.2.1'
+    gradleVersion = '3.4'
 }
 
 description = 'Dropwizard-guicey extensions'
@@ -49,8 +49,7 @@ subprojects {
     sourceCompatibility = 1.8
 
     ext {
-        guicey = '4.0.1'
-        spock = '1.0-groovy-2.4'
+        guicey = '4.1.0'
         guiceExtAnn = '1.2.1'
     }
 
@@ -60,7 +59,6 @@ subprojects {
         }
         dependencies {
             dependency "ru.vyarus:dropwizard-guicey:$guicey"
-            dependency "org.spockframework:spock-core:$spock"
             dependency "ru.vyarus:guice-ext-annotations:$guiceExtAnn"
         }
     }
@@ -72,6 +70,7 @@ subprojects {
 
         testCompile "org.spockframework:spock-core"
         testCompile "io.dropwizard:dropwizard-testing"
+        testCompile 'com.github.stefanbirkner:system-rules'
     }
 
     group = 'ru.vyarus.guicey'
@@ -112,7 +111,7 @@ subprojects {
     task showDependenciesTree(dependsOn: 'htmlDependencyReport', group: 'help', description:
             'Generates dependencies tree report and opens it in browser') {
         doLast {
-            java.awt.Desktop.getDesktop().open(file('/build/reports/project/dependencies/root.html'))
+            java.awt.Desktop.getDesktop().open(file("build/reports/project/dependencies/root.${project.name}.html"))
         }
     }
 }

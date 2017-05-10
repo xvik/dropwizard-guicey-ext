@@ -4,6 +4,8 @@ import io.dropwizard.Application
 import io.dropwizard.Configuration
 import io.dropwizard.setup.Bootstrap
 import io.dropwizard.setup.Environment
+import org.junit.Rule
+import ru.vyarus.dropwizard.guice.test.StartupErrorRule
 import ru.vyarus.guicey.spa.SpaBundle
 import spock.lang.Specification
 
@@ -14,13 +16,17 @@ import spock.lang.Specification
  */
 class MappingClashTest extends Specification {
 
+    @Rule
+    StartupErrorRule rule = StartupErrorRule.create()
+
     def "Check uri paths clash"() {
 
         when: "starting app"
         new App().run(['server'] as String[])
+
         then: "error"
-        def ex = thrown(IllegalStateException)
-        ex.message == "Assets servlet app2 registration clash with already installed servlets on paths: /app/*"
+        thrown(rule.indicatorExceptionType)
+        rule.error.contains("Assets servlet app2 registration clash with already installed servlets on paths: /app/*")
     }
 
     static class App extends Application<Configuration> {

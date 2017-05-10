@@ -1,7 +1,9 @@
 description = "Guicey extensions BOM"
 
-def props = ['guicey.version'               : guicey,
-             'spock.version'                : spock,
+def props = ['dropwizard.version'            : dependencyManagement.importedProperties['dropwizard.version'],
+             'guice.version'                  : dependencyManagement.importedProperties['guice.version'],
+             'hk2.version'                    : dependencyManagement.importedProperties['hk2.version'],
+             'guicey.version'                 : guicey,
              'guice-ext-annotations.version': guiceExtAnn]
 
 // main dependenciesManagement section will be generated based on dependenciesManagement declared in root project

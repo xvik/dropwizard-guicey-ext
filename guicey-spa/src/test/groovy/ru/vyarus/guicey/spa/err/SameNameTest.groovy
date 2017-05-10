@@ -4,6 +4,8 @@ import io.dropwizard.Application
 import io.dropwizard.Configuration
 import io.dropwizard.setup.Bootstrap
 import io.dropwizard.setup.Environment
+import org.junit.Rule
+import ru.vyarus.dropwizard.guice.test.StartupErrorRule
 import ru.vyarus.guicey.spa.SpaBundle
 import spock.lang.Specification
 
@@ -13,13 +15,16 @@ import spock.lang.Specification
  */
 class SameNameTest extends Specification {
 
+    @Rule
+    StartupErrorRule rule = StartupErrorRule.create()
+
     def "Check duplicate spa names"() {
 
         when: "starting app"
         new App().run(['server'] as String[])
         then: "error"
-        def ex = thrown(IllegalArgumentException)
-        ex.message == "SPA with name 'app' is already registered"
+        thrown(rule.indicatorExceptionType)
+        rule.error.contains("SPA with name 'app' is already registered")
     }
 
     static class App extends Application<Configuration> {
