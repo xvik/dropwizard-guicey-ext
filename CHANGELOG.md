@@ -1,6 +1,6 @@
 ### 0.3.0 (2017-05-10)
 * Update to guicey 4.1.0 (dropwizard 1.1.0)
-* Fix jdbi compatibility with dropwizard 1.1.0
+* Fix jdbi compatibility with dropwizard 1.1.0 (#1)
 * Add single pages application module (html5 routing support)
 
 ### 0.2.1 (2016-12-06)
