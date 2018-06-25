@@ -49,8 +49,8 @@ subprojects {
     sourceCompatibility = 1.8
 
     ext {
-        guicey = '4.1.0'
-        guiceExtAnn = '1.2.1'
+        guicey = '4.2.0'
+        guiceExtAnn = '1.3.0'
     }
 
     dependencyManagement {

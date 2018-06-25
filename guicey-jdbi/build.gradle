@@ -2,7 +2,6 @@ description = "Guicey integration for JDBI"
 
 dependencies {
     compile 'io.dropwizard:dropwizard-jdbi'
-    compile 'com.google.inject.extensions:guice-multibindings'
     compile 'ru.vyarus:guice-ext-annotations'
 
     testCompile 'io.dropwizard.modules:dropwizard-flyway:1.1.0-1'
