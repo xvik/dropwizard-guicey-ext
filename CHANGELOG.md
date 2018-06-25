@@ -1,3 +1,4 @@
+### 0.4.0 (2018-06-25)
 * Update to guicey 4.2.0 (dropwizard 1.3.5)
 * Fix jdbi compatibility with guice 4.2.0 
 
