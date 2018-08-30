@@ -21,7 +21,7 @@ public class TransactionalInterceptor implements MethodInterceptor {
     @Override
     @SuppressWarnings("PMD.AvoidThrowingRawExceptionTypes")
     public Object invoke(final MethodInvocation invocation) throws Throwable {
-        return template.inTransaction((handle) -> {
+        return template.inTransaction(handle -> {
             try {
                 return invocation.proceed();
             } catch (Throwable throwable) {

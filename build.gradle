@@ -1,19 +1,19 @@
 plugins {
-    id 'ru.vyarus.java-lib' version '1.0.4' apply false
+    id 'ru.vyarus.java-lib' version '1.1.2' apply false
     id 'ru.vyarus.github-info' version '1.1.0' apply false
-    id 'ru.vyarus.quality' version '2.0.0' apply false
-    id 'com.jfrog.bintray' version '1.7.3' apply false
-    id "io.spring.dependency-management" version "0.6.1.RELEASE" apply false
+    id 'ru.vyarus.quality' version '3.1.1' apply false
+    id 'com.jfrog.bintray' version '1.8.4' apply false
+    id "io.spring.dependency-management" version "1.0.6.RELEASE" apply false
 
     id 'base'
     id 'jacoco'
-    id 'net.researchgate.release' version '2.4.1'
-    id 'com.github.kt3k.coveralls' version '2.7.1'
-    id 'com.github.ben-manes.versions' version '0.13.0'
+    id 'net.researchgate.release' version '2.7.0'
+    id 'com.github.kt3k.coveralls' version '2.8.2'
+    id 'com.github.ben-manes.versions' version '0.20.0'
 }
 
 wrapper {
-    gradleVersion = '3.4'
+    gradleVersion = '4.8.1'
 }
 
 description = 'Dropwizard-guicey extensions'
@@ -49,7 +49,7 @@ subprojects {
     sourceCompatibility = 1.8
 
     ext {
-        guicey = '4.2.0'
+        guicey = '4.2.1'
         guiceExtAnn = '1.3.0'
     }
 
@@ -63,7 +63,7 @@ subprojects {
         }
     }
     dependencies {
-        provided 'com.google.code.findbugs:jsr305:3.0.1'
+        provided 'com.google.code.findbugs:jsr305:3.0.2'
         provided 'com.google.code.findbugs:annotations:3.0.1'
 
         compile "ru.vyarus:dropwizard-guicey"
