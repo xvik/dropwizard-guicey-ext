@@ -51,6 +51,11 @@ Module provides integration with Guava EventBus: automates subscriptions, report
 Based on dropwizard integration. Introduce thread bound transactions, defined with annotations. 
 Sql proxies could be used as usual guice beans without extra efforts to use them in the same transaction. 
 
+#### [JDBI3 integration](guicey-jdbi3)
+
+Jdbi3 integrtation, based on dropwizard module. Introduce thread bound transactions, defined with annotations. 
+Sql proxies could be used as usual guice beans without extra efforts to use them in the same transaction.
+
 #### [Single page applications](guicey-spa)
 
 Correct redirect to index page for html5 client routing urls (e.g. html5 routing enabled by default in Angular 2). 
