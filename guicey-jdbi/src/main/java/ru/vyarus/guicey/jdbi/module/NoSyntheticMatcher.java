@@ -1,4 +1,4 @@
-package ru.vyarus.guicey.jdbi3.module;
+package ru.vyarus.guicey.jdbi.module;
 
 import com.google.inject.matcher.AbstractMatcher;
 

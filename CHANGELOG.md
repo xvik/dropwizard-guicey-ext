@@ -1,4 +1,5 @@
 * Add jdbi3 module (#2)
+* Remove possible warnings about synthetic methods for jdbi2 repositories
 
 ### 0.4.0 (2018-06-25)
 * Update to guicey 4.2.0 (dropwizard 1.3.5)

@@ -10,6 +10,7 @@ import ru.vyarus.dropwizard.guice.module.installer.FeatureInstaller;
 import ru.vyarus.dropwizard.guice.module.installer.install.binding.BindingInstaller;
 import ru.vyarus.dropwizard.guice.module.installer.util.Reporter;
 import ru.vyarus.guice.ext.core.generator.DynamicClassGenerator;
+import ru.vyarus.guicey.jdbi.module.NoSyntheticMatcher;
 
 import javax.inject.Singleton;
 import java.lang.reflect.InvocationTargetException;
@@ -40,7 +41,7 @@ public class RepositoryInstaller implements FeatureInstaller<Object>, BindingIns
     }
 
     @Override
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "checkstyle:Indentation"})
     public <T> void install(final Binder binder, final Class<? extends T> type, final boolean lazy) {
         Preconditions.checkState(!lazy, "@LazyBinding not supported");
         // jdbi on demand proxy with custom ding
@@ -51,14 +52,15 @@ public class RepositoryInstaller implements FeatureInstaller<Object>, BindingIns
         binder.bind((Class<T>) type).to(guiceType).in(Singleton.class);
         // interceptor registered for each dao and redirect calls to actual jdbi proxy
         // (at this point all guice interceptors are already involved)
-        binder.bindInterceptor(Matchers.subclassesOf(type), Matchers.any(), (MethodInterceptor) invocation -> {
-            try {
-                return invocation.getMethod().invoke(jdbiProxy, invocation.getArguments());
-            } catch (InvocationTargetException th) {
-                // avoid exception wrapping (simpler to handle outside)
-                throw th.getCause();
-            }
-        });
+        binder.bindInterceptor(Matchers.subclassesOf(type), NoSyntheticMatcher.instance(),
+                (MethodInterceptor) invocation -> {
+                    try {
+                        return invocation.getMethod().invoke(jdbiProxy, invocation.getArguments());
+                    } catch (InvocationTargetException th) {
+                        // avoid exception wrapping (simpler to handle outside)
+                        throw th.getCause();
+                    }
+                });
         reporter.line(String.format("(%s)", type.getName()));
     }
 
