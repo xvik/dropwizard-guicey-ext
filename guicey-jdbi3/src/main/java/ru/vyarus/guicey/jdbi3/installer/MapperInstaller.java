@@ -26,7 +26,7 @@ import javax.inject.Singleton;
 public class MapperInstaller implements FeatureInstaller<RowMapper>,
         BindingInstaller {
 
-    private final Reporter reporter = new Reporter(MapperInstaller.class, "jdbi mappers = ");
+    private final Reporter reporter = new Reporter(MapperInstaller.class, "jdbi row mappers = ");
 
     @Override
     public boolean matches(final Class<?> type) {
