@@ -192,6 +192,31 @@ INFO  [2016-12-05 19:42:27,374] ru.vyarus.guicey.jdbi3.installer.repository.Repo
     (ru.vyarus.guicey.jdbi3.support.repository.SampleRepository)
 ```
 
+#### Guice beans access
+
+You can access guice beans by annotating getter with `@Inject` (javax or guice):
+
+```java
+@JdbiRepository
+@InTransaction
+public interface MyRepository {     
+
+    @Inject
+    MyOtherRepository getOtherRepo();
+    
+    @SqlQuery("select name from something where id = :id")
+    String findNameById(@Bind("id") int id);
+    
+    default String doSomething(int id) {
+        String name = findNameById(id);
+        return getOtherRepo().doSOmethingWithName(name);
+    }
+}
+```
+
+Here call to `getOtherRepo()` will return `MyOtherRepository` guice bean, which is actually
+another proxy.  
+
 #### Row mapper
 
 If you have custom implementations of `RowMapper`, it may be registered automatically. 
@@ -265,7 +290,7 @@ Repositories could also be called inside such manual unit (as unit of work is co
 
 * Sql obect proxies must be interfaces now (jdbi3 restriction). But as java 8 interfaces support default methods,
 its not a big problem
-    - But previously interbal injections were possible, now it's not possible (in interface)
+    - instead of field injection (to access other proxies), now getter annotated with @Inject must be used.
     
     
 See [jdbi3 migration gude](http://jdbi.org/#_upgrading_from_v2_to_v3) for other (pure jdbi related) differences        

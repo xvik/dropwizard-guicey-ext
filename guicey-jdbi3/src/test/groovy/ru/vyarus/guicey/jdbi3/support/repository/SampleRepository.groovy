@@ -7,6 +7,8 @@ import ru.vyarus.guicey.jdbi3.support.mapper.binder.SampleBind
 import ru.vyarus.guicey.jdbi3.support.model.Sample
 import ru.vyarus.guicey.jdbi3.tx.InTransaction
 
+import javax.inject.Inject
+
 /**
  * @author Vyacheslav Rusakov
  * @since 31.08.2018
@@ -20,4 +22,7 @@ interface SampleRepository {
 
     @SqlUpdate("insert into sample (name) values (:name)")
     void save(@SampleBind Sample sample)
+
+    @Inject
+    CustTxRepository getCustRepo();
 }
