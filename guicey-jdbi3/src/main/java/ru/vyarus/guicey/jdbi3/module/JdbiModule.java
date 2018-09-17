@@ -72,7 +72,7 @@ public class JdbiModule extends AbstractModule {
         final TransactionalInterceptor interceptor = new TransactionalInterceptor();
         requestInjection(interceptor);
         txAnnotations.forEach(it -> {
-            bindInterceptor(Matchers.annotatedWith(it), Matchers.any(), interceptor);
+            bindInterceptor(Matchers.annotatedWith(it), NoSyntheticMatcher.instance(), interceptor);
             bindInterceptor(Matchers.any(), Matchers.annotatedWith(it), interceptor);
         });
     }

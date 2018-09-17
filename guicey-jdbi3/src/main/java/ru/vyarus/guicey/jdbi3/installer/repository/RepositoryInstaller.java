@@ -9,6 +9,7 @@ import ru.vyarus.dropwizard.guice.module.installer.install.binding.BindingInstal
 import ru.vyarus.dropwizard.guice.module.installer.util.Reporter;
 import ru.vyarus.guice.ext.core.generator.DynamicClassGenerator;
 import ru.vyarus.guicey.jdbi3.installer.repository.sql.SqlObjectProvider;
+import ru.vyarus.guicey.jdbi3.module.NoSyntheticMatcher;
 import ru.vyarus.guicey.jdbi3.tx.InTransaction;
 import ru.vyarus.guicey.jdbi3.tx.TransactionTemplate;
 import ru.vyarus.guicey.jdbi3.unit.UnitManager;
@@ -42,7 +43,7 @@ public class RepositoryInstaller implements FeatureInstaller<Object>, BindingIns
     }
 
     @Override
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "checkstyle:Indentation"})
     public <T> void install(final Binder binder, final Class<? extends T> type, final boolean lazy) {
         Preconditions.checkState(!lazy, "@LazyBinding not supported");
 
@@ -57,14 +58,15 @@ public class RepositoryInstaller implements FeatureInstaller<Object>, BindingIns
 
         // interceptor registered for each dao and redirect calls to actual jdbi proxy
         // (at this point all guice interceptors are already involved)
-        binder.bindInterceptor(Matchers.subclassesOf(type), Matchers.any(), (MethodInterceptor) invocation -> {
-            try {
-                return invocation.getMethod().invoke(jdbiProxy.get(), invocation.getArguments());
-            } catch (InvocationTargetException th) {
-                // avoid exception wrapping (simpler to handle outside)
-                throw th.getCause();
-            }
-        });
+        binder.bindInterceptor(Matchers.subclassesOf(type), NoSyntheticMatcher.instance(),
+                (MethodInterceptor) invocation -> {
+                    try {
+                        return invocation.getMethod().invoke(jdbiProxy.get(), invocation.getArguments());
+                    } catch (InvocationTargetException th) {
+                        // avoid exception wrapping (simpler to handle outside)
+                        throw th.getCause();
+                    }
+                });
         reporter.line(String.format("(%s)", type.getName()));
     }
 
