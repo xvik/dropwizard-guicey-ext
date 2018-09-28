@@ -93,7 +93,7 @@ multiple objects in one transaction, you have to always create them manually for
 
 Integration removes these restrictions: dao (repository) objects are normal guice beans and transaction
 scope is controlled by `@InTransaction` annotation (note that such name was intentional to avoid confusion with
-DBI own's Transaction annotation and more common Transactional annotations).
+JDBI own's Transaction annotation and more common Transactional annotations).
 
 At the beginning of unit of work, JDBI handle is created and bound to thread (thread local).
 All repositories are simply using this bound handle and so share transaction inside unit of work.
@@ -121,6 +121,41 @@ Nested annotations are allowed (they simply ignored).
 Note that unit of work is not the same as transaction scope (transaction scope could be less or equal to unit of work). 
 But, for simplicity, you may think of it as the same things, if you always use `@InTransaction` annotation. 
 
+###### Transaction configuration
+
+Transaction isolation level and readonly flag could be defined with annotation:
+
+```java
+@InTransaction(TransactionIsolationLevel.READ_UNCOMMITTED)
+
+@InTransaction(readOnly = true)
+```
+
+In case of nested transactions error will be thrown if:
+
+* Current transaction level is different then nested one
+* Current transaction is read only and nexted one is not  (note that some drivers, like h2, ignore readOnly flag completely)
+
+For example:
+
+```java
+@InTransaction
+public void action() {
+    nestedAction();
+}
+
+@InTransaction(TransactionIsolationLevel.READ_UNCOMMITTED)
+public void nestedAction() {
+...    
+}
+``` 
+
+When `action()` method called new transaction is created with default level
+(usually READ_COMMITTED). When 'nestedAction()' is called exception will be thrown
+because it's transaction level requirement (READ_UNCOMMITTED) contradict with current transaction.
+
+###### Custom transactional annotation
+
 If required, you may use your own annotation for transaction definition:
 
 ```java
@@ -136,6 +171,18 @@ JdbiBundle.forDatabase((conf, env) -> conf.getDatabase())
     .withTxAnnotations(InTransaction.class, MyCustomTransactional.class);
 ```
 
+If you need to support transaction configuration with your annotation then:
+ 
+1. Add required properties into annotation itself (see `@InTransaction` as example).
+2. Create implementation of `TxConfigFactory` (see `InTransactionTxConfigFactory` as example)
+3. Register factory inside your annotation with `@TxConfigSupport(MyCustomAnnotationTxConfigFactory.class)` 
+
+Your factory will be instantiated as guice bean so annotate it as Singleton, if possible
+to avoid redundant instances creation.
+
+Configuration is resolved just once for each method, so yur factory will be called just once 
+for each annotated (with your custom annotation) method. 
+
 ##### Context Handle
 
 Inside unit of work you may reference current handle by using:
@@ -149,13 +196,24 @@ Inside unit of work you may reference current handle by using:
 You may define transaction (with unit of work) without annotation using:
 
 ```java
-@Inject TransactionTenpate template;
+@Inject TransactionTempate template;
 ...
-template.inTrabsansaction((handle) -> doSomething())
+template.inTrasansaction((handle) -> doSomething())
 ```
 
 Note that inside such manual scope you may also call any repository bean, as it's absolutely the same definition as 
 with annotation.
+
+You can also specify transaction config (if required):
+
+```java
+@Inject TransactionTempate template;
+...
+template.inTrasansaction(
+        new TxConfig().level(TransactionIsolationLevel.READ_UNCOMMITTED), 
+        (handle) -> doSomething())
+```
+
 
 #### Repository
 
