@@ -1,3 +1,4 @@
+### 0.5.0 (2018-11-01)
 * Add jdbi3 module (#2)
 * Remove possible warnings about synthetic methods for jdbi2 repositories
 

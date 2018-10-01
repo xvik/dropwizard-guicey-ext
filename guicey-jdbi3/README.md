@@ -1,6 +1,6 @@
 # JDBI 3 integration
 
-> [Example app](https://github.com/xvik/dropwizard-guicey-examples/tree/master/jdbi)
+> [Example app](https://github.com/xvik/dropwizard-guicey-examples/tree/master/jdbi3)
 
 Migration from *jdbi2* is described at the end.
 
@@ -37,14 +37,14 @@ Maven:
 <dependency>
   <groupId>ru.vyarus.guicey</groupId>
   <artifactId>guicey-jdbi3</artifactId>
-  <version>UNRELEASED</version>
+  <version>0.5.0</version>
 </dependency>
 ```
 
 Gradle:
 
 ```groovy
-compile 'ru.vyarus.guicey:guicey-jdbi3:UNRELEASED'
+compile 'ru.vyarus.guicey:guicey-jdbi3:0.5.0'
 ```
 
 See the most recent version in the badge above.
@@ -348,7 +348,7 @@ Repositories could also be called inside such manual unit (as unit of work is co
     - `@BindingAnnotation` -> `@SqlStatementCustomizingAnnotation`
     - `BindingFactory` ->  `SqlStatementCustomizerFactory`
 
-* Sql obect proxies must be interfaces now (jdbi3 restriction). But as java 8 interfaces support default methods,
+* Sql object proxies must be interfaces now (jdbi3 restriction). But as java 8 interfaces support default methods,
 its not a big problem
     - instead of field injection (to access other proxies), now getter annotated with @Inject must be used.
     
