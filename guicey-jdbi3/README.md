@@ -20,6 +20,7 @@ Features:
 * Automatic installation for custom `RowMapper` 
 
 Added installers:
+
 * [RepositoryInstaller](src/main/java/ru/vyarus/guicey/jdbi3/installer/repository/RepositoryInstaller.java) - sql proxies
 * [MapperInstaller](src/main/java/ru/vyarus/guicey/jdbi3/installer/MapperInstaller.java) - row mappers  
  
