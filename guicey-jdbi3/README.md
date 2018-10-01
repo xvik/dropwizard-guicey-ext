@@ -2,7 +2,7 @@
 
 > [Example app](https://github.com/xvik/dropwizard-guicey-examples/tree/master/jdbi)
 
-Migration from *jdbi2* described at the end
+Migration from *jdbi2* is described at the end.
 
 ### About
 
@@ -12,15 +12,16 @@ Features:
 
 * JDBI instance available for injection
 * Introduce unit of work concept, which is managed by annotations and guice aop (very like spring's @Transactional)
-* Repositories (JDBI proxies for interfaces and abstract classes):
+* Repositories (JDBI proxies for interfaces):
     - installed automatically (when classpath scan enabled)
     - are normal guice beans, supporting aop and participating in global (thread bound) transaction.
     - no need to compose repositories anymore (e.g. with @CreateSqlObject) to gain single transaction.
+    - can reference guice beans (with annotated getters)
 * Automatic installation for custom `RowMapper` 
 
 Added installers:
 * [RepositoryInstaller](src/main/java/ru/vyarus/guicey/jdbi3/installer/repository/RepositoryInstaller.java) - sql proxies
-* [MapperInstaller](src/main/java/ru/vyarus/guicey/jdbi3/installer/MapperInstaller.java) - result set mappers  
+* [MapperInstaller](src/main/java/ru/vyarus/guicey/jdbi3/installer/MapperInstaller.java) - row mappers  
  
 ### Setup
 
