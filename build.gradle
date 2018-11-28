@@ -49,7 +49,7 @@ subprojects {
     sourceCompatibility = 1.8
 
     ext {
-        guicey = '4.2.1'
+        guicey = '4.2.2'
         guiceExtAnn = '1.3.0'
     }
 
