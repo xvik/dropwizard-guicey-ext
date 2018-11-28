@@ -42,6 +42,10 @@ You can use snapshot versions through [JitPack](https://jitpack.io):
 
 ### Modules
 
+#### [Lifecycle annotations](guicey-lifecycle-annotations)
+
+Support for @PostConstruct, @PreDestroy, @PostStartup annotations on guice beans. 
+
 #### [Guava EventBus integration](guicey-eventbus) 
 
 Module provides integration with Guava EventBus: automates subscriptions, report events with subscriptions and registers EventBus for inject.

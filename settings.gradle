@@ -4,5 +4,6 @@ include 'guicey-bom',
         'guicey-eventbus',
         'guicey-jdbi',
         'guicey-jdbi3',
-        'guicey-spa'
+        'guicey-spa',
+        'guicey-lifecycle-annotations'
 

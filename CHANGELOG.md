@@ -1,3 +1,5 @@
+* Add lifecycle-annotations module
+
 ### 0.5.0 (2018-10-01)
 * Update to guicey 4.2.1
 * Add jdbi3 module (#2)
