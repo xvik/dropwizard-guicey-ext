@@ -14,7 +14,7 @@ import ru.vyarus.guicey.annotations.lifecycle.module.LifecycleAnnotationsModule;
  * <ul>
  *     <li>{@link javax.annotation.PostConstruct} - same as {@link io.dropwizard.lifecycle.Managed#start()}</li>
  *     <li>{@link PostStartup} - called after server startup
- *     (jetty {@link org.glassfish.jersey.server.monitoring.ApplicationEvent.Type#INITIALIZATION_FINISHED} event)</li>
+ *     (dropwizard {@link io.dropwizard.lifecycle.ServerLifecycleListener} used)</li>
  *     <li>{@link javax.annotation.PreDestroy} - same as {@link io.dropwizard.lifecycle.Managed#stop()}</li>
  * </ul>
  * <p>
