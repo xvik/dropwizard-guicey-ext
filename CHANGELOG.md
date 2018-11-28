@@ -1,3 +1,4 @@
+### 0.6.0 (2018-11-28)
 * Add lifecycle-annotations module
 * Update to guicey 4.2.2
 
