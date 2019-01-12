@@ -1,0 +1,8 @@
+description = "Guicey server pages"
+
+dependencies {
+    compile 'io.dropwizard:dropwizard-views'
+    compile project(':guicey-spa')
+    testCompile 'io.dropwizard:dropwizard-views-freemarker'
+    testCompile 'io.dropwizard:dropwizard-views-mustache'
+}
