@@ -30,7 +30,7 @@ class SpaMappingTest extends Specification {
         res.contains("Sample page")
 
         when: "accessing not existing page"
-        new URL("http://localhost:8080/some/").text
+        res = new URL("http://localhost:8080/some/").text
         then: "ok"
         res.contains("Sample page")
 
