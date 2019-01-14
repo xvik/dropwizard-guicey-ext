@@ -110,9 +110,9 @@ public class TemplateContext {
 
         if (path.startsWith(PathUtils.SLASH)) {
             // absolute path
-            return template;
+            return path;
         } else {
-            final String lookup = ResourceLookup.lookup(template, resourcePaths);
+            final String lookup = ResourceLookup.lookup(path, resourcePaths);
             if (lookup == null) {
                 throw new TemplateNotFoundException(String.format(
                         "Template '%s' not found in locations: %s", template, resourcePaths));
