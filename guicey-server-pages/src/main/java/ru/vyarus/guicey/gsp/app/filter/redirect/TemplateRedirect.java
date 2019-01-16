@@ -37,16 +37,19 @@ public class TemplateRedirect {
     private final String mapping;
     private final LazyLocationProvider locationProvider;
     private final Provider<Injector> injectorProvider;
+    private final ErrorRedirect errorRedirect;
     private String rootPath;
 
     public TemplateRedirect(final String app,
                             final String mapping,
                             final LazyLocationProvider locationProvider,
-                            final Provider<Injector> injectorProvider) {
+                            final Provider<Injector> injectorProvider,
+                            final ErrorRedirect errorRedirect) {
         this.app = app;
         this.mapping = mapping;
         this.locationProvider = locationProvider;
         this.injectorProvider = injectorProvider;
+        this.errorRedirect = errorRedirect;
     }
 
     /**
@@ -80,13 +83,21 @@ public class TemplateRedirect {
                 mapping,
                 locationProvider.get(),
                 request.getRequestURI(),
-                injectorProvider));
+                injectorProvider,
+                errorRedirect));
         try {
             final String path = PathUtils.path(rootPath, app, page);
             request.getRequestDispatcher(path).forward(request, response);
         } finally {
             CONTEXT_TEMPLATE.remove();
         }
+    }
+
+    /**
+     * @return custom error pages support
+     */
+    public ErrorRedirect getErrorRedirect() {
+        return errorRedirect;
     }
 
     /**

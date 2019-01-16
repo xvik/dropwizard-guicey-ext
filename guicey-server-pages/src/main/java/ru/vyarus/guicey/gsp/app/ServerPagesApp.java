@@ -19,7 +19,6 @@ import ru.vyarus.guicey.gsp.app.filter.redirect.ErrorRedirect;
 import ru.vyarus.guicey.gsp.app.filter.redirect.TemplateRedirect;
 import ru.vyarus.guicey.gsp.app.rest.DirectTemplateResource;
 import ru.vyarus.guicey.gsp.app.rest.support.TemplateAnnotationFilter;
-import ru.vyarus.guicey.gsp.app.rest.support.TemplateErrorHandler;
 import ru.vyarus.guicey.gsp.app.util.PathUtils;
 import ru.vyarus.guicey.spa.SpaBundle;
 import ru.vyarus.guicey.spa.filter.SpaRoutingFilter;
@@ -97,35 +96,28 @@ public class ServerPagesApp implements ApplicationEventListener {
     public void setup(final Environment environment) {
         final ServletEnvironment context = mainContext ? environment.servlets() : environment.admin();
 
-        // application extensions could be registered a bit later so it is impossible tokow all classpath
+        // application extensions could be registered a bit later so it is impossible to know all classpath
         // paths at that point
-        locationsProvider = new LazyLocationProvider(
-                resourcePath, name, globalConfig);
-
+        locationsProvider = new LazyLocationProvider(resourcePath, name, globalConfig);
         installAssetsServlet(context, locationsProvider);
 
-        if (spaSupport) {
-            installSpaRoutingFilter(context);
-        }
-
-        // customizable error pages support
-        final ErrorRedirect errorRedirect = new ErrorRedirect(uriPath, errorPages, logErrors);
-        if (!errorPages.isEmpty()) {
-            // global rest exception handler
-            environment.jersey().register(new TemplateErrorHandler(errorRedirect));
-        }
-
-        // Templates support (filter must be above spaSupport filter)
+        // templates support
         templateRedirect = new TemplateRedirect(name, uriPath, locationsProvider,
-                new InjectorProvider(globalConfig.getApplication()));
-        installTemplatesSupportFilter(context, templateRedirect, errorRedirect);
+                new InjectorProvider(globalConfig.getApplication()),
+                new ErrorRedirect(uriPath, errorPages, logErrors));
+        installTemplatesSupportFilter(context, templateRedirect);
         // @Template annotation support (even with multiple registrations should be created just once)
         // note: applied only to annotated resources!
         environment.jersey().register(TemplateAnnotationFilter.class);
         // Default direct templates rendering rest (dynamically registered to handle "$appName/*")
         environment.jersey().getResourceConfig().registerResources(Resource.builder(DirectTemplateResource.class)
                 .path(SLASH + name)
+                .extended(false)
                 .build());
+
+        if (spaSupport) {
+            installSpaRoutingFilter(context);
+        }
 
         // Finalize initialization after server startup and print console report
         // delay is required to collect information from all app extensions
@@ -162,7 +154,7 @@ public class ServerPagesApp implements ApplicationEventListener {
      */
     private void installSpaRoutingFilter(final ServletEnvironment context) {
         final EnumSet<DispatcherType> spaTypes = EnumSet.of(DispatcherType.REQUEST);
-        context.addFilter(name + "Routing", new SpaRoutingFilter(uriPath, spaNoRedirectRegex))
+        context.addFilter(name + "Routing", new SpaRoutingFilter(indexFile, spaNoRedirectRegex))
                 .addMappingForServletNames(spaTypes, false, name);
     }
 
@@ -172,11 +164,9 @@ public class ServerPagesApp implements ApplicationEventListener {
      *
      * @param context          main or admin context
      * @param templateRedirect template redirection support
-     * @param errorRedirect    error redirection support
      */
     private void installTemplatesSupportFilter(final ServletEnvironment context,
-                                               final TemplateRedirect templateRedirect,
-                                               final ErrorRedirect errorRedirect) {
+                                               final TemplateRedirect templateRedirect) {
         final EnumSet<DispatcherType> types = EnumSet.of(DispatcherType.REQUEST);
         context.addFilter(name + "Templates",
                 new ServerPagesFilter(
@@ -184,7 +174,6 @@ public class ServerPagesApp implements ApplicationEventListener {
                         fileRequestPattern,
                         indexFile,
                         templateRedirect,
-                        errorRedirect,
                         globalConfig.getRenderers()))
                 .addMappingForServletNames(types, false, name);
     }

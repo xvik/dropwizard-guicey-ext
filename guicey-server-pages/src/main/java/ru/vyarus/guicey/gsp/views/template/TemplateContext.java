@@ -3,6 +3,7 @@ package ru.vyarus.guicey.gsp.views.template;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.inject.Injector;
+import ru.vyarus.guicey.gsp.app.filter.redirect.ErrorRedirect;
 import ru.vyarus.guicey.gsp.app.filter.redirect.TemplateRedirect;
 import ru.vyarus.guicey.gsp.app.rest.support.TemplateAnnotationFilter;
 import ru.vyarus.guicey.gsp.app.util.PathUtils;
@@ -30,17 +31,20 @@ public class TemplateContext {
     private String templatePath;
     private final String url;
     private final Provider<Injector> injectorProvider;
+    private final ErrorRedirect errorRedirect;
 
     public TemplateContext(final String appName,
                            final String rootUrl,
                            final List<String> resourcePaths,
                            final String url,
-                           final Provider<Injector> injectorProvider) {
+                           final Provider<Injector> injectorProvider,
+                           final ErrorRedirect errorRedirect) {
         this.appName = appName;
         this.rootUrl = rootUrl;
         this.resourcePaths = resourcePaths;
         this.url = url;
         this.injectorProvider = injectorProvider;
+        this.errorRedirect = errorRedirect;
     }
 
     /**
@@ -65,6 +69,14 @@ public class TemplateContext {
      */
     public String getUrl() {
         return url;
+    }
+
+    /**
+     * 
+     * @return
+     */
+    public ErrorRedirect getErrorRedirect() {
+        return errorRedirect;
     }
 
     /**

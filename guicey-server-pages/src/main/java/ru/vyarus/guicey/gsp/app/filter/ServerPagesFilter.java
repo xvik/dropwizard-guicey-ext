@@ -5,6 +5,7 @@ import io.dropwizard.views.ViewRenderer;
 import ru.vyarus.guicey.gsp.app.filter.redirect.ErrorRedirect;
 import ru.vyarus.guicey.gsp.app.filter.redirect.TemplateRedirect;
 import ru.vyarus.guicey.gsp.app.rest.support.TemplateErrorHandler;
+import ru.vyarus.guicey.gsp.app.util.PathUtils;
 import ru.vyarus.guicey.spa.filter.ResponseWrapper;
 
 import javax.servlet.*;
@@ -37,29 +38,24 @@ import java.util.regex.Pattern;
  */
 public class ServerPagesFilter implements Filter {
 
-    public static final String SLASH = "/";
-
     // server app mapping
     private final String uriPath;
     // file requets detection regexp
     private final Pattern filePattern;
     // index page
     private final String index;
-    private final TemplateRedirect resourceRedirect;
-    private final ErrorRedirect errorRedirect;
+    private final TemplateRedirect redirect;
     private final Iterable<ViewRenderer> renderers;
 
     public ServerPagesFilter(final String uriPath,
                              final String filePattern,
                              final String index,
-                             final TemplateRedirect resourceRedirect,
-                             final ErrorRedirect errorRedirect,
+                             final TemplateRedirect redirect,
                              final Iterable<ViewRenderer> renderers) {
         this.uriPath = uriPath;
         this.filePattern = Pattern.compile(filePattern);
         this.index = index;
-        this.resourceRedirect = resourceRedirect;
-        this.errorRedirect = errorRedirect;
+        this.redirect = redirect;
         this.renderers = renderers;
     }
 
@@ -113,7 +109,7 @@ public class ServerPagesFilter implements Filter {
 
     private boolean isRoot(final HttpServletRequest req) {
         final String uri = req.getRequestURI();
-        final String path = uri.endsWith(SLASH) ? uri : uri + SLASH;
+        final String path = PathUtils.endSlash(uri);
         return path.equals(uriPath);
     }
 
@@ -141,7 +137,7 @@ public class ServerPagesFilter implements Filter {
                                final String page) throws IOException, ServletException {
         // wrap request to intercept errors
         final ResponseWrapper wrapper = new ResponseWrapper(resp);
-        resourceRedirect.redirect(req, resp, page);
+        redirect.redirect(req, resp, page);
         handleError(req, resp, wrapper.getError());
     }
 
@@ -150,7 +146,7 @@ public class ServerPagesFilter implements Filter {
                              final int error) throws IOException {
         // handle only error codes, preserving redirects (3xx)
         if (error >= ErrorRedirect.CODE_400
-                && !errorRedirect.redirect(req, resp, new WebApplicationException(error))) {
+                && !redirect.getErrorRedirect().redirect(req, resp, new WebApplicationException(error))) {
             // if no mapped error page - return error as is
             resp.sendError(error);
         }

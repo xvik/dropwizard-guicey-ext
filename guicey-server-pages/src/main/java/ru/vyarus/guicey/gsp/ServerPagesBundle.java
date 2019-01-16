@@ -12,7 +12,9 @@ import ru.vyarus.dropwizard.guice.module.installer.bundle.GuiceyBootstrap;
 import ru.vyarus.guicey.gsp.app.GlobalConfig;
 import ru.vyarus.guicey.gsp.app.ServerPagesApp;
 import ru.vyarus.guicey.gsp.app.filter.redirect.ErrorRedirect;
+import ru.vyarus.guicey.gsp.app.rest.RestErrorsSupport;
 import ru.vyarus.guicey.gsp.app.rest.support.TemplateAnnotationFilter;
+import ru.vyarus.guicey.gsp.app.rest.support.TemplateErrorHandlerAlias;
 import ru.vyarus.guicey.gsp.views.ViewRendererConfigurationModifier;
 import ru.vyarus.guicey.gsp.views.ViewsSupport;
 import ru.vyarus.guicey.spa.SpaBundle;
@@ -121,8 +123,11 @@ public class ServerPagesBundle implements ConfiguredBundle<Configuration> {
 
     @Override
     public void run(final Configuration configuration, final Environment environment) throws Exception {
+        // template rest errors interception
+        RestErrorsSupport.setup(GLOBAL_CONFIG.get(), environment);
         // global dropwizard ViewBundle installed once
         ViewsSupport.setup(GLOBAL_CONFIG.get(), app.name, configuration, environment);
+
         // app specific initialization (create servlets, filters, etc)
         app.setup(environment);
     }
@@ -280,7 +285,8 @@ public class ServerPagesBundle implements ConfiguredBundle<Configuration> {
          * @return builder instance for chained calls
          */
         public ServerPagesBundle.Builder errorPage(final int code, final String path) {
-            checkArgument(code >= 400, "Only error codes (4xx, 5xx) allowed for mapping");
+            checkArgument(code >= ErrorRedirect.CODE_400 || code == ErrorRedirect.DEFAULT_ERROR_PAGE,
+                    "Only error codes (4xx, 5xx) allowed for mapping");
             bundle.app.errorPages.put(code, path);
             return this;
         }
@@ -295,6 +301,40 @@ public class ServerPagesBundle implements ConfiguredBundle<Configuration> {
          */
         public ServerPagesBundle.Builder logAllErrors() {
             bundle.app.logErrors = true;
+            return this;
+        }
+
+        /**
+         * Error pages support use {@link javax.ws.rs.ext.ExceptionMapper} in order to intercept all
+         * exceptions in template resources (resource annotated with
+         * {@link ru.vyarus.guicey.gsp.views.template.Template} and used for template rendering). But
+         * jersey always select the most closest exception mapper and choose other mapper if custom mapper registered.
+         * In this case error message will appear detecting not properly handled exception with the advise
+         * to register custom mapper here.
+         * <p>
+         * Note that this mappers only affect template rest and all other resources (main api) will work as before
+         * ({@link org.glassfish.jersey.spi.ExtendedExceptionMapper} is actually used which is applied on conditional
+         * basis). It's only required for proper handling of error pages.
+         * <p>
+         * Dropwizard itself use this approach with {@link io.dropwizard.jersey.errors.LoggingExceptionMapper}
+         * (which is registered for {@link Throwable} and {@link IllegalStateException}). By default, error handler
+         * is registered for the same types to override dropwizard handler.
+         * <p>
+         * NOTE: it is very important to declare proper exception type:
+         * {@code .handleTemplateException(new TemplateErrorHandlerAlias<ExceptionToMap>() {})}.
+         * <p>
+         * Exception mappers are global, so handler may be registered in any server pages bundle and will
+         * affect all of them.
+         * <p>
+         * If handler for the same exception type could be registered multiple times (in different bundles), but still
+         * only one will be used (duplicates avoided).
+         *
+         * @param handlerAlias exception handler to override default mapping for templates
+         * @return builder instance for chained calls
+         */
+        public ServerPagesBundle.Builder handleTemplateException(
+                final TemplateErrorHandlerAlias<? extends Throwable> handlerAlias) {
+            GLOBAL_CONFIG.get().mappedExceptions.add(handlerAlias);
             return this;
         }
 

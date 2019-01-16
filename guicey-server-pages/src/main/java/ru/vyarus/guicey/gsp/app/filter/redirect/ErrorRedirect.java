@@ -4,6 +4,7 @@ import com.google.common.base.Throwables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.vyarus.guicey.gsp.app.util.PathUtils;
+import ru.vyarus.guicey.gsp.views.template.TemplateContext;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -65,9 +66,14 @@ public class ErrorRedirect {
                 request.getRequestDispatcher(path).forward(request, response);
                 // always log 500 error exceptions and other errors if configured
                 if (logErrors || exception.getResponse().getStatus() == CODE_500) {
-                    logger.error("Error serving response for " + request.getRequestURI(), exception);
+                    logger.error("Error serving response for '" + TemplateContext.getInstance().getUrl()
+                            + "' (handled as '" + request.getRequestURI() + "'). "
+                            + "Custom error page '" + path + "' rendered.", exception);
                 }
             } catch (Exception ex) {
+                // important to log original exception because it will be overridden
+                logger.error("Failed to redirect to error page '" + path + "' instead of rest exception:",
+                        exception);
                 Throwables.throwIfUnchecked(ex);
                 throw new IllegalStateException("Failed to redirect to error page '" + path + "'", ex);
             } finally {

@@ -1,6 +1,8 @@
 package ru.vyarus.guicey.gsp.app;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.LinkedHashMultimap;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import io.dropwizard.Application;
 import io.dropwizard.Configuration;
@@ -8,6 +10,7 @@ import io.dropwizard.views.ViewConfigurable;
 import io.dropwizard.views.ViewRenderer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.vyarus.guicey.gsp.app.rest.support.TemplateErrorHandlerAlias;
 import ru.vyarus.guicey.gsp.views.ViewRendererConfigurationModifier;
 
 import java.util.ArrayList;
@@ -24,6 +27,14 @@ import static com.google.common.base.Preconditions.checkArgument;
  * @since 06.12.2018
  */
 public class GlobalConfig {
+
+    // rest exception mapper aliases (to override other mappers in case of template render)
+    public final List<TemplateErrorHandlerAlias> mappedExceptions = Lists.newArrayList(
+            new TemplateErrorHandlerAlias<IllegalStateException>() {
+            }
+    );
+    public final List<Class> installedExceptions = new ArrayList<>();
+
     private final Logger logger = LoggerFactory.getLogger(GlobalConfig.class);
 
     private final List<String> names = new ArrayList<>();
@@ -33,6 +44,7 @@ public class GlobalConfig {
     // app name -- packages to search resources in
     private final Multimap<String, String> extensions = LinkedHashMultimap.create();
     private boolean printConfig;
+
     @SuppressWarnings("PMD.AvoidFieldNameMatchingMethodName")
     private boolean initialized;
     private Application application;
@@ -64,6 +76,7 @@ public class GlobalConfig {
      * @param name      server pages application name which performs configuration
      */
     public void setRenderers(final Iterable<ViewRenderer> renderers, final String name) {
+        Preconditions.checkState(!initialized, "Global initialization already performed");
         if (this.renderers == null) {
             logger.debug("Global views renderers configured by '{}' server pages bundle", name);
         } else {
@@ -90,6 +103,7 @@ public class GlobalConfig {
     @SuppressWarnings("unchecked")
     public <T extends Configuration> void setConfigurable(final ViewConfigurable<T> configurable,
                                                           final String name) {
+        Preconditions.checkState(!initialized, "Global initialization already performed");
         if (this.configurable == null) {
             logger.debug("Global views configurable configured by '{}' server pages bundle", name);
         } else {
@@ -103,6 +117,7 @@ public class GlobalConfig {
      * @param modifier modifier for exact renderer config
      */
     public void addConfigModifier(final String name, final ViewRendererConfigurationModifier modifier) {
+        Preconditions.checkState(!initialized, "Global initialization already performed");
         configModifiers.put(name, modifier);
     }
 

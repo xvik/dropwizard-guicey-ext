@@ -21,7 +21,7 @@ class ResourceMappingTest extends Specification {
 
     def "Chek custom resource mapping"() {
 
-        when: "accessing tempate through resource"
+        when: "accessing template through resource"
         String res = new URL("http://localhost:8080/sample/tt").text
         then: "template mapped"
         res.contains("name: tt")
