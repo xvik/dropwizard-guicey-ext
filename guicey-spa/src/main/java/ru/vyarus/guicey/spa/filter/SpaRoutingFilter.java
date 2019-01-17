@@ -1,14 +1,8 @@
 package ru.vyarus.guicey.spa.filter;
 
-import com.google.common.base.Strings;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.util.regex.Pattern;
 
@@ -26,9 +20,6 @@ import java.util.regex.Pattern;
  * @since 02.04.2017
  */
 public class SpaRoutingFilter implements Filter {
-
-    public static final String SLASH = "/";
-    private final Logger logger = LoggerFactory.getLogger(SpaRoutingFilter.class);
 
     private final String target;
     private final Pattern noRedirect;
@@ -51,8 +42,10 @@ public class SpaRoutingFilter implements Filter {
         final HttpServletRequest req = (HttpServletRequest) servletRequest;
         final HttpServletResponse resp = (HttpServletResponse) servletResponse;
 
-        if (isRoot(req)) {
-            directCall(req, resp, chain);
+        if (SpaUtils.isRootPage(req.getRequestURI(), target)) {
+            // direct call for index (no need to redirect)
+            SpaUtils.noCache(resp);
+            chain.doFilter(req, resp);
         } else {
             checkRedirect(req, resp, chain);
         }
@@ -62,15 +55,6 @@ public class SpaRoutingFilter implements Filter {
     public void destroy() {
         // not needed
     }
-
-
-    private void directCall(final HttpServletRequest req,
-                            final HttpServletResponse resp,
-                            final FilterChain chain) throws IOException, ServletException {
-        noCache(resp);
-        chain.doFilter(req, resp);
-    }
-
 
     private void checkRedirect(final HttpServletRequest req,
                                final HttpServletResponse resp,
@@ -89,46 +73,12 @@ public class SpaRoutingFilter implements Filter {
             return;
         }
 
-        if (isRedirectAllowed(req)) {
+        if (SpaUtils.isSpaRoute(req, noRedirect)) {
             // redirect to root
-            noCache(resp);
-            req.getRequestDispatcher(target).forward(req, resp);
+            SpaUtils.doRedirect(req, resp, target);
         } else {
             // bypass resource not found
-            ((HttpServletResponse) resp).sendError(error);
+            resp.sendError(error);
         }
-    }
-
-    private boolean isRoot(final HttpServletRequest req) {
-        final String uri = req.getRequestURI();
-        final String path = uri.endsWith(SLASH) ? uri : uri + SLASH;
-        return path.equals(target);
-    }
-
-    private void noCache(final HttpServletResponse resp) {
-        resp.setHeader(HttpHeaders.CACHE_CONTROL, "must-revalidate,no-cache,no-store");
-    }
-
-    private boolean isRedirectAllowed(final HttpServletRequest req) {
-        final String accept = req.getHeader(HttpHeaders.ACCEPT);
-        if (Strings.emptyToNull(accept) == null) {
-            return false;
-        }
-
-        boolean compatible = false;
-        // accept header could contain multiple mime types
-        for (String type : accept.split(",")) {
-            try {
-                if (MediaType.valueOf(type).isCompatible(MediaType.TEXT_HTML_TYPE)) {
-                    compatible = true;
-                    break;
-                }
-            } catch (Exception ex) {
-                // ignore errors for better behaviour
-                logger.debug("Failed to parse media type '{}':", type, ex.getMessage());
-            }
-        }
-
-        return compatible && !noRedirect.matcher(req.getRequestURI()).find();
     }
 }
