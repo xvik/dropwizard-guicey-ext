@@ -13,9 +13,13 @@ import javax.ws.rs.ext.ExceptionMapper;
  * Install global exception handlers to intercept exceptions during template rendering.
  *
  * @author Vyacheslav Rusakov
+ * @see TemplateErrorHandler for description
  * @since 16.01.2019
  */
-public class RestErrorsSupport {
+public final class RestErrorsSupport {
+
+    private RestErrorsSupport() {
+    }
 
     /**
      * Install exception handlers. On first (global) initialization install main exception handler and known

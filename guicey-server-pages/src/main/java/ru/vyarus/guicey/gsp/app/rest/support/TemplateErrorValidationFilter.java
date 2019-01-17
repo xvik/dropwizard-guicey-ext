@@ -35,6 +35,8 @@ import java.io.IOException;
 @Provider
 @Template
 public class TemplateErrorValidationFilter implements ContainerResponseFilter {
+    private static final String DBL_NL = "\n\n";
+    
     private final Logger logger = LoggerFactory.getLogger(TemplateErrorValidationFilter.class);
 
     @Context
@@ -46,23 +48,23 @@ public class TemplateErrorValidationFilter implements ContainerResponseFilter {
     public void filter(final ContainerRequestContext requestContext,
                        final ContainerResponseContext responseContext) throws IOException {
         // check if incorrect exception mapper were used
-        if (TemplateErrorHandler.isErrorPageNotRendered(request)) {
-            final Throwable error = TemplateErrorHandler.getExceptionType(request);
-            logger.error("\n\n" +
-                    "\tCustom error page was not shown because jersey used more specific "
+        if (TemplateErrorHandler.isWrongMapperUsed(request)) {
+            final Throwable error = TemplateErrorHandler.getException(request);
+            logger.error(DBL_NL
+                    + "\tCustom error page was not shown because jersey used more specific "
                     + "exception mapper for error:\n"
-                    + "\t\t" + error.getClass().getName() + ": " + error.getMessage() + "\n\n"
+                    + "\t\t" + error.getClass().getName() + ": " + error.getMessage() + DBL_NL
 
                     + "\tIn order to override this behaviour register template handler alias:\n "
-                    + "\t\t(ServerPagesBundle)\n" +
-                    "\t\t\t.handleTemplateException(new TemplateErrorHandlerAlias<"
+                    + "\t\t(ServerPagesBundle)\n"
+                    + "\t\t\t.handleTemplateException(new TemplateErrorHandlerAlias<"
                     + error.getClass().getSimpleName() + ">(){})\n");
         } else if (responseContext.getStatus() >= ErrorRedirect.CODE_400) {
             // redirect direct status return from rest into error page (e.g. when Response.noContent() used as response)
             final TemplateContext context = TemplateContext.getInstance();
             final WebApplicationException exception = new WebApplicationException(responseContext.getStatus());
-            if (context != null && context.getErrorRedirect().isRedirectable(exception)) {
-                TemplateContext.getInstance().getErrorRedirect().redirect(request, response, exception);
+            if (context != null) {
+                context.getErrorRedirect().redirect(request, response, exception);
             }
         }
     }

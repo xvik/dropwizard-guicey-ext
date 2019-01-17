@@ -3,6 +3,7 @@ package ru.vyarus.guicey.gsp.app.filter;
 import io.dropwizard.views.View;
 import io.dropwizard.views.ViewRenderer;
 import ru.vyarus.guicey.gsp.app.filter.redirect.ErrorRedirect;
+import ru.vyarus.guicey.gsp.app.filter.redirect.SpaSupport;
 import ru.vyarus.guicey.gsp.app.filter.redirect.TemplateRedirect;
 import ru.vyarus.guicey.gsp.app.rest.support.TemplateErrorHandler;
 import ru.vyarus.guicey.gsp.app.util.PathUtils;
@@ -18,8 +19,8 @@ import java.util.regex.Pattern;
 
 /**
  * The main filter, implementing server pages support. Filter is applied above assets servlet. For each request,
- * file calls detected using pre-defined regexp (by default, looking if request end with en extensions - most
- * likely file). Detected file extension checked if it's a template file. If not template then redirected to
+ * file call detected using pre-defined regexp (by default, looking if request end with en extensions - most
+ * likely it's a file). Detected file extension checked if it's a template file. If not template then redirected to
  * assets servlet (normal dropwizard assets processing). In all other cases, request is redirected into
  * rest (with "{app name}" prefix) to be handled by rest resource (dropwizard views).
  * <p>
@@ -29,9 +30,11 @@ import java.util.regex.Pattern;
  * error code - redirect to error page (which could also be a template). If no special page registered - server
  * error response as is.
  * <p>
- * Note that exceptions inside rest resources are also tracked by
- * {@link TemplateErrorHandler} (exception mapper) which allows to
- * use more informative exception objects in error page.
+ * Note that exceptions inside rest resources are also tracked by {@link TemplateErrorHandler} (exception mapper)
+ * which allows to use more informative exception objects in error page.
+ * <p>
+ * When SPA support is enabled, intercepted 404 error is checked if spa routing detected and do index redirect
+ * instead of showing error page.
  *
  * @author Vyacheslav Rusakov
  * @since 22.10.2018
@@ -44,18 +47,22 @@ public class ServerPagesFilter implements Filter {
     private final Pattern filePattern;
     // index page
     private final String index;
+
     private final TemplateRedirect redirect;
+    private final SpaSupport spa;
     private final Iterable<ViewRenderer> renderers;
 
     public ServerPagesFilter(final String uriPath,
                              final String filePattern,
                              final String index,
                              final TemplateRedirect redirect,
+                             final SpaSupport spa,
                              final Iterable<ViewRenderer> renderers) {
         this.uriPath = uriPath;
         this.filePattern = Pattern.compile(filePattern);
         this.index = index;
         this.redirect = redirect;
+        this.spa = spa;
         this.renderers = renderers;
     }
 
@@ -70,6 +77,8 @@ public class ServerPagesFilter implements Filter {
                          final FilterChain chain) throws IOException, ServletException {
         final HttpServletRequest req = (HttpServletRequest) servletRequest;
         final HttpServletResponse resp = (HttpServletResponse) servletResponse;
+
+        spa.markPossibleSpaRoute(req, resp);
 
         // look if request ends with file (name.ext pattern, maybe followed by query params (?) part)
         // e.g. /some/url/file.txt?start=1 -> file.txt
@@ -88,7 +97,8 @@ public class ServerPagesFilter implements Filter {
             page = index;
         }
         // redirect to rest handling (dropwizard-view template)
-        serveTemplate(req, resp, page);
+        // (errors are handled with exception mapper and response filter)
+        redirect.redirect(req, resp, page);
     }
 
     @Override
@@ -132,14 +142,6 @@ public class ServerPagesFilter implements Filter {
         handleError(req, resp, wrapper.getError());
     }
 
-    private void serveTemplate(final HttpServletRequest req,
-                               final HttpServletResponse resp,
-                               final String page) throws IOException, ServletException {
-        // wrap request to intercept errors
-        final ResponseWrapper wrapper = new ResponseWrapper(resp);
-        redirect.redirect(req, resp, page);
-        handleError(req, resp, wrapper.getError());
-    }
 
     private void handleError(final HttpServletRequest req,
                              final HttpServletResponse resp,

@@ -26,6 +26,7 @@ import static com.google.common.base.Preconditions.checkArgument;
  * @author Vyacheslav Rusakov
  * @since 06.12.2018
  */
+@SuppressWarnings("checkstyle:VisibilityModifier")
 public class GlobalConfig {
 
     // rest exception mapper aliases (to override other mappers in case of template render)
@@ -76,7 +77,7 @@ public class GlobalConfig {
      * @param name      server pages application name which performs configuration
      */
     public void setRenderers(final Iterable<ViewRenderer> renderers, final String name) {
-        Preconditions.checkState(!initialized, "Global initialization already performed");
+        checkAlreadyInitialized();
         if (this.renderers == null) {
             logger.debug("Global views renderers configured by '{}' server pages bundle", name);
         } else {
@@ -103,7 +104,7 @@ public class GlobalConfig {
     @SuppressWarnings("unchecked")
     public <T extends Configuration> void setConfigurable(final ViewConfigurable<T> configurable,
                                                           final String name) {
-        Preconditions.checkState(!initialized, "Global initialization already performed");
+        checkAlreadyInitialized();
         if (this.configurable == null) {
             logger.debug("Global views configurable configured by '{}' server pages bundle", name);
         } else {
@@ -117,7 +118,7 @@ public class GlobalConfig {
      * @param modifier modifier for exact renderer config
      */
     public void addConfigModifier(final String name, final ViewRendererConfigurationModifier modifier) {
-        Preconditions.checkState(!initialized, "Global initialization already performed");
+        checkAlreadyInitialized();
         configModifiers.put(name, modifier);
     }
 
@@ -186,5 +187,9 @@ public class GlobalConfig {
      */
     public void setApplication(final Application application) {
         this.application = application;
+    }
+
+    private void checkAlreadyInitialized() {
+        Preconditions.checkState(!initialized, "Global initialization already performed");
     }
 }

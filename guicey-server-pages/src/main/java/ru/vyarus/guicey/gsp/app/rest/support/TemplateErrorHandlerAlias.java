@@ -20,6 +20,7 @@ import javax.ws.rs.ext.Provider;
  * <p>
  * NOTE: registered alias will not change main rest behaviour! Only template resources will be affected.
  *
+ * @param <T> exception type
  * @author Vyacheslav Rusakov
  * @see ru.vyarus.guicey.gsp.ServerPagesBundle.Builder#handleTemplateException(TemplateErrorHandlerAlias)
  * @since 16.01.2019

@@ -16,12 +16,12 @@ import ru.vyarus.guicey.gsp.app.asset.LazyLocationProvider;
 import ru.vyarus.guicey.gsp.app.asset.MultiSourceAssetServlet;
 import ru.vyarus.guicey.gsp.app.filter.ServerPagesFilter;
 import ru.vyarus.guicey.gsp.app.filter.redirect.ErrorRedirect;
+import ru.vyarus.guicey.gsp.app.filter.redirect.SpaSupport;
 import ru.vyarus.guicey.gsp.app.filter.redirect.TemplateRedirect;
 import ru.vyarus.guicey.gsp.app.rest.DirectTemplateResource;
 import ru.vyarus.guicey.gsp.app.rest.support.TemplateAnnotationFilter;
 import ru.vyarus.guicey.gsp.app.util.PathUtils;
 import ru.vyarus.guicey.spa.SpaBundle;
-import ru.vyarus.guicey.spa.filter.SpaRoutingFilter;
 
 import javax.servlet.DispatcherType;
 import java.nio.charset.StandardCharsets;
@@ -39,7 +39,6 @@ import static ru.vyarus.guicey.spa.SpaBundle.SLASH;
  * <li>Special assets servlet (with multiple classpath locations support)</li>
  * <li>Main {@link ServerPagesFilter} around assets servlet which differentiate asset and template requests
  * (and handle error pages)</li>
- * <li>if required, {@link SpaRoutingFilter} could be applied in order to support SPA routing.</li>
  * </ul>
  *
  * @author Vyacheslav Rusakov
@@ -102,10 +101,11 @@ public class ServerPagesApp implements ApplicationEventListener {
         installAssetsServlet(context, locationsProvider);
 
         // templates support
+        final SpaSupport spa = new SpaSupport(spaSupport, uriPath, spaNoRedirectRegex);
         templateRedirect = new TemplateRedirect(name, uriPath, locationsProvider,
                 new InjectorProvider(globalConfig.getApplication()),
-                new ErrorRedirect(uriPath, errorPages, logErrors));
-        installTemplatesSupportFilter(context, templateRedirect);
+                new ErrorRedirect(uriPath, errorPages, logErrors, spa));
+        installTemplatesSupportFilter(context, templateRedirect, spa);
         // @Template annotation support (even with multiple registrations should be created just once)
         // note: applied only to annotated resources!
         environment.jersey().register(TemplateAnnotationFilter.class);
@@ -114,10 +114,6 @@ public class ServerPagesApp implements ApplicationEventListener {
                 .path(SLASH + name)
                 .extended(false)
                 .build());
-
-        if (spaSupport) {
-            installSpaRoutingFilter(context);
-        }
 
         // Finalize initialization after server startup and print console report
         // delay is required to collect information from all app extensions
@@ -147,18 +143,6 @@ public class ServerPagesApp implements ApplicationEventListener {
     }
 
     /**
-     * Install {@link SpaRoutingFilter} from {@link SpaBundle} to support SPA routing (return index page on html5
-     * client routing calls). Filter installed above assets servlet. SPA index page may be a template.
-     *
-     * @param context main or admin context
-     */
-    private void installSpaRoutingFilter(final ServletEnvironment context) {
-        final EnumSet<DispatcherType> spaTypes = EnumSet.of(DispatcherType.REQUEST);
-        context.addFilter(name + "Routing", new SpaRoutingFilter(indexFile, spaNoRedirectRegex))
-                .addMappingForServletNames(spaTypes, false, name);
-    }
-
-    /**
      * Install filter which recognize calls to templates and redirect to rest endpoint instead. This way
      * client dont know about rest and we use all benefits of rest parameters mapping.
      *
@@ -166,7 +150,8 @@ public class ServerPagesApp implements ApplicationEventListener {
      * @param templateRedirect template redirection support
      */
     private void installTemplatesSupportFilter(final ServletEnvironment context,
-                                               final TemplateRedirect templateRedirect) {
+                                               final TemplateRedirect templateRedirect,
+                                               final SpaSupport spa) {
         final EnumSet<DispatcherType> types = EnumSet.of(DispatcherType.REQUEST);
         context.addFilter(name + "Templates",
                 new ServerPagesFilter(
@@ -174,6 +159,7 @@ public class ServerPagesApp implements ApplicationEventListener {
                         fileRequestPattern,
                         indexFile,
                         templateRedirect,
+                        spa,
                         globalConfig.getRenderers()))
                 .addMappingForServletNames(types, false, name);
     }
