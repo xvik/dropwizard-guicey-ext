@@ -16,7 +16,7 @@ import java.util.Map;
 /**
  * Redirects response error to the configured error page
  * ({@link ru.vyarus.guicey.gsp.ServerPagesBundle.Builder#errorPage(String)}).
- * Only response codes >= 400 (errors) are handled, everything else considered as normal flow.
+ * Only response codes &gt;= 400 (errors) are handled, everything else considered as normal flow.
  * <p>
  * When SPA support is enabled, also intercept all 404 errors and checks if it could be SPA route (and do home redirect
  * instead of error).

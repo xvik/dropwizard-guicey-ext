@@ -26,7 +26,7 @@ public final class AppReportBuilder {
      * Build application report.
      *
      * @param app server pages application instance
-     * @return
+     * @return application configuration report
      */
     public static String build(final ServerPagesApp app) {
         final StringBuilder res = new StringBuilder(String.format(

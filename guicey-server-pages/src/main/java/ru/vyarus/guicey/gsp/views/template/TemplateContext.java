@@ -72,8 +72,7 @@ public class TemplateContext {
     }
 
     /**
-     * 
-     * @return
+     * @return error redirection handler
      */
     public ErrorRedirect getErrorRedirect() {
         return errorRedirect;

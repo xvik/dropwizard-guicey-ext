@@ -60,16 +60,19 @@ import static ru.vyarus.guicey.spa.SpaBundle.SLASH;
  * classpath path. Internal application name is "ui". When browser request any file directly, e.g.
  * "ui/styles.css" then file "/com/assets/path/styles.css" will be served. Any other path is redirected to rest
  * endpoint: e.g. "ui/dashboard/" is redirected to "{rest mapping}/ui/dashboard.
- * <pre>{@code
- *  @Template("dashboard.ftl")
- *  @Path("ui/dahboard")
- *  @Produces(MediaType.TEXT_HTML)
+ * <pre>
+ * <code>
+ *  {@literal @}Template("dashboard.ftl")
+ *  {@literal @}Path("ui/dahboard")
+ *  {@literal @}Produces(MediaType.TEXT_HTML)
  *  public class DashboardPage {
- *   @GET
+ *   {@literal @}GET
  *   public DashboardView get() {
  *      return new DashboardView();
  *   }
- *  }}</pre>
+ *  }
+ * </code>
+ * </pre>
  * Note that {@link ru.vyarus.guicey.gsp.views.template.Template} annotation on resource is required. Without it,
  * bundle will not be able to show path in console reporting. Also, configured template automatically applied
  * into view (so you don't have to specify template path in all methods (note that custom template path could
@@ -257,7 +260,7 @@ public class ServerPagesBundle implements ConfiguredBundle<Configuration> {
         }
 
         /**
-         * Default error page (shown in case of exceptions and for all error return codes (>=400)).
+         * Default error page (shown in case of exceptions and for all error return codes (&gt;=400)).
          * Errors are intercepted both for assets and template rendering. For templates, global exception
          * handler intercepts all exceptions, appeared during template call processing.
          *
