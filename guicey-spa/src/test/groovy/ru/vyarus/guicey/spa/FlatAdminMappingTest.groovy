@@ -24,7 +24,7 @@ class FlatAdminMappingTest extends Specification {
         res.contains("Sample page")
 
         when: "accessing not existing page"
-        new URL("http://localhost:8080/admin/app/some").text
+        res = new URL("http://localhost:8080/admin/app/some").text
         then: "error"
         res.contains("Sample page")
 
