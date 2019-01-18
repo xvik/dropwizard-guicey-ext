@@ -28,6 +28,8 @@ import static com.google.common.base.Preconditions.checkArgument;
  */
 @SuppressWarnings("checkstyle:VisibilityModifier")
 public class GlobalConfig {
+    public Application application;
+    public List<ServerPagesApp> apps = new ArrayList<>();
 
     // rest exception mapper aliases (to override other mappers in case of template render)
     public final List<TemplateErrorHandlerAlias> mappedExceptions = Lists.newArrayList(
@@ -48,7 +50,6 @@ public class GlobalConfig {
 
     @SuppressWarnings("PMD.AvoidFieldNameMatchingMethodName")
     private boolean initialized;
-    private Application application;
 
     /**
      * Used to reveal registered application with the same name.
@@ -175,19 +176,6 @@ public class GlobalConfig {
         return extensions.get(app);
     }
 
-    /**
-     * @return current dropwizard application instance
-     */
-    public Application getApplication() {
-        return application;
-    }
-
-    /**
-     * @param application current dropwizard application instance
-     */
-    public void setApplication(final Application application) {
-        this.application = application;
-    }
 
     private void checkAlreadyInitialized() {
         Preconditions.checkState(!initialized, "Global initialization already performed");

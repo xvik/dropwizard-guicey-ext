@@ -4,10 +4,6 @@ import com.google.common.base.Joiner;
 import io.dropwizard.jetty.setup.ServletEnvironment;
 import io.dropwizard.setup.Environment;
 import org.glassfish.jersey.server.model.Resource;
-import org.glassfish.jersey.server.monitoring.ApplicationEvent;
-import org.glassfish.jersey.server.monitoring.ApplicationEventListener;
-import org.glassfish.jersey.server.monitoring.RequestEvent;
-import org.glassfish.jersey.server.monitoring.RequestEventListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.vyarus.dropwizard.guice.injector.lookup.InjectorProvider;
@@ -19,8 +15,8 @@ import ru.vyarus.guicey.gsp.app.filter.redirect.ErrorRedirect;
 import ru.vyarus.guicey.gsp.app.filter.redirect.SpaSupport;
 import ru.vyarus.guicey.gsp.app.filter.redirect.TemplateRedirect;
 import ru.vyarus.guicey.gsp.app.rest.DirectTemplateResource;
+import ru.vyarus.guicey.gsp.app.rest.log.ResourcePath;
 import ru.vyarus.guicey.gsp.app.rest.support.TemplateAnnotationFilter;
-import ru.vyarus.guicey.gsp.app.util.PathUtils;
 import ru.vyarus.guicey.spa.SpaBundle;
 
 import javax.servlet.DispatcherType;
@@ -46,7 +42,7 @@ import static ru.vyarus.guicey.spa.SpaBundle.SLASH;
  */
 @SuppressWarnings({"checkstyle:VisibilityModifier", "checkstyle:ClassDataAbstractionCoupling",
         "PMD.ExcessiveImports"})
-public class ServerPagesApp implements ApplicationEventListener {
+public class ServerPagesApp {
 
     public boolean mainContext;
     public String name;
@@ -62,7 +58,6 @@ public class ServerPagesApp implements ApplicationEventListener {
     public final Map<Integer, String> errorPages = new TreeMap<>();
     public boolean logErrors;
 
-    protected Environment environment;
     protected TemplateRedirect templateRedirect;
     protected LazyLocationProvider locationsProvider;
 
@@ -73,18 +68,6 @@ public class ServerPagesApp implements ApplicationEventListener {
 
     public ServerPagesApp(final GlobalConfig globalConfig) {
         this.globalConfig = globalConfig;
-    }
-
-    @Override
-    public void onEvent(final ApplicationEvent event) {
-        if (event.getType() == ApplicationEvent.Type.INITIALIZATION_APP_FINISHED) {
-            completeInitialization();
-        }
-    }
-
-    @Override
-    public RequestEventListener onRequest(final RequestEvent requestEvent) {
-        return null;
     }
 
     /**
@@ -106,7 +89,7 @@ public class ServerPagesApp implements ApplicationEventListener {
                 name,
                 uriPath,
                 locationsProvider,
-                new InjectorProvider(globalConfig.getApplication()),
+                new InjectorProvider(globalConfig.application),
                 new ErrorRedirect(uriPath, errorPages, logErrors, spa));
         installTemplatesSupportFilter(context, templateRedirect, spa);
 
@@ -119,10 +102,21 @@ public class ServerPagesApp implements ApplicationEventListener {
                 .extended(false)
                 .build());
 
-        // Finalize initialization after server startup and print console report
-        // delay is required to collect information from all app extensions
-        this.environment = environment;
         environment.jersey().register(this);
+    }
+
+    /**
+     * Delayed initialization. Important to call when jersey initialization finished to get correct
+     * rest path and make sure all extended registrations (other bundles extending app) are performed.
+     *
+     * @param restRootPath root rest mapping path
+     * @param paths        rest template paths belonging to application
+     */
+    public void initialize(final String restRootPath, final Set<ResourcePath> paths) {
+        templateRedirect.setRootPath(restRootPath);
+        // delayed compose of extended locations
+        locationsProvider.get();
+        logger.info(AppReportBuilder.build(this, paths));
     }
 
     /**
@@ -166,15 +160,5 @@ public class ServerPagesApp implements ApplicationEventListener {
                         spa,
                         globalConfig.getRenderers()))
                 .addMappingForServletNames(types, false, name);
-    }
-
-
-    private void completeInitialization() {
-        templateRedirect.setRootPath(PathUtils.endSlash(PathUtils.trimStars(environment.jersey().getUrlPattern())));
-
-        // delayed compose of extended locations
-        locationsProvider.get();
-
-        logger.info(AppReportBuilder.build(this));
     }
 }

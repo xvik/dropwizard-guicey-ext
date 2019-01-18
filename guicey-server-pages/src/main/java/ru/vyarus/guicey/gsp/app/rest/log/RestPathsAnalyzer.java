@@ -8,6 +8,7 @@ import org.glassfish.jersey.server.model.ResourceMethod;
 import ru.vyarus.guicey.gsp.app.util.PathUtils;
 import ru.vyarus.guicey.gsp.views.template.Template;
 
+import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -18,38 +19,26 @@ import java.util.TreeSet;
  * @author Vyacheslav Rusakov
  * @since 06.12.2018
  */
-public final class ResourcePathsAnalyzer {
+public class RestPathsAnalyzer {
 
     private static final TypeResolver TYPE_RESOLVER = new TypeResolver();
-
-    private ResourcePathsAnalyzer() {
-    }
+    private final Set<ResourcePath> paths = new HashSet<>();
 
     /**
      * Collects all registered template resource paths for console logging.
      *
-     * @param app         server pages application name
-     * @param appMapping  application mapping
-     * @param restMapping rest mapping
-     * @param config      dropwizard resources configuration object
-     * @return all template resource methods
+     * @param config dropwizard resources configuration object
      */
-    public static Set<ResourcePath> analyze(
-            final String app,
-            final String appMapping,
-            final String restMapping,
-            final DropwizardResourceConfig config) {
-        final Set<ResourcePath> handles = new TreeSet<>();
-        // resource name must start with application name in order to differentiate applications
-        final String appResourcePrefix = PathUtils.prefixSlash(PathUtils.endSlash(app));
+    public static RestPathsAnalyzer build(final DropwizardResourceConfig config) {
+        final RestPathsAnalyzer analyzer = new RestPathsAnalyzer();
         for (Class<?> cls : config.getClasses()) {
             if (!cls.isAnnotationPresent(Template.class)) {
                 continue;
             }
             final Resource resource = Resource.from(cls);
             // other template resources will be processed by other applications or not used at all
-            if (resource != null && resource.getPath().startsWith(appResourcePrefix)) {
-                populate(app, appMapping, restMapping, cls, false, resource, handles);
+            if (resource != null) {
+                populate("", cls, false, resource, analyzer.paths);
             }
         }
         // manually added resources
@@ -57,19 +46,31 @@ public final class ResourcePathsAnalyzer {
             for (Resource childRes : resource.getChildResources()) {
                 for (Class<?> childResHandlerClass : childRes.getHandlerClasses()) {
                     if (childResHandlerClass.isAnnotationPresent(Template.class)) {
-                        populate(app, appMapping, PathUtils.cleanUpPath(restMapping + resource.getPath()),
-                                childResHandlerClass, false, childRes, handles);
+                        populate(resource.getPath(), childResHandlerClass, false, childRes, analyzer.paths);
                     }
                 }
             }
         }
-        return handles;
+        return analyzer;
+    }
+
+    /**
+     * @param app application name
+     * @return rest paths of required app
+     */
+    public Set<ResourcePath> select(final String app) {
+        final Set<ResourcePath> res = new TreeSet<>();
+        final String prefix = PathUtils.SLASH + app + PathUtils.SLASH;
+        for (ResourcePath path : paths) {
+            if (path.getUrl().startsWith(prefix)) {
+                res.add(path);
+            }
+        }
+        return res;
     }
 
     @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
-    private static void populate(final String app,
-                                 final String mapping,
-                                 final String rootPath,
+    private static void populate(final String rootPath,
                                  final Class<?> klass,
                                  final boolean isLocator,
                                  final Resource resource,
@@ -81,14 +82,14 @@ public final class ResourcePathsAnalyzer {
 
         for (ResourceMethod method : resource.getResourceMethods()) {
             // map direct resource methods
-            handles.add(new ResourcePath(method, resource, klass, basePath, app, mapping));
+            handles.add(new ResourcePath(method, resource, klass, basePath));
         }
 
         for (Resource childResource : resource.getChildResources()) {
             for (ResourceMethod method : childResource.getAllMethods()) {
                 if (method.getType() == ResourceMethod.JaxrsType.RESOURCE_METHOD) {
                     final String path = PathUtils.normalizePath(basePath, childResource.getPath());
-                    handles.add(new ResourcePath(method, childResource, klass, path, app, mapping));
+                    handles.add(new ResourcePath(method, childResource, klass, path));
                 } else if (method.getType() == ResourceMethod.JaxrsType.SUB_RESOURCE_LOCATOR) {
                     final String path = PathUtils.normalizePath(basePath, childResource.getPath());
                     final ResolvedType responseType = TYPE_RESOLVER
@@ -98,9 +99,9 @@ public final class ResourcePathsAnalyzer {
                             : responseType.getErasedType();
                     final Resource erasedTypeResource = Resource.from(erasedType);
                     if (erasedTypeResource == null) {
-                        handles.add(new ResourcePath(method, childResource, erasedType, path, app, mapping));
+                        handles.add(new ResourcePath(method, childResource, erasedType, path));
                     } else {
-                        populate(app, mapping, path, erasedType, true, erasedTypeResource, handles);
+                        populate(path, erasedType, true, erasedTypeResource, handles);
                     }
                 }
             }

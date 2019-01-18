@@ -10,6 +10,7 @@ import io.dropwizard.views.ViewConfigurable;
 import io.dropwizard.views.ViewRenderer;
 import ru.vyarus.dropwizard.guice.module.installer.bundle.GuiceyBootstrap;
 import ru.vyarus.guicey.gsp.app.GlobalConfig;
+import ru.vyarus.guicey.gsp.app.DelayedInitializer;
 import ru.vyarus.guicey.gsp.app.ServerPagesApp;
 import ru.vyarus.guicey.gsp.app.filter.redirect.ErrorRedirect;
 import ru.vyarus.guicey.gsp.app.rest.RestErrorsSupport;
@@ -121,15 +122,22 @@ public class ServerPagesBundle implements ConfiguredBundle<Configuration> {
 
     @Override
     public void initialize(final Bootstrap<?> bootstrap) {
-        GLOBAL_CONFIG.get().setApplication(bootstrap.getApplication());
+        GLOBAL_CONFIG.get().application = bootstrap.getApplication();
+        GLOBAL_CONFIG.get().apps.add(app);
     }
 
     @Override
     public void run(final Configuration configuration, final Environment environment) throws Exception {
-        // template rest errors interception
-        RestErrorsSupport.setup(GLOBAL_CONFIG.get(), environment);
-        // global dropwizard ViewBundle installed once
-        ViewsSupport.setup(GLOBAL_CONFIG.get(), app.name, configuration, environment);
+        final GlobalConfig config = GLOBAL_CONFIG.get();
+        if (!config.isInitialized()) {
+            // delayed apps init finalization (common for all registered apps)
+            new DelayedInitializer(config, environment);
+        }
+
+        // template rest errors interception (partially global initialization)
+        RestErrorsSupport.setup(config, environment);
+        // global dropwizard ViewBundle installation (performed just once)
+        ViewsSupport.setup(config, app.name, configuration, environment);
 
         // app specific initialization (create servlets, filters, etc)
         app.setup(environment);

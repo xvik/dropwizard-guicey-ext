@@ -2,7 +2,6 @@ package ru.vyarus.guicey.gsp.app;
 
 import ru.vyarus.guicey.gsp.app.filter.redirect.ErrorRedirect;
 import ru.vyarus.guicey.gsp.app.rest.log.ResourcePath;
-import ru.vyarus.guicey.gsp.app.rest.log.ResourcePathsAnalyzer;
 import ru.vyarus.guicey.gsp.app.util.PathUtils;
 
 import java.util.Map;
@@ -28,13 +27,13 @@ public final class AppReportBuilder {
      * @param app server pages application instance
      * @return application configuration report
      */
-    public static String build(final ServerPagesApp app) {
+    public static String build(final ServerPagesApp app, final Set<ResourcePath> paths) {
         final StringBuilder res = new StringBuilder(String.format(
                 "Server pages app '%s' registered on uri '%s' in %s context",
                 app.name, app.uriPath + '*', app.mainContext ? "main" : "admin"));
 
         reportStaticResources(res, app);
-        reportRestPaths(res, app);
+        reportRestPaths(res, app, paths);
         reportErrorPages(res, app);
 
         return res.toString();
@@ -50,17 +49,16 @@ public final class AppReportBuilder {
         res.append(NEWLINE);
     }
 
-    private static void reportRestPaths(final StringBuilder res, final ServerPagesApp app) {
-        // collect rest template resources, related to this app
-        final Set<ResourcePath> handles = ResourcePathsAnalyzer.analyze(app.name,
-                app.uriPath,
-                app.templateRedirect.getRootPath(),
-                app.environment.jersey().getResourceConfig());
-
+    private static void reportRestPaths(final StringBuilder res,
+                                        final ServerPagesApp app,
+                                        final Set<ResourcePath> paths) {
         res.append(TAB).append("Mapped handlers:").append(NEWLINE);
-        for (ResourcePath handle : handles) {
-            res.append(TAB).append(TAB).append(String.format("%-7s %s  (%s)",
-                    handle.getMethod().getHttpMethod(), handle.getPageUrl(), handle.getKlass().getName()
+        for (ResourcePath handle : paths) {
+            res.append(TAB).append(TAB).append(String.format("%-7s %s  (%s #%s)",
+                    handle.getMethod().getHttpMethod(),
+                    PathUtils.cleanUpPath(app.uriPath + handle.getUrl().substring(app.name.length() + 1)),
+                    handle.getKlass().getName(),
+                    handle.getMethod().getInvocable().getDefinitionMethod().getName()
             )).append(NEWLINE);
         }
     }
@@ -83,7 +81,7 @@ public final class AppReportBuilder {
 
     private static void printErrorPage(final StringBuilder res, final String code, final String page) {
         res.append(TAB).append(TAB)
-                .append(String.format("%-10s %s", code, PathUtils.prefixSlash(page)))
+                .append(String.format("%-7s %s", code, PathUtils.prefixSlash(page)))
                 .append(NEWLINE);
     }
 
