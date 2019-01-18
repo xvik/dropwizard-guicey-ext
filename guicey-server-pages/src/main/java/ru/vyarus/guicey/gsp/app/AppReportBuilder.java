@@ -24,7 +24,8 @@ public final class AppReportBuilder {
     /**
      * Build application report.
      *
-     * @param app server pages application instance
+     * @param app   server pages application instance
+     * @param paths rest template paths belonging for application
      * @return application configuration report
      */
     public static String build(final ServerPagesApp app, final Set<ResourcePath> paths) {

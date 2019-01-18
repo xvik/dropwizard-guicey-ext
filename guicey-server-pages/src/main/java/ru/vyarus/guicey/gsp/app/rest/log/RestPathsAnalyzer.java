@@ -28,6 +28,7 @@ public class RestPathsAnalyzer {
      * Collects all registered template resource paths for console logging.
      *
      * @param config dropwizard resources configuration object
+     * @return analyzer instance with all found template resources
      */
     public static RestPathsAnalyzer build(final DropwizardResourceConfig config) {
         final RestPathsAnalyzer analyzer = new RestPathsAnalyzer();
