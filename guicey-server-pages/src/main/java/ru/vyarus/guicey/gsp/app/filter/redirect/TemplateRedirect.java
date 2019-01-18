@@ -1,13 +1,17 @@
 package ru.vyarus.guicey.gsp.app.filter.redirect;
 
 import com.google.inject.Injector;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.vyarus.guicey.gsp.app.asset.LazyLocationProvider;
 import ru.vyarus.guicey.gsp.app.rest.DirectTemplateResource;
 import ru.vyarus.guicey.gsp.app.rest.support.TemplateAnnotationFilter;
+import ru.vyarus.guicey.gsp.app.util.TemplateRequest;
 import ru.vyarus.guicey.gsp.app.util.PathUtils;
 import ru.vyarus.guicey.gsp.views.template.TemplateContext;
 
 import javax.inject.Provider;
+import javax.servlet.Servlet;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -33,6 +37,9 @@ public class TemplateRedirect {
 
     private static final ThreadLocal<TemplateContext> CONTEXT_TEMPLATE = new ThreadLocal<>();
 
+    private final Logger logger = LoggerFactory.getLogger(TemplateRedirect.class);
+
+    private final Servlet restServlet;
     private final String app;
     private final String mapping;
     private final LazyLocationProvider locationProvider;
@@ -40,11 +47,13 @@ public class TemplateRedirect {
     private final ErrorRedirect errorRedirect;
     private String rootPath;
 
-    public TemplateRedirect(final String app,
+    public TemplateRedirect(final Servlet restServlet,
+                            final String app,
                             final String mapping,
                             final LazyLocationProvider locationProvider,
                             final Provider<Injector> injectorProvider,
                             final ErrorRedirect errorRedirect) {
+        this.restServlet = restServlet;
         this.app = app;
         this.mapping = mapping;
         this.locationProvider = locationProvider;
@@ -87,7 +96,9 @@ public class TemplateRedirect {
                 errorRedirect));
         try {
             final String path = PathUtils.path(rootPath, app, page);
-            request.getRequestDispatcher(path).forward(request, response);
+            logger.debug("Rendering template path: {}", path);
+            // this moment is especially important for admin apps where context could be radically different
+            restServlet.service(new TemplateRequest(request, app), response);
         } finally {
             CONTEXT_TEMPLATE.remove();
         }
@@ -106,5 +117,4 @@ public class TemplateRedirect {
     public static TemplateContext templateContext() {
         return CONTEXT_TEMPLATE.get();
     }
-
 }

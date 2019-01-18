@@ -36,7 +36,7 @@ public class DirectTemplateResource {
     }
 
     private View handle(final String path) {
-        logger.debug("Default rendering for path: {}", path);
+        logger.debug("Direct template rendering: {}", path);
         try {
             return new TemplateView(path);
         } catch (TemplateNotFoundException ex) {

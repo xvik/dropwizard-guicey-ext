@@ -115,6 +115,7 @@ public class ErrorRedirect {
         final String path = selectErrorPage(exception);
         // do not redirect errors of error page rendering (prevent loops)
         if (path != null && CONTEXT_ERROR.get() == null) {
+            logger.debug("Redirecting to error page: {}", path);
             // to be able to access exception in error view
             CONTEXT_ERROR.set(exception);
             try {

@@ -2,6 +2,8 @@ package ru.vyarus.guicey.gsp.app.filter;
 
 import io.dropwizard.views.View;
 import io.dropwizard.views.ViewRenderer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.vyarus.guicey.gsp.app.filter.redirect.ErrorRedirect;
 import ru.vyarus.guicey.gsp.app.filter.redirect.SpaSupport;
 import ru.vyarus.guicey.gsp.app.filter.redirect.TemplateRedirect;
@@ -40,6 +42,7 @@ import java.util.regex.Pattern;
  * @since 22.10.2018
  */
 public class ServerPagesFilter implements Filter {
+    private final Logger logger = LoggerFactory.getLogger(ServerPagesFilter.class);
 
     // server app mapping
     private final String uriPath;
@@ -85,6 +88,7 @@ public class ServerPagesFilter implements Filter {
         // file request could be either asset or direct template call
         final String pathFile = findFileInPath(req);
         if (pathFile != null && !isTemplate(pathFile)) {
+            logger.debug("Serving asset: {}", req.getRequestURI());
             // delegate to asset servlet
             serveAsset(req, resp, chain);
             return;
@@ -147,9 +151,9 @@ public class ServerPagesFilter implements Filter {
                              final HttpServletResponse resp,
                              final int error) throws IOException {
         // handle only error codes, preserving redirects (3xx)
-        if (error >= ErrorRedirect.CODE_400
-                && !redirect.getErrorRedirect().redirect(req, resp, new WebApplicationException(error))) {
-            // if no mapped error page - return error as is
+        if (error <= ErrorRedirect.CODE_400
+                || !redirect.getErrorRedirect().redirect(req, resp, new WebApplicationException(error))) {
+            // if no mapped error page or non error status returned - return error as is
             resp.sendError(error);
         }
     }

@@ -2,6 +2,7 @@ package ru.vyarus.guicey.gsp.app.rest.support;
 
 import org.glassfish.jersey.spi.ExtendedExceptionMapper;
 import ru.vyarus.guicey.gsp.app.filter.redirect.TemplateRedirect;
+import ru.vyarus.guicey.gsp.app.util.TemplateRequest;
 import ru.vyarus.guicey.gsp.views.template.TemplateContext;
 
 import javax.inject.Singleton;
@@ -73,7 +74,9 @@ public class TemplateErrorHandler implements ExtendedExceptionMapper<Throwable> 
     @Override
     public Response toResponse(final Throwable exception) {
         final TemplateContext context = TemplateContext.getInstance();
-        if (context.getErrorRedirect().redirect(request, response, wrap(exception))) {
+        // use request with original uri instead of rest mapped
+        if (context.getErrorRedirect().redirect(
+                TemplateRequest.getOriginalRequest(request), response, wrap(exception))) {
             request.removeAttribute(ERROR_PROCESSING_STATE);
         }
         // have to specify code manually in order to prevent modifications (204 for null return)

@@ -1,6 +1,8 @@
 package ru.vyarus.guicey.gsp.app.filter.redirect;
 
 import com.google.common.base.Throwables;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.vyarus.guicey.spa.filter.SpaUtils;
 
 import javax.servlet.http.HttpServletRequest;
@@ -21,6 +23,8 @@ import java.util.regex.Pattern;
  */
 public class SpaSupport {
     private static final String SPA_ROUTE_POSSIBILITY = "SpaRedirect.SPA_ROUTE_POSSIBILITY";
+
+    private final Logger logger = LoggerFactory.getLogger(SpaSupport.class);
 
     private final boolean enabled;
     // application root path, but not index page! (assets filter will navigate this route to index page implicitly)
@@ -74,6 +78,7 @@ public class SpaSupport {
                 && SpaUtils.isSpaRoute(req, noRedirect)) {
             // redirect to root
             try {
+                logger.debug("Perform SPA route redirect for: {}", req.getRequestURI());
                 SpaUtils.doRedirect(req, res, target);
             } catch (Exception ex) {
                 Throwables.throwIfUnchecked(ex);

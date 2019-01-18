@@ -102,10 +102,14 @@ public class ServerPagesApp implements ApplicationEventListener {
 
         // templates support
         final SpaSupport spa = new SpaSupport(spaSupport, uriPath, spaNoRedirectRegex);
-        templateRedirect = new TemplateRedirect(name, uriPath, locationsProvider,
+        templateRedirect = new TemplateRedirect(environment.getJerseyServletContainer(),
+                name,
+                uriPath,
+                locationsProvider,
                 new InjectorProvider(globalConfig.getApplication()),
                 new ErrorRedirect(uriPath, errorPages, logErrors, spa));
         installTemplatesSupportFilter(context, templateRedirect, spa);
+
         // @Template annotation support (even with multiple registrations should be created just once)
         // note: applied only to annotated resources!
         environment.jersey().register(TemplateAnnotationFilter.class);

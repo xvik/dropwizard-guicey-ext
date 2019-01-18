@@ -3,6 +3,8 @@ package ru.vyarus.guicey.gsp.app.rest.support;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.vyarus.guicey.gsp.app.filter.redirect.ErrorRedirect;
+import ru.vyarus.guicey.gsp.app.filter.redirect.TemplateRedirect;
+import ru.vyarus.guicey.gsp.app.util.TemplateRequest;
 import ru.vyarus.guicey.gsp.views.template.Template;
 import ru.vyarus.guicey.gsp.views.template.TemplateContext;
 
@@ -36,7 +38,7 @@ import java.io.IOException;
 @Template
 public class TemplateErrorValidationFilter implements ContainerResponseFilter {
     private static final String DBL_NL = "\n\n";
-    
+
     private final Logger logger = LoggerFactory.getLogger(TemplateErrorValidationFilter.class);
 
     @Context
@@ -61,10 +63,12 @@ public class TemplateErrorValidationFilter implements ContainerResponseFilter {
                     + error.getClass().getSimpleName() + ">(){})\n");
         } else if (responseContext.getStatus() >= ErrorRedirect.CODE_400) {
             // redirect direct status return from rest into error page (e.g. when Response.noContent() used as response)
-            final TemplateContext context = TemplateContext.getInstance();
-            final WebApplicationException exception = new WebApplicationException(responseContext.getStatus());
+            final TemplateContext context = TemplateRedirect.templateContext();
             if (context != null) {
-                context.getErrorRedirect().redirect(request, response, exception);
+                final WebApplicationException exception = new WebApplicationException(responseContext.getStatus());
+                // use request with original uri instead of rest mapped
+                context.getErrorRedirect().redirect(
+                        TemplateRequest.getOriginalRequest(request), response, exception);
             }
         }
     }
