@@ -11,6 +11,7 @@ import ru.vyarus.guicey.gsp.app.util.ResourceLookup;
 
 import javax.annotation.Nullable;
 import javax.inject.Provider;
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 /**
@@ -32,19 +33,22 @@ public class TemplateContext {
     private final String url;
     private final Provider<Injector> injectorProvider;
     private final ErrorRedirect errorRedirect;
+    private final HttpServletRequest originalRequest;
 
     public TemplateContext(final String appName,
                            final String rootUrl,
                            final List<String> resourcePaths,
                            final String url,
                            final Provider<Injector> injectorProvider,
-                           final ErrorRedirect errorRedirect) {
+                           final ErrorRedirect errorRedirect,
+                           final HttpServletRequest originalRequest) {
         this.appName = appName;
         this.rootUrl = rootUrl;
         this.resourcePaths = resourcePaths;
         this.url = url;
         this.injectorProvider = injectorProvider;
         this.errorRedirect = errorRedirect;
+        this.originalRequest = originalRequest;
     }
 
     /**
@@ -76,6 +80,13 @@ public class TemplateContext {
      */
     public ErrorRedirect getErrorRedirect() {
         return errorRedirect;
+    }
+
+    /**
+     * @return original request object (before any redirection)
+     */
+    public HttpServletRequest getOriginalRequest() {
+        return originalRequest;
     }
 
     /**

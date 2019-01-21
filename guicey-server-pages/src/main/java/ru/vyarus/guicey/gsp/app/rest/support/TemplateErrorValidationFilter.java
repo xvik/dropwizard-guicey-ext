@@ -4,7 +4,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.vyarus.guicey.gsp.app.filter.redirect.ErrorRedirect;
 import ru.vyarus.guicey.gsp.app.filter.redirect.TemplateRedirect;
-import ru.vyarus.guicey.gsp.app.util.TemplateRequest;
 import ru.vyarus.guicey.gsp.views.template.Template;
 import ru.vyarus.guicey.gsp.views.template.TemplateContext;
 
@@ -66,9 +65,9 @@ public class TemplateErrorValidationFilter implements ContainerResponseFilter {
             final TemplateContext context = TemplateRedirect.templateContext();
             if (context != null) {
                 final WebApplicationException exception = new WebApplicationException(responseContext.getStatus());
+                final HttpServletRequest req = context.getOriginalRequest();
                 // use request with original uri instead of rest mapped
-                context.getErrorRedirect().redirect(
-                        TemplateRequest.getOriginalRequest(request), response, exception);
+                context.getErrorRedirect().redirect(req, response, exception);
             }
         }
     }

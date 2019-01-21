@@ -2,7 +2,6 @@ package ru.vyarus.guicey.gsp.app.rest.support;
 
 import org.glassfish.jersey.spi.ExtendedExceptionMapper;
 import ru.vyarus.guicey.gsp.app.filter.redirect.TemplateRedirect;
-import ru.vyarus.guicey.gsp.app.util.TemplateRequest;
 import ru.vyarus.guicey.gsp.views.template.TemplateContext;
 
 import javax.inject.Singleton;
@@ -46,8 +45,6 @@ public class TemplateErrorHandler implements ExtendedExceptionMapper<Throwable> 
     private static final String ERROR = "TemplateExceptionHandler.ERROR";
 
     @Context
-    private HttpServletRequest request;
-    @Context
     private HttpServletResponse response;
 
     @Override
@@ -59,14 +56,15 @@ public class TemplateErrorHandler implements ExtendedExceptionMapper<Throwable> 
         }
         final WebApplicationException ex = wrap(exception);
 
-        final boolean res = context.getErrorRedirect().isRedirectableException(request, ex);
+        final HttpServletRequest req = context.getOriginalRequest();
+        final boolean res = context.getErrorRedirect().isRedirectableException(req, ex);
         if (res) {
             // exception mapping mechanism will check all mappers but select the one with the best type matching
             // so here special marker set that request MUST be processed by this handler
             // and response filter will check if it was actually processed
-            request.setAttribute(ERROR_PROCESSING_STATE, true);
+            req.setAttribute(ERROR_PROCESSING_STATE, true);
             // store exception instance for more complete message (in case of wrong mapper)
-            request.setAttribute(ERROR, exception);
+            req.setAttribute(ERROR, exception);
         }
         return res;
     }
@@ -75,9 +73,9 @@ public class TemplateErrorHandler implements ExtendedExceptionMapper<Throwable> 
     public Response toResponse(final Throwable exception) {
         final TemplateContext context = TemplateContext.getInstance();
         // use request with original uri instead of rest mapped
-        if (context.getErrorRedirect().redirect(
-                TemplateRequest.getOriginalRequest(request), response, wrap(exception))) {
-            request.removeAttribute(ERROR_PROCESSING_STATE);
+        final HttpServletRequest req = context.getOriginalRequest();
+        if (context.getErrorRedirect().redirect(req, response, wrap(exception))) {
+            req.removeAttribute(ERROR_PROCESSING_STATE);
         }
         // have to specify code manually in order to prevent modifications (204 for null return)
         return Response.status(200).build();

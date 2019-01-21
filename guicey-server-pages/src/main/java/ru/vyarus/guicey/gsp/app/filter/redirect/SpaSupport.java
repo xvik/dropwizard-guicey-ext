@@ -28,11 +28,16 @@ public class SpaSupport {
 
     private final boolean enabled;
     // application root path, but not index page! (assets filter will navigate this route to index page implicitly)
+    private final String rootMapping;
     private final String target;
     private final Pattern noRedirect;
 
-    public SpaSupport(final boolean enabled, final String target, final String noRedirectRegex) {
+    public SpaSupport(final boolean enabled,
+                      final String rootMapping,
+                      final String target,
+                      final String noRedirectRegex) {
         this.enabled = enabled;
+        this.rootMapping = rootMapping;
         this.target = target;
         this.noRedirect = Pattern.compile(noRedirectRegex);
     }
@@ -48,7 +53,7 @@ public class SpaSupport {
         if (!enabled) {
             return;
         }
-        if (SpaUtils.isRootPage(req.getRequestURI(), target)) {
+        if (SpaUtils.isRootPage(req.getRequestURI(), rootMapping)) {
             // index page must be not cacheable
             SpaUtils.noCache(res);
         } else {
@@ -78,7 +83,7 @@ public class SpaSupport {
                 && SpaUtils.isSpaRoute(req, noRedirect)) {
             // redirect to root
             try {
-                logger.debug("Perform SPA route redirect for: {}", req.getRequestURI());
+                logger.debug("Perform SPA route redirect: {} => {}", req.getRequestURI(), target);
                 SpaUtils.doRedirect(req, res, target);
             } catch (Exception ex) {
                 Throwables.throwIfUnchecked(ex);

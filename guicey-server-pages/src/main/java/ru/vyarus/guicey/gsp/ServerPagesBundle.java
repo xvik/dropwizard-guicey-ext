@@ -258,6 +258,9 @@ public class ServerPagesBundle implements ConfiguredBundle<Configuration> {
         /**
          * Index page may also be a template. If index view is handled with a rest then simply leave as "" (default).
          * In this case resource on path "{restPath}/{appMapping}/" will be used as root page.
+         * <p>
+         * Pay attention that index is not set by default to "index.html" because most likely it would be some
+         * template handled with rest resource (and so it would be too often necessary to override default).
          *
          * @param name index file name (by default "")
          * @return builder instance for chained calls

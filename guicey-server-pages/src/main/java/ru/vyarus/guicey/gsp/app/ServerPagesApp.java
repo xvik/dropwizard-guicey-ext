@@ -17,6 +17,7 @@ import ru.vyarus.guicey.gsp.app.filter.redirect.TemplateRedirect;
 import ru.vyarus.guicey.gsp.app.rest.DirectTemplateResource;
 import ru.vyarus.guicey.gsp.app.rest.log.ResourcePath;
 import ru.vyarus.guicey.gsp.app.rest.support.TemplateAnnotationFilter;
+import ru.vyarus.guicey.gsp.app.util.PathUtils;
 import ru.vyarus.guicey.spa.SpaBundle;
 
 import javax.servlet.DispatcherType;
@@ -48,6 +49,7 @@ public class ServerPagesApp {
     public String name;
     public String resourcePath;
     public String uriPath;
+    public String fullUriPath;
     public String indexFile = "";
     // regexp for file requests detection (to recognize asset or direct template render)
     public String fileRequestPattern = ServerPagesBundle.FILE_REQUEST_PATTERN;
@@ -78,19 +80,25 @@ public class ServerPagesApp {
     public void setup(final Environment environment) {
         final ServletEnvironment context = mainContext ? environment.servlets() : environment.admin();
 
+        // apply possible context (if servlet registered not to root, e.g. most likely in case of flat admin context)
+        final String contextMapping = mainContext
+                ? environment.getApplicationContext().getContextPath()
+                : environment.getAdminContext().getContextPath();
+        fullUriPath = PathUtils.path(contextMapping, uriPath);
+
         // application extensions could be registered a bit later so it is impossible to know all classpath
         // paths at that point
         locationsProvider = new LazyLocationProvider(resourcePath, name, globalConfig);
         installAssetsServlet(context, locationsProvider);
 
         // templates support
-        final SpaSupport spa = new SpaSupport(spaSupport, uriPath, spaNoRedirectRegex);
+        final SpaSupport spa = new SpaSupport(spaSupport, fullUriPath, uriPath, spaNoRedirectRegex);
         templateRedirect = new TemplateRedirect(environment.getJerseyServletContainer(),
                 name,
-                uriPath,
+                fullUriPath,
                 locationsProvider,
                 new InjectorProvider(globalConfig.application),
-                new ErrorRedirect(uriPath, errorPages, logErrors, spa));
+                new ErrorRedirect(fullUriPath, errorPages, logErrors, spa));
         installTemplatesSupportFilter(context, templateRedirect, spa);
 
         // @Template annotation support (even with multiple registrations should be created just once)
@@ -153,7 +161,7 @@ public class ServerPagesApp {
         final EnumSet<DispatcherType> types = EnumSet.of(DispatcherType.REQUEST);
         context.addFilter(name + "Templates",
                 new ServerPagesFilter(
-                        uriPath,
+                        fullUriPath,
                         fileRequestPattern,
                         indexFile,
                         templateRedirect,

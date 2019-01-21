@@ -3,6 +3,7 @@ package ru.vyarus.guicey.gsp.app;
 import ru.vyarus.guicey.gsp.app.filter.redirect.ErrorRedirect;
 import ru.vyarus.guicey.gsp.app.rest.log.ResourcePath;
 import ru.vyarus.guicey.gsp.app.util.PathUtils;
+import ru.vyarus.guicey.spa.SpaBundle;
 
 import java.util.Map;
 import java.util.Set;
@@ -31,11 +32,12 @@ public final class AppReportBuilder {
     public static String build(final ServerPagesApp app, final Set<ResourcePath> paths) {
         final StringBuilder res = new StringBuilder(String.format(
                 "Server pages app '%s' registered on uri '%s' in %s context",
-                app.name, app.uriPath + '*', app.mainContext ? "main" : "admin"));
+                app.name, app.fullUriPath + '*', app.mainContext ? "main" : "admin"));
 
         reportStaticResources(res, app);
         reportRestPaths(res, app, paths);
         reportErrorPages(res, app);
+        reportSpaSupport(res, app);
 
         return res.toString();
     }
@@ -57,7 +59,7 @@ public final class AppReportBuilder {
         for (ResourcePath handle : paths) {
             res.append(TAB).append(TAB).append(String.format("%-7s %s  (%s #%s)",
                     handle.getMethod().getHttpMethod(),
-                    PathUtils.cleanUpPath(app.uriPath + handle.getUrl().substring(app.name.length() + 1)),
+                    PathUtils.cleanUpPath(app.fullUriPath + handle.getUrl().substring(app.name.length() + 1)),
                     handle.getKlass().getName(),
                     handle.getMethod().getInvocable().getDefinitionMethod().getName()
             )).append(NEWLINE);
@@ -84,6 +86,16 @@ public final class AppReportBuilder {
         res.append(TAB).append(TAB)
                 .append(String.format("%-7s %s", code, PathUtils.prefixSlash(page)))
                 .append(NEWLINE);
+    }
+
+    private static void reportSpaSupport(final StringBuilder res, final ServerPagesApp app) {
+        if (app.spaSupport) {
+            res.append(NEWLINE).append(TAB).append("SPA routing enabled");
+            if (!app.spaNoRedirectRegex.equals(SpaBundle.DEFAULT_PATTERN)) {
+                res.append(" (with custom pattern)");
+            }
+            res.append(NEWLINE);
+        }
     }
 
 }

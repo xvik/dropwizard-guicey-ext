@@ -93,12 +93,14 @@ public class TemplateRedirect {
                 locationProvider.get(),
                 request.getRequestURI(),
                 injectorProvider,
-                errorRedirect));
+                errorRedirect,
+                request));
         try {
             final String path = PathUtils.path(rootPath, app, page);
             logger.debug("Rendering template path: {}", path);
             // this moment is especially important for admin apps where context could be radically different
-            restServlet.service(new TemplateRequest(request, app), response);
+            restServlet.service(new TemplateRequest(restServlet, request, app, mapping), response);
+
         } finally {
             CONTEXT_TEMPLATE.remove();
         }

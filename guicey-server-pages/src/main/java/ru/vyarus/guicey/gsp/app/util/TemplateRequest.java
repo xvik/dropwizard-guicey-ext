@@ -1,5 +1,6 @@
 package ru.vyarus.guicey.gsp.app.util;
 
+import javax.servlet.Servlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 
@@ -13,11 +14,17 @@ import javax.servlet.http.HttpServletRequestWrapper;
  */
 public class TemplateRequest extends HttpServletRequestWrapper {
 
+    private final Servlet restServlet;
     private final String path;
 
-    public TemplateRequest(final HttpServletRequest request, final String app) {
+    public TemplateRequest(
+            final Servlet restServlet,
+            final HttpServletRequest request,
+            final String app,
+            final String mapping) {
         super(request);
-        path = PathUtils.prefixSlash(PathUtils.path(app, request.getRequestURI()));
+        this.restServlet = restServlet;
+        path = PathUtils.prefixSlash(PathUtils.path(app, request.getRequestURI().substring(mapping.length())));
     }
 
     @Override
@@ -34,16 +41,17 @@ public class TemplateRequest extends HttpServletRequestWrapper {
         return new StringBuffer(res);
     }
 
-    /**
-     * For application logic it's often better to operate on original request (with original url, before
-     * redirection to rest).
-     *
-     * @param request request to unwrap
-     * @return original request if it's a template request or request itself
-     */
-    public static HttpServletRequest getOriginalRequest(final HttpServletRequest request) {
-        return request instanceof TemplateRequest
-                ? (HttpServletRequest) ((TemplateRequest) request).getRequest()
-                : request;
+    // overrides below are required for proper handling inside admin context (with flat mapping)
+
+    @Override
+    public String getContextPath() {
+        // (main) context mapping path
+        return "/";
+    }
+
+    @Override
+    public String getServletPath() {
+        // (main) servlet mapping path
+        return restServlet.getServletConfig().getServletContext().getContextPath();
     }
 }
