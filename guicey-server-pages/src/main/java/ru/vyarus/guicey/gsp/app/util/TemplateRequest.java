@@ -1,12 +1,11 @@
 package ru.vyarus.guicey.gsp.app.util;
 
-import javax.servlet.Servlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 
 /**
  * Request wrapper used to prefix app name into original request url during redirection to rest.
- * For example, original url like '/some/url/' trasformed into '{app}/some/url' where {app} is server pages
+ * For example, original url like '/some/url/' transformed into '{app}/some/url' where {app} is server pages
  * application registration name.
  *
  * @author Vyacheslav Rusakov
@@ -14,17 +13,19 @@ import javax.servlet.http.HttpServletRequestWrapper;
  */
 public class TemplateRequest extends HttpServletRequestWrapper {
 
-    private final Servlet restServlet;
     private final String path;
+    private final String context;
+    private final String mapping;
 
     public TemplateRequest(
-            final Servlet restServlet,
             final HttpServletRequest request,
-            final String app,
+            final String path,
+            final String context,
             final String mapping) {
         super(request);
-        this.restServlet = restServlet;
-        path = PathUtils.prefixSlash(PathUtils.path(app, request.getRequestURI().substring(mapping.length())));
+        this.path = path;
+        this.context = context;
+        this.mapping = mapping;
     }
 
     @Override
@@ -46,12 +47,12 @@ public class TemplateRequest extends HttpServletRequestWrapper {
     @Override
     public String getContextPath() {
         // (main) context mapping path
-        return "/";
+        return context;
     }
 
     @Override
     public String getServletPath() {
         // (main) servlet mapping path
-        return restServlet.getServletConfig().getServletContext().getContextPath();
+        return mapping;
     }
 }

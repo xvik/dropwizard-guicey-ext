@@ -117,11 +117,12 @@ public class ServerPagesApp {
      * Delayed initialization. Important to call when jersey initialization finished to get correct
      * rest path and make sure all extended registrations (other bundles extending app) are performed.
      *
-     * @param restRootPath root rest mapping path
-     * @param paths        rest template paths belonging to application
+     * @param restContext rest context mapping ( == main context mapping)
+     * @param restMapping servlet mapping (under main context)
+     * @param paths       rest template paths belonging to application
      */
-    public void initialize(final String restRootPath, final Set<ResourcePath> paths) {
-        templateRedirect.setRootPath(restRootPath);
+    public void initialize(final String restContext, final String restMapping, final Set<ResourcePath> paths) {
+        templateRedirect.setRootPath(restContext, restMapping);
         // delayed compose of extended locations
         locationsProvider.get();
         logger.info(AppReportBuilder.build(this, paths));

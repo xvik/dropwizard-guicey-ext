@@ -42,11 +42,15 @@ public class DelayedInitializer implements ApplicationEventListener {
     }
 
     private void init() {
-        final String rootPath = PathUtils.endSlash(PathUtils.trimStars(environment.jersey().getUrlPattern()));
+        // server.applicationContextPath
+        final String contextPath = environment.getJerseyServletContainer()
+                .getServletConfig().getServletContext().getContextPath();
+        // server.rootPath
+        final String restMapping = PathUtils.endSlash(PathUtils.trimStars(environment.jersey().getUrlPattern()));
         final RestPathsAnalyzer analyzer = RestPathsAnalyzer.build(environment.jersey().getResourceConfig());
         for (ServerPagesApp app : config.apps) {
             final Set<ResourcePath> paths = analyzer.select(app.name);
-            app.initialize(rootPath, paths);
+            app.initialize(contextPath, restMapping, paths);
         }
     }
 }
