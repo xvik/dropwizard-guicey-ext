@@ -284,10 +284,6 @@ public class ServerPagesBundle implements ConfiguredBundle<Configuration> {
             return errorPage(ErrorRedirect.DEFAULT_ERROR_PAGE, path);
         }
 
-        // error page path specified relat
-        // NOTE this will not handle non exception case, when user return status directly from resource
-        // Response.status(500).build() -- not intercepted!
-
         /**
          * Show special page instead of response with specified status code.
          * Errors are intercepted both for assets and template rendering. For templates, global exception

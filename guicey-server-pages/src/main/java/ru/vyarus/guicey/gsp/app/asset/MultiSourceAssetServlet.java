@@ -1,6 +1,7 @@
 package ru.vyarus.guicey.gsp.app.asset;
 
 import io.dropwizard.servlets.assets.AssetServlet;
+import ru.vyarus.guicey.gsp.app.util.PathUtils;
 import ru.vyarus.guicey.gsp.app.util.ResourceLookup;
 
 import javax.annotation.Nullable;
@@ -33,12 +34,15 @@ public class MultiSourceAssetServlet extends AssetServlet {
     @SuppressWarnings("PMD.AvoidLiteralsInIfCondition")
     protected URL getResourceUrl(final String absoluteRequestedResourcePath) {
         String realPath = absoluteRequestedResourcePath;
-        final List<String> locations = this.locationsProvider.get();
-        // look for resource in all registered locations
-        if (locations.size() > 1) {
-            final String path = absoluteRequestedResourcePath.substring(
-                    locationsProvider.getPrimaryLocation().length());
-            realPath = ResourceLookup.lookup(path, locations);
+        // do nothing on root request (wait while index page will be requested)
+        if (!PathUtils.endSlash(realPath).equals(this.locationsProvider.getPrimaryLocation())) {
+            final List<String> locations = this.locationsProvider.get();
+            // look for resource in all registered locations
+            if (locations.size() > 1) {
+                final String path = absoluteRequestedResourcePath.substring(
+                        locationsProvider.getPrimaryLocation().length());
+                realPath = ResourceLookup.lookup(path, locations);
+            }
         }
         // mimic default behaviour when resource not found
         return super.getResourceUrl(realPath);
