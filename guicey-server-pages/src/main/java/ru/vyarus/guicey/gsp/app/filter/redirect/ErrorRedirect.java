@@ -1,10 +1,8 @@
 package ru.vyarus.guicey.gsp.app.filter.redirect;
 
-import com.google.common.base.Throwables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.vyarus.guicey.gsp.app.util.PathUtils;
-import ru.vyarus.guicey.gsp.views.template.TemplateContext;
 import ru.vyarus.guicey.spa.filter.SpaUtils;
 
 import javax.servlet.http.HttpServletRequest;
@@ -22,9 +20,9 @@ import java.util.Map;
  * instead of error).
  * <p>
  * Asset errors are intercepted directly inside {@link ru.vyarus.guicey.gsp.app.filter.ServerPagesFilter}.
- * Rest errors are intercepted with {@link ru.vyarus.guicey.gsp.app.rest.support.TemplateErrorHandler}
+ * Rest errors are intercepted with {@link ru.vyarus.guicey.gsp.app.rest.support.TemplateExceptionMapper}
  * exception mapper. Direct not OK statuses, returned from rest, are intercepted with response filter
- * {@link ru.vyarus.guicey.gsp.app.rest.support.TemplateErrorValidationFilter} (which also detects
+ * {@link ru.vyarus.guicey.gsp.app.rest.support.TemplateErrorResponseFilter} (which also detects
  * if incorrect exception mapper was used).
  *
  * @author Vyacheslav Rusakov
@@ -89,7 +87,7 @@ public class ErrorRedirect {
      * Checks if rest exception must be intercepted (when redirection to error page is possible).
      * <p>
      * Note that exception is not handled in case of SPA route because 404 response will be detected in
-     * {@link ru.vyarus.guicey.gsp.app.rest.support.TemplateErrorValidationFilter} and properly redirected
+     * {@link ru.vyarus.guicey.gsp.app.rest.support.TemplateErrorResponseFilter} and properly redirected
      * (and there is very low chance that 404 will appear because of exception).
      *
      * @param request   request instance
@@ -122,20 +120,17 @@ public class ErrorRedirect {
                 request.getRequestDispatcher(path).forward(request, response);
                 // always log 500 error exceptions and other errors if configured
                 if (logErrors || exception.getResponse().getStatus() == CODE_500) {
-                    logger.error("Error serving response for '" + TemplateContext.getInstance().getUrl()
-                            + "' (handled as '" + request.getRequestURI() + "'). "
-                            + "Custom error page '" + path + "' rendered.", exception);
+                    logger.error("Error serving response for '" + request.getRequestURI() + "' ("
+                            + "custom error page '" + path + "' rendered instead).", exception);
                 }
+                return true;
             } catch (Exception ex) {
                 final String baseMsg = "Failed to redirect to error page '" + path + "'";
                 // important to log original exception because it will be overridden
-                logger.error(baseMsg + " instead of rest exception:", exception);
-                Throwables.throwIfUnchecked(ex);
-                throw new IllegalStateException(baseMsg, ex);
+                logger.error(baseMsg + " instead of rest exception:", ex);
             } finally {
                 CONTEXT_ERROR.remove();
             }
-            return true;
         }
         return false;
     }

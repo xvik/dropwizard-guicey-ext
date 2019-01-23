@@ -15,7 +15,7 @@ import ru.vyarus.guicey.gsp.app.ServerPagesApp;
 import ru.vyarus.guicey.gsp.app.filter.redirect.ErrorRedirect;
 import ru.vyarus.guicey.gsp.app.rest.RestErrorsSupport;
 import ru.vyarus.guicey.gsp.app.rest.support.TemplateAnnotationFilter;
-import ru.vyarus.guicey.gsp.app.rest.support.TemplateErrorHandlerAlias;
+import ru.vyarus.guicey.gsp.app.rest.support.TemplateExceptionMapperAlias;
 import ru.vyarus.guicey.gsp.views.ViewRendererConfigurationModifier;
 import ru.vyarus.guicey.gsp.views.ViewsSupport;
 import ru.vyarus.guicey.spa.SpaBundle;
@@ -343,7 +343,7 @@ public class ServerPagesBundle implements ConfiguredBundle<Configuration> {
          * @return builder instance for chained calls
          */
         public ServerPagesBundle.Builder handleTemplateException(
-                final TemplateErrorHandlerAlias<? extends Throwable> handlerAlias) {
+                final TemplateExceptionMapperAlias<? extends Throwable> handlerAlias) {
             GLOBAL_CONFIG.get().mappedExceptions.add(handlerAlias);
             return this;
         }

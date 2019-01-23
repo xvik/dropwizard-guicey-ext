@@ -96,7 +96,8 @@ public class TemplateRedirect {
                 request.getRequestURI(),
                 injectorProvider,
                 errorRedirect,
-                request));
+                request,
+                response));
         try {
             final String path = PathUtils.path(rootPath, app, page);
             logger.debug("Rendering template path: {}", path);

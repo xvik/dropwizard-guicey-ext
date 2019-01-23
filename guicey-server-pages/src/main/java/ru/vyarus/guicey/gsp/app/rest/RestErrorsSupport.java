@@ -2,9 +2,9 @@ package ru.vyarus.guicey.gsp.app.rest;
 
 import io.dropwizard.setup.Environment;
 import ru.vyarus.guicey.gsp.app.GlobalConfig;
-import ru.vyarus.guicey.gsp.app.rest.support.TemplateErrorHandler;
-import ru.vyarus.guicey.gsp.app.rest.support.TemplateErrorHandlerAlias;
-import ru.vyarus.guicey.gsp.app.rest.support.TemplateErrorValidationFilter;
+import ru.vyarus.guicey.gsp.app.rest.support.TemplateExceptionMapper;
+import ru.vyarus.guicey.gsp.app.rest.support.TemplateExceptionMapperAlias;
+import ru.vyarus.guicey.gsp.app.rest.support.TemplateErrorResponseFilter;
 import ru.vyarus.java.generics.resolver.GenericsResolver;
 
 import javax.ws.rs.ext.ExceptionMapper;
@@ -13,7 +13,7 @@ import javax.ws.rs.ext.ExceptionMapper;
  * Install global exception handlers to intercept exceptions during template rendering.
  *
  * @author Vyacheslav Rusakov
- * @see TemplateErrorHandler for description
+ * @see TemplateExceptionMapper for description
  * @since 16.01.2019
  */
 public final class RestErrorsSupport {
@@ -38,15 +38,15 @@ public final class RestErrorsSupport {
 
     private static void globalInit(final Environment environment) {
         // one handler instance used
-        environment.jersey().register(new TemplateErrorHandler());
+        environment.jersey().register(new TemplateExceptionMapper());
 
         // detect incorrect exception mapper used
-        environment.jersey().register(TemplateErrorValidationFilter.class);
+        environment.jersey().register(TemplateErrorResponseFilter.class);
     }
 
     private static void installAliases(final GlobalConfig config, final Environment environment) {
         // aliases used used to override other registered exception mappers for template rest
-        for (TemplateErrorHandlerAlias alias : config.mappedExceptions) {
+        for (TemplateExceptionMapperAlias alias : config.mappedExceptions) {
             final Class ex = GenericsResolver.resolve(alias.getClass())
                     .type(ExceptionMapper.class).generic("E");
             if (!config.installedExceptions.contains(ex)) {

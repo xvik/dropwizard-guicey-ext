@@ -1,4 +1,4 @@
-package ru.vyarus.guicey.gsp
+package ru.vyarus.guicey.gsp.error
 
 import io.dropwizard.Application
 import io.dropwizard.Configuration
@@ -6,6 +6,7 @@ import io.dropwizard.setup.Bootstrap
 import io.dropwizard.setup.Environment
 import ru.vyarus.dropwizard.guice.test.spock.ConfigOverride
 import ru.vyarus.dropwizard.guice.test.spock.UseDropwizardApp
+import ru.vyarus.guicey.gsp.ServerPagesBundle
 import ru.vyarus.guicey.gsp.support.app.SampleTemplateResource
 import spock.lang.Specification
 

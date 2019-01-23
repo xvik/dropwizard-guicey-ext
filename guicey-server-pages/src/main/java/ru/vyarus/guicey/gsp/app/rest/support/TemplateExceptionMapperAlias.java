@@ -7,7 +7,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.Provider;
 
 /**
- * Alias handler for main template error handler ({@link TemplateErrorHandler}) used to intercept all exceptions
+ * Alias handler for main template error handler ({@link TemplateExceptionMapper}) used to intercept all exceptions
  * thrown during template rendering. Aliases are important because jersey always selects the most suitable mapper
  * which means that mapper with the closest exception type is selected. In order to override such mappers
  * behaviour, custom mapper with the same exception type must be registered.
@@ -22,14 +22,14 @@ import javax.ws.rs.ext.Provider;
  *
  * @param <T> exception type
  * @author Vyacheslav Rusakov
- * @see ru.vyarus.guicey.gsp.ServerPagesBundle.Builder#handleTemplateException(TemplateErrorHandlerAlias)
+ * @see ru.vyarus.guicey.gsp.ServerPagesBundle.Builder#handleTemplateException(TemplateExceptionMapperAlias)
  * @since 16.01.2019
  */
 @Provider
-public abstract class TemplateErrorHandlerAlias<T extends Throwable> implements ExtendedExceptionMapper<T> {
+public abstract class TemplateExceptionMapperAlias<T extends Throwable> implements ExtendedExceptionMapper<T> {
 
     @Inject
-    private TemplateErrorHandler handler;
+    private TemplateExceptionMapper handler;
 
     @Override
     public boolean isMappable(final T exception) {

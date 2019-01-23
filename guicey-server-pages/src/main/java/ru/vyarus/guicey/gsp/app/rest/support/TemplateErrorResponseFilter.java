@@ -8,7 +8,6 @@ import ru.vyarus.guicey.gsp.views.template.Template;
 import ru.vyarus.guicey.gsp.views.template.TemplateContext;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerResponseContext;
@@ -18,7 +17,7 @@ import javax.ws.rs.ext.Provider;
 import java.io.IOException;
 
 /**
- * Detects cases when different exception mapper was used instead of {@link TemplateErrorHandler}.
+ * Detects cases when different exception mapper was used instead of {@link TemplateExceptionMapper}.
  * In this case expected error page is not rendered.
  * <p>
  * Detection mechanism use the fact that main template exception mapper is
@@ -35,22 +34,20 @@ import java.io.IOException;
  */
 @Provider
 @Template
-public class TemplateErrorValidationFilter implements ContainerResponseFilter {
+public class TemplateErrorResponseFilter implements ContainerResponseFilter {
     private static final String DBL_NL = "\n\n";
 
-    private final Logger logger = LoggerFactory.getLogger(TemplateErrorValidationFilter.class);
+    private final Logger logger = LoggerFactory.getLogger(TemplateErrorResponseFilter.class);
 
     @Context
     private HttpServletRequest request;
-    @Context
-    private HttpServletResponse response;
 
     @Override
     public void filter(final ContainerRequestContext requestContext,
                        final ContainerResponseContext responseContext) throws IOException {
-        // check if incorrect exception mapper were used
-        if (TemplateErrorHandler.isWrongMapperUsed(request)) {
-            final Throwable error = TemplateErrorHandler.getException(request);
+        // check if incorrect exception mapper was used
+        if (TemplateExceptionMapper.isWrongMapperUsed(request)) {
+            final Throwable error = TemplateExceptionMapper.getException(request);
             logger.error(DBL_NL
                     + "\tCustom error page was not shown because jersey used more specific "
                     + "exception mapper for error:\n"
@@ -61,13 +58,16 @@ public class TemplateErrorValidationFilter implements ContainerResponseFilter {
                     + "\t\t\t.handleTemplateException(new TemplateErrorHandlerAlias<"
                     + error.getClass().getSimpleName() + ">(){})\n");
         } else if (responseContext.getStatus() >= ErrorRedirect.CODE_400) {
-            // redirect direct status return from rest into error page (e.g. when Response.noContent() used as response)
+            // redirect direct status return from rest into error page (e.g. when
+            // Response.status(400).build() used as response)
             final TemplateContext context = TemplateRedirect.templateContext();
             if (context != null) {
                 final WebApplicationException exception = new WebApplicationException(responseContext.getStatus());
-                final HttpServletRequest req = context.getOriginalRequest();
-                // use request with original uri instead of rest mapped
-                context.getErrorRedirect().redirect(req, response, exception);
+                // use request with original uri instead of rest mapped and raw response (not hk proxy)
+                context.getErrorRedirect().redirect(
+                        context.getOriginalRequest(),
+                        context.getOriginalResponse(),
+                        exception);
             }
         }
     }

@@ -6,7 +6,6 @@ import ru.vyarus.guicey.gsp.views.template.TemplateContext;
 
 import javax.inject.Singleton;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
@@ -19,11 +18,11 @@ import javax.ws.rs.ext.Provider;
  * (not template) resources.
  * <p>
  * Other errors, directly returned from rest resources will be recognized directly in response filter
- * {@link TemplateErrorValidationFilter}.
+ * {@link TemplateErrorResponseFilter}.
  * <p>
  * Single mapping registration is not enough because jersey selects the most closest exception according to
  * exception type which means in some cases different exception mapper could be selected. In order to properly
- * handle some exception types, additional {@link TemplateErrorHandlerAlias} must be registered with more specific
+ * handle some exception types, additional {@link TemplateExceptionMapperAlias} must be registered with more specific
  * exception type.
  * <p>
  * Aliasing was done the same way as dropwizard own default exceptions mapping with
@@ -40,12 +39,12 @@ import javax.ws.rs.ext.Provider;
  */
 @Provider
 @Singleton
-public class TemplateErrorHandler implements ExtendedExceptionMapper<Throwable> {
+public class TemplateExceptionMapper implements ExtendedExceptionMapper<Throwable> {
     private static final String ERROR_PROCESSING_STATE = "TemplateExceptionHandler.ERROR_PROCESSING_STATE";
     private static final String ERROR = "TemplateExceptionHandler.ERROR";
 
     @Context
-    private HttpServletResponse response;
+    private HttpServletRequest request;
 
     @Override
     public boolean isMappable(final Throwable exception) {
@@ -56,15 +55,14 @@ public class TemplateErrorHandler implements ExtendedExceptionMapper<Throwable> 
         }
         final WebApplicationException ex = wrap(exception);
 
-        final HttpServletRequest req = context.getOriginalRequest();
-        final boolean res = context.getErrorRedirect().isRedirectableException(req, ex);
+        final boolean res = context.getErrorRedirect().isRedirectableException(request, ex);
         if (res) {
             // exception mapping mechanism will check all mappers but select the one with the best type matching
             // so here special marker set that request MUST be processed by this handler
             // and response filter will check if it was actually processed
-            req.setAttribute(ERROR_PROCESSING_STATE, true);
+            request.setAttribute(ERROR_PROCESSING_STATE, true);
             // store exception instance for more complete message (in case of wrong mapper)
-            req.setAttribute(ERROR, exception);
+            request.setAttribute(ERROR, exception);
         }
         return res;
     }
@@ -72,11 +70,12 @@ public class TemplateErrorHandler implements ExtendedExceptionMapper<Throwable> 
     @Override
     public Response toResponse(final Throwable exception) {
         final TemplateContext context = TemplateContext.getInstance();
-        // use request with original uri instead of rest mapped
-        final HttpServletRequest req = context.getOriginalRequest();
-        if (context.getErrorRedirect().redirect(req, response, wrap(exception))) {
-            req.removeAttribute(ERROR_PROCESSING_STATE);
-        }
+        request.removeAttribute(ERROR_PROCESSING_STATE);
+        // use request with original uri instead of rest mapped and original response object (not hk proxy)
+        context.getErrorRedirect().redirect(
+                context.getOriginalRequest(),
+                context.getOriginalResponse(),
+                wrap(exception));
         // have to specify code manually in order to prevent modifications (204 for null return)
         return Response.status(200).build();
     }

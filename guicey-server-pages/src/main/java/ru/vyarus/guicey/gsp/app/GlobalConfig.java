@@ -10,7 +10,7 @@ import io.dropwizard.views.ViewConfigurable;
 import io.dropwizard.views.ViewRenderer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.vyarus.guicey.gsp.app.rest.support.TemplateErrorHandlerAlias;
+import ru.vyarus.guicey.gsp.app.rest.support.TemplateExceptionMapperAlias;
 import ru.vyarus.guicey.gsp.views.ViewRendererConfigurationModifier;
 
 import java.util.ArrayList;
@@ -32,8 +32,8 @@ public class GlobalConfig {
     public List<ServerPagesApp> apps = new ArrayList<>();
 
     // rest exception mapper aliases (to override other mappers in case of template render)
-    public final List<TemplateErrorHandlerAlias> mappedExceptions = Lists.newArrayList(
-            new TemplateErrorHandlerAlias<IllegalStateException>() {
+    public final List<TemplateExceptionMapperAlias> mappedExceptions = Lists.newArrayList(
+            new TemplateExceptionMapperAlias<IllegalStateException>() {
             }
     );
     public final List<Class> installedExceptions = new ArrayList<>();

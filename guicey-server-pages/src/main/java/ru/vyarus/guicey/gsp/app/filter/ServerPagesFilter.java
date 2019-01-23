@@ -7,7 +7,6 @@ import org.slf4j.LoggerFactory;
 import ru.vyarus.guicey.gsp.app.filter.redirect.ErrorRedirect;
 import ru.vyarus.guicey.gsp.app.filter.redirect.SpaSupport;
 import ru.vyarus.guicey.gsp.app.filter.redirect.TemplateRedirect;
-import ru.vyarus.guicey.gsp.app.rest.support.TemplateErrorHandler;
 import ru.vyarus.guicey.gsp.app.util.PathUtils;
 import ru.vyarus.guicey.spa.filter.ResponseWrapper;
 
@@ -32,8 +31,9 @@ import java.util.regex.Pattern;
  * error code - redirect to error page (which could also be a template). If no special page registered - server
  * error response as is.
  * <p>
- * Note that exceptions inside rest resources are also tracked by {@link TemplateErrorHandler} (exception mapper)
- * which allows to use more informative exception objects in error page.
+ * Note that exceptions inside rest resources are also tracked by
+ * {@link ru.vyarus.guicey.gsp.app.rest.support.TemplateExceptionMapper} which allows to use more informative
+ * exception objects in error page.
  * <p>
  * When SPA support is enabled, intercepted 404 error is checked if spa routing detected and do index redirect
  * instead of showing error page.

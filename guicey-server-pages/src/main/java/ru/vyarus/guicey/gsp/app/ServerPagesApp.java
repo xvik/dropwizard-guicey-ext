@@ -159,7 +159,7 @@ public class ServerPagesApp {
     private void installTemplatesSupportFilter(final ServletEnvironment context,
                                                final TemplateRedirect templateRedirect,
                                                final SpaSupport spa) {
-        final EnumSet<DispatcherType> types = EnumSet.of(DispatcherType.REQUEST);
+        final EnumSet<DispatcherType> types = EnumSet.of(DispatcherType.REQUEST, DispatcherType.FORWARD);
         context.addFilter(name + "Templates",
                 new ServerPagesFilter(
                         fullUriPath,

@@ -12,6 +12,7 @@ import ru.vyarus.guicey.gsp.app.util.ResourceLookup;
 import javax.annotation.Nullable;
 import javax.inject.Provider;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
 /**
@@ -34,14 +35,17 @@ public class TemplateContext {
     private final Provider<Injector> injectorProvider;
     private final ErrorRedirect errorRedirect;
     private final HttpServletRequest originalRequest;
+    private final HttpServletResponse originalResponse;
 
+    @SuppressWarnings("checkstyle:ParameterNumber")
     public TemplateContext(final String appName,
                            final String rootUrl,
                            final List<String> resourcePaths,
                            final String url,
                            final Provider<Injector> injectorProvider,
                            final ErrorRedirect errorRedirect,
-                           final HttpServletRequest originalRequest) {
+                           final HttpServletRequest originalRequest,
+                           final HttpServletResponse originalResponse) {
         this.appName = appName;
         this.rootUrl = rootUrl;
         this.resourcePaths = resourcePaths;
@@ -49,6 +53,7 @@ public class TemplateContext {
         this.injectorProvider = injectorProvider;
         this.errorRedirect = errorRedirect;
         this.originalRequest = originalRequest;
+        this.originalResponse = originalResponse;
     }
 
     /**
@@ -87,6 +92,16 @@ public class TemplateContext {
      */
     public HttpServletRequest getOriginalRequest() {
         return originalRequest;
+    }
+
+    /**
+     * Raw response is required for redirection logic to avoid response processing loops
+     * due to hk wrappers (if hk injection were used for response object injection it would always be a proxy).
+     *
+     * @return original response object
+     */
+    public HttpServletResponse getOriginalResponse() {
+        return originalResponse;
     }
 
     /**
