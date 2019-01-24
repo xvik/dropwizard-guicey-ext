@@ -1,4 +1,4 @@
-package ru.vyarus.guicey.gsp.admin
+package ru.vyarus.guicey.gsp.error
 
 import io.dropwizard.Application
 import io.dropwizard.Configuration
@@ -12,44 +12,45 @@ import spock.lang.Specification
 
 /**
  * @author Vyacheslav Rusakov
- * @since 21.01.2019
+ * @since 23.01.2019
  */
-@UseDropwizardApp(value = App, configOverride = [
-        @ConfigOverride(key = "server.rootPath", value = "/rest/*")
-])
-class AdminErrorMappingTest extends Specification {
+@UseDropwizardApp(value = App, config = 'src/test/resources/conf.yml',
+        configOverride = [
+                @ConfigOverride(key = "server.applicationContextPath", value = "/prefix/")
+        ])
+class NoRootMappingTemplateErrorsTest extends Specification {
 
     def "Check error mapping"() {
 
         when: "accessing not existing asset"
-        def res = new URL("http://localhost:8081/appp/notexisting.html").text
+        def res = new URL("http://localhost:8080/prefix/notexisting.html").text
         then: "error page"
-        res.contains("custom error page")
+        res.contains("Error: WebApplicationException")
 
         when: "accessing not existing template"
-        res = new URL("http://localhost:8081/appp/notexisting.ftl").text
+        res = new URL("http://localhost:8080/prefix/notexisting.ftl").text
         then: "error page"
-        res.contains("custom error page")
+        res.contains("Error: NotFoundException")
 
         when: "accessing not existing path"
-        res = new URL("http://localhost:8081/appp/notexisting/").text
+        res = new URL("http://localhost:8080/prefix/notexisting/").text
         then: "error page"
-        res.contains("custom error page")
+        res.contains("Error: NotFoundException")
 
         when: "error processing template"
-        res = new URL("http://localhost:8081/appp/sample/error").text
+        res = new URL("http://localhost:8080/prefix/sample/error").text
         then: "error page"
-        res.contains("custom error page")
+        res.contains("Error: WebApplicationException")
 
         when: "error processing template"
-        res = new URL("http://localhost:8081/appp/sample/error2").text
+        res = new URL("http://localhost:8080/prefix/sample/error2").text
         then: "error page"
-        res.contains("custom error page")
+        res.contains("Error: WebApplicationException")
 
         when: "direct 404 rest response"
-        res = new URL("http://localhost:8081/appp/sample/notfound").text
+        res = new URL("http://localhost:8080/prefix/sample/notfound").text
         then: "error page"
-        res.contains("custom error page")
+        res.contains("Error: WebApplicationException")
     }
 
     static class App extends Application<Configuration> {
@@ -57,9 +58,8 @@ class AdminErrorMappingTest extends Specification {
         @Override
         void initialize(Bootstrap<Configuration> bootstrap) {
             // pure dropwizard bundle
-            bootstrap.addBundle(ServerPagesBundle.adminApp("app", "/app", "/appp")
-                    .indexPage("index.html")
-                    .errorPage("error.html")
+            bootstrap.addBundle(ServerPagesBundle.app("app", "/app", "/")
+                    .errorPage("error.ftl")
                     .build())
         }
 

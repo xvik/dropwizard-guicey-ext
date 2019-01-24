@@ -98,7 +98,7 @@ public class ServerPagesApp {
                 fullUriPath,
                 locationsProvider,
                 new InjectorProvider(globalConfig.application),
-                new ErrorRedirect(fullUriPath, errorPages, logErrors, spa));
+                new ErrorRedirect(uriPath, errorPages, logErrors, spa));
         installTemplatesSupportFilter(context, templateRedirect, spa);
 
         // @Template annotation support (even with multiple registrations should be created just once)
