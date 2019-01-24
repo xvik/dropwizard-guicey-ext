@@ -83,6 +83,18 @@ public class TemplateView extends View {
     }
 
     /**
+     * Shortcut for {@code getContextError().getResponse().getStatus()}. Shortcut created because direct expression
+     * can't be used in freemarker expression.
+     *
+     * @return status code from context error
+     * @see #getContextError()
+     */
+    @JsonIgnore
+    public int getContextErrorCode() {
+        return contextError.getResponse().getStatus();
+    }
+
+    /**
      * Access for any guice bean directly from model. Useful for very special cases only when custom model could
      * not be used.
      *
