@@ -2,7 +2,6 @@ package ru.vyarus.guicey.gsp.app;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.LinkedHashMultimap;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import io.dropwizard.Application;
 import io.dropwizard.Configuration;
@@ -10,7 +9,6 @@ import io.dropwizard.views.ViewConfigurable;
 import io.dropwizard.views.ViewRenderer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.vyarus.guicey.gsp.app.rest.support.TemplateExceptionMapperAlias;
 import ru.vyarus.guicey.gsp.views.ViewRendererConfigurationModifier;
 
 import java.util.ArrayList;
@@ -30,13 +28,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 public class GlobalConfig {
     public Application application;
     public List<ServerPagesApp> apps = new ArrayList<>();
-
-    // rest exception mapper aliases (to override other mappers in case of template render)
-    public final List<TemplateExceptionMapperAlias> mappedExceptions = Lists.newArrayList(
-            new TemplateExceptionMapperAlias<IllegalStateException>() {
-            }
-    );
-    public final List<Class> installedExceptions = new ArrayList<>();
 
     private final Logger logger = LoggerFactory.getLogger(GlobalConfig.class);
 

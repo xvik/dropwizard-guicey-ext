@@ -20,10 +20,8 @@ import java.util.Map;
  * instead of error).
  * <p>
  * Asset errors are intercepted directly inside {@link ru.vyarus.guicey.gsp.app.filter.ServerPagesFilter}.
- * Rest errors are intercepted with {@link ru.vyarus.guicey.gsp.app.rest.support.TemplateExceptionMapper}
- * exception mapper. Direct not OK statuses, returned from rest, are intercepted with response filter
- * {@link ru.vyarus.guicey.gsp.app.rest.support.TemplateErrorResponseFilter} (which also detects
- * if incorrect exception mapper was used).
+ * Rest errors are intercepted with {@link ru.vyarus.guicey.gsp.app.rest.support.TemplateExceptionListener}
+ * and {@link ru.vyarus.guicey.gsp.app.rest.support.TemplateErrorResponseFilter}.
  *
  * @author Vyacheslav Rusakov
  * @since 07.12.2018
@@ -35,22 +33,18 @@ public class ErrorRedirect {
      */
     public static final int DEFAULT_ERROR_PAGE = -1;
     public static final int CODE_400 = 400;
-    public static final int CODE_500 = 500;
 
     private static final ThreadLocal<WebApplicationException> CONTEXT_ERROR = new ThreadLocal<>();
     private final Logger logger = LoggerFactory.getLogger(ErrorRedirect.class);
 
     private final Map<Integer, String> errorPages;
-    private final boolean logErrors;
     private final SpaSupport spa;
 
     public ErrorRedirect(final String appMapping,
                          final Map<Integer, String> pages,
-                         final boolean logErrors,
                          final SpaSupport spa) {
         // copy for modifications
         this.errorPages = new HashMap<>(pages);
-        this.logErrors = logErrors;
         this.spa = spa;
         // normalize paths to be absolute
         for (int code : pages.keySet()) {
@@ -83,21 +77,6 @@ public class ErrorRedirect {
         return CONTEXT_ERROR.get();
     }
 
-    /**
-     * Checks if rest exception must be intercepted (when redirection to error page is possible).
-     * <p>
-     * Note that exception is not handled in case of SPA route because 404 response will be detected in
-     * {@link ru.vyarus.guicey.gsp.app.rest.support.TemplateErrorResponseFilter} and properly redirected
-     * (and there is very low chance that 404 will appear because of exception).
-     *
-     * @param request   request instance
-     * @param exception exception
-     * @return true if request could be redirected to error page (or to root page as SPA route)
-     */
-    public boolean isRedirectableException(final HttpServletRequest request, final WebApplicationException exception) {
-        return SpaUtils.isHtmlRequest(request) && selectErrorPage(exception) != null;
-    }
-
     private String selectErrorPage(final WebApplicationException exception) {
         final int status = exception.getResponse().getStatus();
         if (status >= CODE_400) {
@@ -112,22 +91,20 @@ public class ErrorRedirect {
                                final WebApplicationException exception) {
         final String path = selectErrorPage(exception);
         // do not redirect errors of error page rendering (prevent loops)
-        if (path != null && CONTEXT_ERROR.get() == null) {
+        if (path != null && !response.isCommitted() && CONTEXT_ERROR.get() == null) {
             logger.debug("Redirecting to error page: {}", path);
             // to be able to access exception in error view
             CONTEXT_ERROR.set(exception);
             try {
                 request.getRequestDispatcher(path).forward(request, response);
                 // always log 500 error exceptions and other errors if configured
-                if (logErrors || exception.getResponse().getStatus() == CODE_500) {
-                    logger.error("Error serving response for '" + request.getRequestURI() + "' ("
-                            + "custom error page '" + path + "' rendered instead).", exception);
-                }
+                logger.info("Serving error page '{}' instead of '{}' response error {}",
+                        path, request.getRequestURL(), exception.getResponse().getStatus());
                 return true;
             } catch (Exception ex) {
-                final String baseMsg = "Failed to redirect to error page '" + path + "'";
-                // important to log original exception because it will be overridden
-                logger.error(baseMsg + " instead of rest exception:", ex);
+                // assume normal processing for original request (without error page)
+                logger.error("Failed to serve error page '" + path + "' for request '"
+                        + request.getRequestURL() + "' instead of rest exception:", ex);
             } finally {
                 CONTEXT_ERROR.remove();
             }

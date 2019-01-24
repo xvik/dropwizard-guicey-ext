@@ -58,7 +58,6 @@ public class ServerPagesApp {
     public String spaNoRedirectRegex = SpaBundle.DEFAULT_PATTERN;
 
     public final Map<Integer, String> errorPages = new TreeMap<>();
-    public boolean logErrors;
 
     protected TemplateRedirect templateRedirect;
     protected LazyLocationProvider locationsProvider;
@@ -98,7 +97,7 @@ public class ServerPagesApp {
                 fullUriPath,
                 locationsProvider,
                 new InjectorProvider(globalConfig.application),
-                new ErrorRedirect(uriPath, errorPages, logErrors, spa));
+                new ErrorRedirect(uriPath, errorPages, spa));
         installTemplatesSupportFilter(context, templateRedirect, spa);
 
         // @Template annotation support (even with multiple registrations should be created just once)

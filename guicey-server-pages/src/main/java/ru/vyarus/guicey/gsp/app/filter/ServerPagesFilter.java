@@ -31,9 +31,11 @@ import java.util.regex.Pattern;
  * error code - redirect to error page (which could also be a template). If no special page registered - server
  * error response as is.
  * <p>
- * Note that exceptions inside rest resources are also tracked by
- * {@link ru.vyarus.guicey.gsp.app.rest.support.TemplateExceptionMapper} which allows to use more informative
- * exception objects in error page.
+ * Exceptions inside rest resources are tracked by request event listener
+ * {@link ru.vyarus.guicey.gsp.app.rest.support.TemplateExceptionListener} which allows to use more informative
+ * exception objects in error page (note that it means exception mappers are executed, but their response is ignored).
+ * Direct error responses are tracked with response filter
+ * {@link ru.vyarus.guicey.gsp.app.rest.support.TemplateErrorResponseFilter} (applied only for template resources).
  * <p>
  * When SPA support is enabled, intercepted 404 error is checked if spa routing detected and do index redirect
  * instead of showing error page.

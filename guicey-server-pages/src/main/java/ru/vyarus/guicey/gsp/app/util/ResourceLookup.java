@@ -2,6 +2,9 @@ package ru.vyarus.guicey.gsp.app.util;
 
 import com.google.common.base.CharMatcher;
 import com.google.common.base.MoreObjects;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import ru.vyarus.guicey.gsp.views.template.TemplateNotFoundException;
 
 import java.util.Iterator;
 import java.util.List;
@@ -14,6 +17,7 @@ import java.util.List;
  * @since 04.12.2018
  */
 public final class ResourceLookup {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ResourceLookup.class);
 
     private ResourceLookup() {
     }
@@ -40,5 +44,25 @@ public final class ResourceLookup {
             }
         }
         return res;
+    }
+
+    /**
+     * Shortcut for {@link #lookup(String, List)} with fail in case of not found template.
+     *
+     * @param path      static resource path
+     * @param rootPaths classpath folders to search resource in
+     * @return resource location path (first occurrence)
+     * @throws TemplateNotFoundException if template not found
+     */
+    public static String lookupOrFail(final String path, final List<String> rootPaths)
+            throws TemplateNotFoundException {
+        final String lookup = ResourceLookup.lookup(path, rootPaths);
+        if (lookup == null) {
+            final String err = String.format("Template '%s' not found in locations: %s", path, rootPaths);
+            // logged here because exception most likely will be handled as 404 response
+            LOGGER.error(err);
+            throw new TemplateNotFoundException(err);
+        }
+        return lookup;
     }
 }

@@ -3,9 +3,9 @@ package ru.vyarus.guicey.gsp.views.template;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.inject.Injector;
+import org.glassfish.jersey.server.internal.process.MappableException;
 import ru.vyarus.guicey.gsp.app.filter.redirect.ErrorRedirect;
 import ru.vyarus.guicey.gsp.app.filter.redirect.TemplateRedirect;
-import ru.vyarus.guicey.gsp.app.rest.support.TemplateAnnotationFilter;
 import ru.vyarus.guicey.gsp.app.util.PathUtils;
 import ru.vyarus.guicey.gsp.app.util.ResourceLookup;
 
@@ -13,6 +13,7 @@ import javax.annotation.Nullable;
 import javax.inject.Provider;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.WebApplicationException;
 import java.util.List;
 
 /**
@@ -81,14 +82,11 @@ public class TemplateContext {
     }
 
     /**
-     * @return error redirection handler
-     */
-    public ErrorRedirect getErrorRedirect() {
-        return errorRedirect;
-    }
-
-    /**
+     * Method may be used to access original request object (in edge cases).
+     *
      * @return original request object (before any redirection)
+     * @see #getUrl() for original request URI
+     * @see #getRootUrl() for root mapping url
      */
     public HttpServletRequest getOriginalRequest() {
         return originalRequest;
@@ -97,6 +95,8 @@ public class TemplateContext {
     /**
      * Raw response is required for redirection logic to avoid response processing loops
      * due to hk wrappers (if hk injection were used for response object injection it would always be a proxy).
+     * <p>
+     * Method may be used to handle response directly (in edge cases)
      *
      * @return original response object
      */
@@ -114,7 +114,7 @@ public class TemplateContext {
     }
 
     /**
-     * Used by {@link TemplateAnnotationFilter} to set template file
+     * Used by {@link ru.vyarus.guicey.gsp.app.rest.support.TemplateAnnotationFilter} to set template file
      * declared in {@link Template} annotation on rest resource.
      *
      * @param base     resource class (to search relative to; ignored if template path is absolute)
@@ -136,7 +136,7 @@ public class TemplateContext {
      * @throws NullPointerException      if template path not set
      * @throws TemplateNotFoundException if template not found
      */
-    protected String lookupTemplatePath(@Nullable final String template) {
+    public String lookupTemplatePath(@Nullable final String template) {
         String path = Strings.emptyToNull(template);
         if (path == null) {
             // from @Template annotation
@@ -145,17 +145,27 @@ public class TemplateContext {
         Preconditions.checkNotNull(path,
                 "Template name not specified neither directly in model nor in @Template annotation");
 
-        if (path.startsWith(PathUtils.SLASH)) {
-            // absolute path
-            return path;
-        } else {
-            final String lookup = ResourceLookup.lookup(path, resourcePaths);
-            if (lookup == null) {
-                throw new TemplateNotFoundException(String.format(
-                        "Template '%s' not found in locations: %s", template, resourcePaths));
-            }
-            return PathUtils.prefixSlash(lookup);
-        }
+        // do nothing for absolute path
+        return path.startsWith(PathUtils.SLASH) ? path
+                : PathUtils.prefixSlash(ResourceLookup.lookupOrFail(path, resourcePaths));
+    }
+
+    /**
+     * Perform redirection to error page (if registered) or handle SPA route (if 404 response and SPA support enabled).
+     * <p>
+     * When only resulted status code is known use {@code WebApplicationException(code)} as argument for redirection.
+     * <p>
+     * It is safe to call redirection multiple times: only first call will be actually handled (assuming next errors
+     * appear during error page rendering and can't be handled).
+     * <p>
+     * Method is not intended to be used directly, but could be in specific (maybe complex) edge cases.
+     *
+     * @param ex exception instance
+     * @return true if redirect performed, false if no redirect performed
+     */
+    public boolean redirectError(final Throwable ex) {
+        // use request with original uri instead of rest mapped and raw response (not hk proxy)
+        return errorRedirect.redirect(getOriginalRequest(), getOriginalResponse(), wrap(ex));
     }
 
     /**
@@ -164,5 +174,16 @@ public class TemplateContext {
     public static TemplateContext getInstance() {
         return Preconditions.checkNotNull(TemplateRedirect.templateContext(),
                 "No template context found for current thread");
+    }
+
+    private WebApplicationException wrap(final Throwable exception) {
+        Throwable cause = exception;
+        // compensate MappableException
+        while (cause instanceof MappableException) {
+            cause = cause.getCause();
+        }
+        return cause instanceof WebApplicationException
+                ? (WebApplicationException) cause
+                : new WebApplicationException(cause, 500);
     }
 }

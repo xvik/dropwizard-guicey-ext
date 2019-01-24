@@ -9,13 +9,13 @@ import io.dropwizard.views.ViewBundle;
 import io.dropwizard.views.ViewConfigurable;
 import io.dropwizard.views.ViewRenderer;
 import ru.vyarus.dropwizard.guice.module.installer.bundle.GuiceyBootstrap;
-import ru.vyarus.guicey.gsp.app.GlobalConfig;
 import ru.vyarus.guicey.gsp.app.DelayedInitializer;
+import ru.vyarus.guicey.gsp.app.GlobalConfig;
 import ru.vyarus.guicey.gsp.app.ServerPagesApp;
 import ru.vyarus.guicey.gsp.app.filter.redirect.ErrorRedirect;
-import ru.vyarus.guicey.gsp.app.rest.RestErrorsSupport;
 import ru.vyarus.guicey.gsp.app.rest.support.TemplateAnnotationFilter;
-import ru.vyarus.guicey.gsp.app.rest.support.TemplateExceptionMapperAlias;
+import ru.vyarus.guicey.gsp.app.rest.support.TemplateErrorResponseFilter;
+import ru.vyarus.guicey.gsp.app.rest.support.TemplateExceptionListener;
 import ru.vyarus.guicey.gsp.views.ViewRendererConfigurationModifier;
 import ru.vyarus.guicey.gsp.views.ViewsSupport;
 import ru.vyarus.guicey.spa.SpaBundle;
@@ -132,12 +132,14 @@ public class ServerPagesBundle implements ConfiguredBundle<Configuration> {
         if (!config.isInitialized()) {
             // delayed apps init finalization (common for all registered apps)
             new DelayedInitializer(config, environment);
-        }
 
-        // template rest errors interception (partially global initialization)
-        RestErrorsSupport.setup(config, environment);
-        // global dropwizard ViewBundle installation (performed just once)
-        ViewsSupport.setup(config, app.name, configuration, environment);
+            // template rest errors interception (global handlers)
+            environment.jersey().register(TemplateErrorResponseFilter.class);
+            environment.jersey().register(TemplateExceptionListener.class);
+
+            // global dropwizard ViewBundle installation
+            ViewsSupport.setup(config, app.name, configuration, environment);
+        }
 
         // app specific initialization (create servlets, filters, etc)
         app.setup(environment);
@@ -272,13 +274,11 @@ public class ServerPagesBundle implements ConfiguredBundle<Configuration> {
 
         /**
          * Default error page (shown in case of exceptions and for all error return codes (&gt;=400)).
-         * Errors are intercepted both for assets and template rendering. For templates, global exception
-         * handler intercepts all exceptions, appeared during template call processing.
          *
          * @param path either path to static resource (inside registered classpath path) or resource url
          *             (without app name prefix)
          * @return builder instance for chained calls
-         * @see #logAllErrors() for logging errors caused error page showing
+         * @see #errorPage(int, String) for registereing error page on exact return code
          */
         public ServerPagesBundle.Builder errorPage(final String path) {
             return errorPage(ErrorRedirect.DEFAULT_ERROR_PAGE, path);
@@ -286,65 +286,23 @@ public class ServerPagesBundle implements ConfiguredBundle<Configuration> {
 
         /**
          * Show special page instead of response with specified status code.
-         * Errors are intercepted both for assets and template rendering. For templates, global exception
-         * handler intercepts all exceptions, appeared during template call processing.
+         * Errors are intercepted both for assets and template rendering. For templates, jersey request listener
+         * used to intercept actual exceptions (to be able to access actual exception inside error page).
+         * Default dropwizard exception mapper will log error (as for usual rest).
+         * <p>
+         * NOTE that error page is returned only if original request accept html response and otherwise no
+         * error page will be shown. Intention here is to show human readable errors only for humans.
          *
          * @param code error code to map page onto
          * @param path either path to static resource (inside registered classpath path) or resource url
          *             (without app name prefix)
          * @return builder instance for chained calls
+         * @see #errorPage(String) for global errors page
          */
         public ServerPagesBundle.Builder errorPage(final int code, final String path) {
             checkArgument(code >= ErrorRedirect.CODE_400 || code == ErrorRedirect.DEFAULT_ERROR_PAGE,
                     "Only error codes (4xx, 5xx) allowed for mapping");
             bundle.app.errorPages.put(code, path);
-            return this;
-        }
-
-        /**
-         * When error pages registered and redirection appear then only 500 error will be logged and other
-         * statuses processed silently. Enabling this option will show error in log for all redirection
-         * (in order to know original source of problem).
-         *
-         * @return builder instance for chained calls
-         * @see #errorPage(int, String)
-         */
-        public ServerPagesBundle.Builder logAllErrors() {
-            bundle.app.logErrors = true;
-            return this;
-        }
-
-        /**
-         * Error pages support use {@link javax.ws.rs.ext.ExceptionMapper} in order to intercept all
-         * exceptions in template resources (resource annotated with
-         * {@link ru.vyarus.guicey.gsp.views.template.Template} and used for template rendering). But
-         * jersey always select the most closest exception mapper and choose other mapper if custom mapper registered.
-         * In this case error message will appear detecting not properly handled exception with the advise
-         * to register custom mapper here.
-         * <p>
-         * Note that this mappers only affect template rest and all other resources (main api) will work as before
-         * ({@link org.glassfish.jersey.spi.ExtendedExceptionMapper} is actually used which is applied on conditional
-         * basis). It's only required for proper handling of error pages.
-         * <p>
-         * Dropwizard itself use this approach with {@link io.dropwizard.jersey.errors.LoggingExceptionMapper}
-         * (which is registered for {@link Throwable} and {@link IllegalStateException}). By default, error handler
-         * is registered for the same types to override dropwizard handler.
-         * <p>
-         * NOTE: it is very important to declare proper exception type:
-         * {@code .handleTemplateException(new TemplateErrorHandlerAlias<ExceptionToMap>() {})}.
-         * <p>
-         * Exception mappers are global, so handler may be registered in any server pages bundle and will
-         * affect all of them.
-         * <p>
-         * If handler for the same exception type could be registered multiple times (in different bundles), but still
-         * only one will be used (duplicates avoided).
-         *
-         * @param handlerAlias exception handler to override default mapping for templates
-         * @return builder instance for chained calls
-         */
-        public ServerPagesBundle.Builder handleTemplateException(
-                final TemplateExceptionMapperAlias<? extends Throwable> handlerAlias) {
-            GLOBAL_CONFIG.get().mappedExceptions.add(handlerAlias);
             return this;
         }
 
