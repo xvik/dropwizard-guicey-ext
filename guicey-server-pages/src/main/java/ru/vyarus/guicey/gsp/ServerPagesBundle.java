@@ -20,6 +20,9 @@ import ru.vyarus.guicey.gsp.views.ViewRendererConfigurationModifier;
 import ru.vyarus.guicey.gsp.views.ViewsSupport;
 import ru.vyarus.guicey.spa.SpaBundle;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static ru.vyarus.guicey.spa.SpaBundle.SLASH;
@@ -121,6 +124,21 @@ public class ServerPagesBundle implements ConfiguredBundle<Configuration> {
 
     @SuppressWarnings("PMD.AvoidFieldNameMatchingMethodName")
     private final ServerPagesApp app = new ServerPagesApp(GLOBAL_CONFIG.get());
+
+    /**
+     * Method is available for custom template detection logic (similar that used inside server pages filter)
+     * or to validate state in tests.
+     * <p>
+     * Returned list represent global set of listeners (not only registered by this bundle, but by all bundles).
+     * <p>
+     * NOTE: the full list of bundles will be available only after startup! Before start, only currently
+     * registered renderes will be available (or even no at all).
+     *
+     * @return list of used renderers (supported template engines)
+     */
+    public List<ViewRenderer> getRenderers() {
+        return new ArrayList<>(GLOBAL_CONFIG.get().getRenderers());
+    }
 
     @Override
     public void initialize(final Bootstrap<?> bootstrap) {

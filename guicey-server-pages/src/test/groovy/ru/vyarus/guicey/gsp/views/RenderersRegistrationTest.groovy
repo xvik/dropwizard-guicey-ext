@@ -1,0 +1,82 @@
+package ru.vyarus.guicey.gsp.views
+
+import io.dropwizard.Application
+import io.dropwizard.Configuration
+import io.dropwizard.setup.Bootstrap
+import io.dropwizard.setup.Environment
+import io.dropwizard.views.View
+import io.dropwizard.views.ViewRenderer
+import ru.vyarus.dropwizard.guice.test.spock.ConfigOverride
+import ru.vyarus.dropwizard.guice.test.spock.UseDropwizardApp
+import ru.vyarus.guicey.gsp.ServerPagesBundle
+import spock.lang.Specification
+
+/**
+ * @author Vyacheslav Rusakov
+ * @since 26.01.2019
+ */
+@UseDropwizardApp(value = App, configOverride = [
+        @ConfigOverride(key = "server.rootPath", value = "/rest/*")
+])
+class RenderersRegistrationTest extends Specification {
+
+    def "Check renderers registration"() {
+
+        expect: "duplicate renderer removed"
+        true
+    }
+
+    static class App extends Application<Configuration> {
+
+        ServerPagesBundle bundle
+
+        @Override
+        void initialize(Bootstrap<Configuration> bootstrap) {
+            // pure dropwizard bundle
+            bundle = ServerPagesBundle.app("app", "/app", "/")
+                    .addViewRenderers(new CustomRenderer("r1"), new CustomRenderer("r2"))
+                    .printViewsConfiguration()
+                    .build()
+            bootstrap.addBundle(bundle)
+
+            bootstrap.addBundle(ServerPagesBundle.app("app2", "/app", "/2")
+                    .addViewRenderers(new CustomRenderer("r2"), new CustomRenderer("r3"))
+                    .build())
+        }
+
+        @Override
+        void run(Configuration configuration, Environment environment) throws Exception {
+            assert bundle.getRenderers().collect {it.getConfigurationKey()} as Set == ['freemarker', 'mustache', 'r1', 'r2', 'r3'] as Set
+        }
+    }
+
+    static class CustomRenderer implements ViewRenderer {
+
+        String key
+
+        CustomRenderer(String key) {
+            this.key = key
+        }
+
+        @Override
+        boolean isRenderable(View view) {
+            return false
+        }
+
+        @Override
+        void render(View view, Locale locale, OutputStream output) throws IOException {
+
+        }
+
+        @Override
+        void configure(Map<String, String> options) {
+
+        }
+
+        @Override
+        String getConfigurationKey() {
+            return key
+        }
+    }
+
+}

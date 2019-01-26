@@ -12,7 +12,6 @@ import org.slf4j.LoggerFactory;
 import ru.vyarus.guicey.gsp.views.ViewRendererConfigurationModifier;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -87,7 +86,6 @@ public class GlobalConfig {
                 this.renderers.add(renderer);
             }
         }
-        this.renderers.addAll(Arrays.asList(renderers));
     }
 
     /**
