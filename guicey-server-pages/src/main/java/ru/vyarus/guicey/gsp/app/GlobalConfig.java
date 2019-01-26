@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import ru.vyarus.guicey.gsp.views.ViewRendererConfigurationModifier;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -31,9 +32,12 @@ public class GlobalConfig {
 
     private final Logger logger = LoggerFactory.getLogger(GlobalConfig.class);
 
-    private final List<String> names = new ArrayList<>();
-    private Iterable<ViewRenderer> renderers;
     private ViewConfigurable<Configuration> configurable;
+    // server bundle name performed views configuration
+    private String viewsConfigurationApp;
+
+    private final List<String> names = new ArrayList<>();
+    private final List<ViewRenderer> renderers = new ArrayList<>();
     private final Multimap<String, ViewRendererConfigurationModifier> configModifiers = LinkedHashMultimap.create();
     // app name -- packages to search resources in
     private final Multimap<String, String> extensions = LinkedHashMultimap.create();
@@ -57,25 +61,33 @@ public class GlobalConfig {
     /**
      * @return view renderers to use (for global views configuration)
      */
-    public Iterable<ViewRenderer> getRenderers() {
+    public List<ViewRenderer> getRenderers() {
         return renderers;
     }
 
     /**
-     * Specifies supported template engines. If configured not once (multiple bundles configure) then next
-     * configuration override previous.
+     * Specifies additional template engines support (main engines are resolved with lookup).
+     * Duplicates are removed automatically.
      *
-     * @param renderers view rendererers to use (for global views configuration)
-     * @param name      server pages application name which performs configuration
+     * @param renderers additional view renderers
      */
-    public void setRenderers(final Iterable<ViewRenderer> renderers, final String name) {
+    public void addRenderers(final ViewRenderer... renderers) {
         checkAlreadyInitialized();
-        if (this.renderers == null) {
-            logger.debug("Global views renderers configured by '{}' server pages bundle", name);
-        } else {
-            logger.debug("Global views renderers overridden by '{}' server pages bundle", name);
+        for (ViewRenderer renderer : renderers) {
+            final String key = renderer.getConfigurationKey();
+            // prevent duplicates
+            boolean add = true;
+            for (ViewRenderer ren : this.renderers) {
+                if (ren.getConfigurationKey().equals(key)) {
+                    add = false;
+                    break;
+                }
+            }
+            if (add) {
+                this.renderers.add(renderer);
+            }
         }
-        this.renderers = renderers;
+        this.renderers.addAll(Arrays.asList(renderers));
     }
 
     /**
@@ -86,8 +98,8 @@ public class GlobalConfig {
     }
 
     /**
-     * Specifies global views configuration binding (usually from application configuration object). If configured
-     * not once (multiple bundles configure) then next configuration override previous.
+     * Specifies global views configuration binding (usually from application configuration object).
+     * Could be configured only by one bundle in order to simplify configuration.
      *
      * @param configurable dropwizard views configuration binding
      * @param name         server pages application name which performs configuration
@@ -95,14 +107,14 @@ public class GlobalConfig {
      */
     @SuppressWarnings("unchecked")
     public <T extends Configuration> void setConfigurable(final ViewConfigurable<T> configurable,
-                                                          final String name) {
+                                                                final String name) {
         checkAlreadyInitialized();
-        if (this.configurable == null) {
-            logger.debug("Global views configurable configured by '{}' server pages bundle", name);
-        } else {
-            logger.debug("Global views configurable overridden by '{}' server pages bundle", name);
-        }
+        Preconditions.checkState(viewsConfigurationApp == null || viewsConfigurationApp.equals(name),
+                "Global views configuration must be performed by one bundle and '%s' "
+                        + "already configured it.", viewsConfigurationApp);
+        logger.debug("Global views configurable configured by '{}' server pages bundle", name);
         this.configurable = (ViewConfigurable<Configuration>) configurable;
+        this.viewsConfigurationApp = name;
     }
 
     /**

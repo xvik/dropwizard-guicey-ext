@@ -43,8 +43,10 @@ import static ru.vyarus.guicey.spa.SpaBundle.SLASH;
  * application, but all new pages still use common master template.
  * <p>
  * Bundle registers {@link ViewBundle} automatically. Do not register it manually! It is required in order to
- * control list of used renderers (supported template engines). This also brings some confusion as
- * every bundle could configure global views, but only one configuration will be actually applied!
+ * control list of used renderers (supported template engines). Only one bundle could provide views configuration
+ * (binding from main yaml configuration), but any bundle could modify this configuration (to tune exact
+ * template engine). Renderers are loaded with service lookup mechanism (default for views) but additional
+ * renderers could be registered in any bundle.
  * This conceptual inconsistency (single views bundle, many server pages bundles) should be kept in mind while
  * planning applications.
  * <p>
@@ -138,7 +140,7 @@ public class ServerPagesBundle implements ConfiguredBundle<Configuration> {
             environment.jersey().register(TemplateExceptionListener.class);
 
             // global dropwizard ViewBundle installation
-            ViewsSupport.setup(config, app.name, configuration, environment);
+            ViewsSupport.setup(config, configuration, environment);
         }
 
         // app specific initialization (create servlets, filters, etc)
@@ -324,30 +326,30 @@ public class ServerPagesBundle implements ConfiguredBundle<Configuration> {
         }
 
         /**
-         * View renderers (template engines support) to use for {@link ViewBundle} configuration.
+         * Additional view renderers (template engines support) to use for {@link ViewBundle} configuration.
+         * Duplicate renderers are checked by renderer key (e.g. "freemarker" or "mustache") and removed.
          * <p>
-         * WARNING: this option is global and if two or more server page bundles will configure it,
-         * only last configuration will actually take place (it can not be local because dropwizard views bundle
-         * is global).
+         * NOTE: default renderers are always loaded with service loader mechanism so registered listeners could only
+         * extend the list of registered renderers (for those renderers which does not provide descriptor
+         * for service loading).
          * <p>
-         * When no renderers declared, service lookup (default for dropwizard views) mechanism will be used.
-         * Normally this option could be useful only if you want to reduce list of default renderers.
+         * Option is global and if two or more server page bundles will configure it,
+         * all registered renderers will be used.
          *
          * @param renderers renderers to use for global dropwizard views configuration
          * @return builder instance for chained calls
          * @see ViewBundle#ViewBundle(Iterable)
          */
-        public ServerPagesBundle.Builder globalViewRenderers(final Iterable<ViewRenderer> renderers) {
-            GLOBAL_CONFIG.get().setRenderers(renderers, bundle.app.name);
+        public ServerPagesBundle.Builder addViewRenderers(final ViewRenderer... renderers) {
+            GLOBAL_CONFIG.get().addRenderers(renderers);
             return this;
         }
 
         /**
-         * Configures configuration provider for {@link ViewBundle}.
+         * Configures configuration provider for {@link ViewBundle} (usually mapping from yaml configuration).
          * <p>
-         * WARNING: this option is global and if two or more server page bundles will configure it,
-         * only last configuration will actually take place (it can not be local because dropwizard views bundle
-         * is global).
+         * Only one bundle could perform this configuration (usually the one directly in application). If
+         * two multiple bundles try to configure this then error will be thrown.
          * <p>
          * Note that if you need to just modify configuration in one of server pages bundles, you can do this
          * with {@link #viewsConfigurationModifier(String, ViewRendererConfigurationModifier)} - special mechanism
@@ -360,7 +362,7 @@ public class ServerPagesBundle implements ConfiguredBundle<Configuration> {
          * @see #viewsConfigurationModifier(String, ViewRendererConfigurationModifier)
          * @see #printViewsConfiguration()
          */
-        public <T extends Configuration> ServerPagesBundle.Builder globalViewsConfiguration(
+        public <T extends Configuration> ServerPagesBundle.Builder viewsConfiguration(
                 final ViewConfigurable<T> configurable) {
             GLOBAL_CONFIG.get().setConfigurable(configurable, bundle.app.name);
             return this;
@@ -368,7 +370,7 @@ public class ServerPagesBundle implements ConfiguredBundle<Configuration> {
 
         /**
          * Dropwizard views configuration modification. In contrast to views configuration object provider
-         * ({@link #globalViewsConfiguration(ViewConfigurable)}), this method is not global and so modifications
+         * ({@link #viewsConfiguration(ViewConfigurable)}), this method is not global and so modifications
          * from all registered server bundles will be applied.
          * <p>
          * The main use case is configuration of the exact template engine. For example, in case of freemarker
@@ -394,7 +396,7 @@ public class ServerPagesBundle implements ConfiguredBundle<Configuration> {
         /**
          * Prints configuration object used for dropwizard views bundle ({@link ViewBundle}). Note that
          * initial views configuration object binding is configured with
-         * {@link #globalViewsConfiguration(ViewConfigurable)} and it could be modified with
+         * {@link #viewsConfiguration(ViewConfigurable)} and it could be modified with
          * {@link #viewsConfigurationModifier(String, ViewRendererConfigurationModifier)}. Printing of the final
          * configuration (after all modification) could be useful for debugging.
          *

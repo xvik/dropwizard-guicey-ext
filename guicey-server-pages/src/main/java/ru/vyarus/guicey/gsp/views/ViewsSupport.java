@@ -28,19 +28,17 @@ public final class ViewsSupport {
      * Install dropwizard view bundle.
      *
      * @param config        global configuration (for all server page apps)
-     * @param appName       application name (which initiate registration)
      * @param configuration dropwizard configuration object
      * @param environment   dropwizard environment object
      * @throws Exception on error
      */
     public static void setup(final GlobalConfig config,
-                             final String appName,
                              final Configuration configuration,
                              final Environment environment) throws Exception {
         // view bundle must be initialized just once
         if (!config.isInitialized()) {
 
-            installViewBundle(config, appName, configuration, environment);
+            installViewBundle(config, configuration, environment);
             config.initialized();
 
             final StringBuilder res = new StringBuilder("Available dropwizard-views renderers:")
@@ -55,15 +53,13 @@ public final class ViewsSupport {
     }
 
     private static void installViewBundle(final GlobalConfig globalConfig,
-                                          final String appName,
                                           final Configuration configuration,
                                           final Environment environment) throws Exception {
-        if (globalConfig.getRenderers() == null) {
-            final Iterable<ViewRenderer> renderers = ServiceLoader.load(ViewRenderer.class);
-            Preconditions.checkState(renderers.iterator().hasNext(),
-                    "No template engines found (dropwizard views renderer)");
-            globalConfig.setRenderers(renderers, appName);
-        }
+        // automatically add engines from classpath lookup
+        final Iterable<ViewRenderer> renderers = ServiceLoader.load(ViewRenderer.class);
+        renderers.forEach(globalConfig::addRenderers);
+        Preconditions.checkState(!globalConfig.getRenderers().isEmpty(),
+                "No template engines found (dropwizard views renderer)");
 
         // configure views bundle
         // bundle can't be registered in bootstrap as this point is in run phase
