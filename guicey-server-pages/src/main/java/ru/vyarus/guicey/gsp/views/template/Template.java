@@ -11,9 +11,10 @@ import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
- * Declare template file in classpath, relative to current class. It is required to be used on template resources.
- * Even if each method in resource use it's own template, resource class should be annotated with empty
- * annotation (see {@link DirectTemplateResource} as example).
+ * Declare template file in classpath, relative to current class or any registered root templates dir (in classpath).
+ * <p>
+ * It is required to use this annotation on template resources. Even if each method in resource use it's own template,
+ * resource class must be annotated with empty annotation (see {@link DirectTemplateResource} as example).
  * <p>
  * Template path could also be absolute (in this case it must start with "/" - classpath root).
  * <p>

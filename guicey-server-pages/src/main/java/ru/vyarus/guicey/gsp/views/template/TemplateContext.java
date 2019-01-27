@@ -4,6 +4,8 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.inject.Injector;
 import org.glassfish.jersey.server.internal.process.MappableException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.vyarus.guicey.gsp.app.filter.redirect.ErrorRedirect;
 import ru.vyarus.guicey.gsp.app.filter.redirect.TemplateRedirect;
 import ru.vyarus.guicey.gsp.app.util.PathUtils;
@@ -27,22 +29,21 @@ import java.util.List;
  * @since 25.10.2018
  */
 public class TemplateContext {
+    private final Logger logger = LoggerFactory.getLogger(TemplateContext.class);
 
     private final String appName;
     private final String rootUrl;
     private final List<String> resourcePaths;
-    private String templatePath;
-    private final String url;
+    private Class resourceClass;
+    private String annotationTemplate;
     private final Provider<Injector> injectorProvider;
     private final ErrorRedirect errorRedirect;
     private final HttpServletRequest request;
     private final HttpServletResponse response;
 
-    @SuppressWarnings("checkstyle:ParameterNumber")
     public TemplateContext(final String appName,
                            final String rootUrl,
                            final List<String> resourcePaths,
-                           final String url,
                            final Provider<Injector> injectorProvider,
                            final ErrorRedirect errorRedirect,
                            final HttpServletRequest request,
@@ -50,7 +51,6 @@ public class TemplateContext {
         this.appName = appName;
         this.rootUrl = rootUrl;
         this.resourcePaths = resourcePaths;
-        this.url = url;
         this.injectorProvider = injectorProvider;
         this.errorRedirect = errorRedirect;
         this.request = request;
@@ -78,7 +78,7 @@ public class TemplateContext {
      * @return original call url
      */
     public String getUrl() {
-        return url;
+        return getRequest().getRequestURI();
     }
 
     /**
@@ -114,22 +114,31 @@ public class TemplateContext {
     }
 
     /**
-     * Used by {@link ru.vyarus.guicey.gsp.app.rest.support.TemplateAnnotationFilter} to set template file
-     * declared in {@link Template} annotation on rest resource.
+     * Set resource class to check template relative to class.
+     * Used by {@link ru.vyarus.guicey.gsp.app.rest.support.TemplateAnnotationFilter}.
      *
-     * @param base     resource class (to search relative to; ignored if template path is absolute)
-     * @param template template file relative path (or absolute)
+     * @param base resource class
      */
-    public void setTemplate(final Class base, final String template) {
-        // compute template relative to file
-        templatePath = template.startsWith(PathUtils.SLASH)
-                ? template : PathUtils.prefixSlash(PathUtils.path(PathUtils.getPath(base), template));
+    public void setResourceClass(final Class base) {
+        resourceClass = base;
     }
 
     /**
-     * Lookup template in one of pre-configured classpath locations. If passed template is null it will be
-     * taken from {@link Template} annotation from resource class. Provided template path may be absolute
-     * (in this cases template will be searched by direct location only).
+     * Used by {@link ru.vyarus.guicey.gsp.app.rest.support.TemplateAnnotationFilter} to set template file
+     * declared in {@link Template} annotation on rest resource.
+     *
+     * @param template template file path
+     */
+    public void setAnnotationTemplate(final String template) {
+        annotationTemplate = template;
+    }
+
+    /**
+     * Lookup relative template path either relative to reosurce class (if annotated with {@link Template} or
+     * in one of pre-configured classpath locations. If passed template is null it will be
+     * taken from {@link Template} annotation from resource class.
+     * <p>
+     * When provided template path is absolute - it is searched by direct location only.
      *
      * @param template template path or null
      * @return absolute path to template
@@ -140,14 +149,31 @@ public class TemplateContext {
         String path = Strings.emptyToNull(template);
         if (path == null) {
             // from @Template annotation
-            path = templatePath;
+            path = annotationTemplate;
         }
         Preconditions.checkNotNull(path,
                 "Template name not specified neither directly in model nor in @Template annotation");
 
-        // do nothing for absolute path
-        return path.startsWith(PathUtils.SLASH) ? path
-                : PathUtils.prefixSlash(ResourceLookup.lookupOrFail(path, resourcePaths));
+        // search relative path relative to resource class
+        if (!path.startsWith(PathUtils.SLASH) && resourceClass != null) {
+            final String resourceBaseLocation = ResourceLookup.lookup(resourceClass, path);
+            if (resourceBaseLocation != null) {
+                path = PathUtils.prefixSlash(resourceBaseLocation);
+                logger.debug("Relative template '{}' found relative to {} class: '{}'",
+                        template, resourceClass.getSimpleName(), path);
+            }
+        }
+
+        // search in configured locations
+        if (!path.startsWith(PathUtils.SLASH)) {
+            // search in configured folders
+            path = PathUtils.prefixSlash(ResourceLookup.lookupOrFail(path, resourcePaths));
+            logger.debug("Relative template '{}' resolved to '{}'", template, path);
+        }
+
+        // check direct absolute path
+        ResourceLookup.existsOrFail(path);
+        return path;
     }
 
     /**

@@ -93,7 +93,6 @@ public class TemplateRedirect {
         CONTEXT_TEMPLATE.set(new TemplateContext(app,
                 mapping,
                 locationProvider.get(),
-                request.getRequestURI(),
                 injectorProvider,
                 errorRedirect,
                 request,

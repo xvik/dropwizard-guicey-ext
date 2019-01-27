@@ -5,6 +5,7 @@ import io.dropwizard.views.View;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.vyarus.guicey.gsp.views.template.Template;
+import ru.vyarus.guicey.gsp.views.template.TemplateContext;
 import ru.vyarus.guicey.gsp.views.template.TemplateNotFoundException;
 import ru.vyarus.guicey.gsp.views.template.TemplateView;
 
@@ -38,6 +39,8 @@ public class DirectTemplateResource {
     private View handle(final String path) {
         logger.debug("Direct template rendering: {}", path);
         try {
+            // no need to check template paths relative to this universal resource class
+            TemplateContext.getInstance().setResourceClass(null);
             return new TemplateView(path);
         } catch (TemplateNotFoundException ex) {
             throw new NotFoundException(ex);

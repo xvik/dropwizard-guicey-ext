@@ -12,6 +12,8 @@ import java.io.IOException;
 
 /**
  * Request filter for {@link Template} annotated resources read configured template path (to be used in model).
+ * Record matched resource class so relative templates could be checked realtive to class even
+ * when template path is specified directly into model.
  *
  * @author Vyacheslav Rusakov
  * @since 03.12.2018
@@ -29,10 +31,12 @@ public class TemplateAnnotationFilter implements ContainerRequestFilter {
         final Template template = resourceClass.getAnnotation(Template.class);
         if (template != null) {
             final TemplateContext context = TemplateContext.getInstance();
+            // remember resource class to check relative templates
+            context.setResourceClass(resourceClass);
             final String tpl = template.value();
-            // when empty, it means direct template rendering
+            // could be empty when annotation used for marking resource only
             if (!tpl.isEmpty()) {
-                context.setTemplate(resourceClass, tpl);
+                context.setAnnotationTemplate(tpl);
             }
         }
     }

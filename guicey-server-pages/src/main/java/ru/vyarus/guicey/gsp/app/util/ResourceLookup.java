@@ -23,6 +23,19 @@ public final class ResourceLookup {
     }
 
     /**
+     * Lookup path relative to class.
+     *
+     * @param base class to search path relative to
+     * @param path relative path
+     * @return found full path or null
+     */
+    public static String lookup(final Class base, final String path) {
+        final String resourceBaseLocation = PathUtils.path(PathUtils.getPath(base),
+                CharMatcher.is('/').trimLeadingFrom(path));
+        return exists(resourceBaseLocation) ? resourceBaseLocation : null;
+    }
+
+    /**
      * Searches provided resource in multiple classpath locations.
      *
      * @param path      static resource path
@@ -30,16 +43,14 @@ public final class ResourceLookup {
      * @return resource location path (first occurrence) or null if not found
      */
     public static String lookup(final String path, final List<String> rootPaths) {
-        final ClassLoader loader =
-                MoreObjects.firstNonNull(
-                        Thread.currentThread().getContextClassLoader(), ResourceLookup.class.getClassLoader());
+
         final String templatePath = CharMatcher.is('/').trimLeadingFrom(path);
         final Iterator<String> it = rootPaths.iterator();
         String location;
         String res = null;
         while (res == null && it.hasNext()) {
             location = it.next();
-            if (loader.getResource(location + templatePath) != null) {
+            if (exists(location + templatePath)) {
                 res = location + templatePath;
             }
         }
@@ -64,5 +75,33 @@ public final class ResourceLookup {
             throw new TemplateNotFoundException(err);
         }
         return lookup;
+    }
+
+    /**
+     * Checks if absolute resource path exists in the classpath.
+     *
+     * @param path absolute path to check (assumed as absolute event if not starts with /)
+     * @return true if resource exists, false otherwise
+     */
+    public static boolean exists(final String path) {
+        final ClassLoader loader =
+                MoreObjects.firstNonNull(
+                        Thread.currentThread().getContextClassLoader(), ResourceLookup.class.getClassLoader());
+        return loader.getResource(CharMatcher.is('/').trimLeadingFrom(path)) != null;
+    }
+
+    /**
+     * Shortcut for {@link #exists(String)} with fail in case of not found template.
+     *
+     * @param path absolute path to check (assumed as absolute event if not starts with /)
+     * @throws TemplateNotFoundException if template not found
+     */
+    public static void existsOrFail(final String path) throws TemplateNotFoundException {
+        if (!exists(path)) {
+            final String err = String.format("Template not found on path '%s'", path);
+            // logged here because exception most likely will be handled as 404 response
+            LOGGER.error(err);
+            throw new TemplateNotFoundException(err);
+        }
     }
 }
