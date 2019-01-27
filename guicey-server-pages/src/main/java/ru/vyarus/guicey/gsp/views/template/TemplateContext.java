@@ -35,8 +35,8 @@ public class TemplateContext {
     private final String url;
     private final Provider<Injector> injectorProvider;
     private final ErrorRedirect errorRedirect;
-    private final HttpServletRequest originalRequest;
-    private final HttpServletResponse originalResponse;
+    private final HttpServletRequest request;
+    private final HttpServletResponse response;
 
     @SuppressWarnings("checkstyle:ParameterNumber")
     public TemplateContext(final String appName,
@@ -45,16 +45,16 @@ public class TemplateContext {
                            final String url,
                            final Provider<Injector> injectorProvider,
                            final ErrorRedirect errorRedirect,
-                           final HttpServletRequest originalRequest,
-                           final HttpServletResponse originalResponse) {
+                           final HttpServletRequest request,
+                           final HttpServletResponse response) {
         this.appName = appName;
         this.rootUrl = rootUrl;
         this.resourcePaths = resourcePaths;
         this.url = url;
         this.injectorProvider = injectorProvider;
         this.errorRedirect = errorRedirect;
-        this.originalRequest = originalRequest;
-        this.originalResponse = originalResponse;
+        this.request = request;
+        this.response = response;
     }
 
     /**
@@ -88,8 +88,8 @@ public class TemplateContext {
      * @see #getUrl() for original request URI
      * @see #getRootUrl() for root mapping url
      */
-    public HttpServletRequest getOriginalRequest() {
-        return originalRequest;
+    public HttpServletRequest getRequest() {
+        return request;
     }
 
     /**
@@ -100,8 +100,8 @@ public class TemplateContext {
      *
      * @return original response object
      */
-    public HttpServletResponse getOriginalResponse() {
-        return originalResponse;
+    public HttpServletResponse getResponse() {
+        return response;
     }
 
     /**
@@ -165,7 +165,7 @@ public class TemplateContext {
      */
     public boolean redirectError(final Throwable ex) {
         // use request with original uri instead of rest mapped and raw response (not hk proxy)
-        return errorRedirect.redirect(getOriginalRequest(), getOriginalResponse(), wrap(ex));
+        return errorRedirect.redirect(getRequest(), getResponse(), wrap(ex));
     }
 
     /**

@@ -69,7 +69,7 @@ public class ErrorRedirect {
 
     /**
      * Note: method is not supposed to be used directly as error object is directly available in model:
-     * {@link ru.vyarus.guicey.gsp.views.template.TemplateView#getContextError()}.
+     * {@link ru.vyarus.guicey.gsp.views.template.TemplateView#getError()}.
      *
      * @return thread bound exception to use in error page rendering
      */

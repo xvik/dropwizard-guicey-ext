@@ -17,7 +17,7 @@ import java.nio.charset.Charset;
  * Note that {@link Template} annotation defines templates relative to annotated class.
  * <p>
  * Provides additional information about server pages application and current request through
- * {@link #getContextInfo()}. Error pages could access actual exception with {@link #getContextError()}.
+ * {@link #getContext()}. Error pages could access actual exception with {@link #getError()}.
  * <p>
  * It is also possible to reference any guice bean directly through model with {@link #getService(Class)}.
  * This may be useful in cases when custom model classes could not be used (error pages) or for quick prototyping.
@@ -27,8 +27,8 @@ import java.nio.charset.Charset;
  */
 public class TemplateView extends View {
 
-    private final TemplateContext contextInfo;
-    private final WebApplicationException contextError;
+    private final TemplateContext context;
+    private final WebApplicationException error;
 
     /**
      * Template obtained from {@link Template} annotation on resource.
@@ -55,8 +55,8 @@ public class TemplateView extends View {
     public TemplateView(@Nullable final String templatePath, @Nullable final Charset charset) {
         // template could be either absolute or relative
         super(TemplateContext.getInstance().lookupTemplatePath(templatePath), charset);
-        this.contextInfo = TemplateContext.getInstance();
-        this.contextError = ErrorRedirect.getContextError();
+        this.context = TemplateContext.getInstance();
+        this.error = ErrorRedirect.getContextError();
     }
 
     /**
@@ -66,8 +66,8 @@ public class TemplateView extends View {
      * @return additional info about current template.
      */
     @JsonIgnore
-    public TemplateContext getContextInfo() {
-        return contextInfo;
+    public TemplateContext getContext() {
+        return context;
     }
 
     /**
@@ -78,20 +78,20 @@ public class TemplateView extends View {
      * @return exception object or null (for normal template rendering)
      */
     @JsonIgnore
-    public WebApplicationException getContextError() {
-        return contextError;
+    public WebApplicationException getError() {
+        return error;
     }
 
     /**
-     * Shortcut for {@code getContextError().getResponse().getStatus()}. Shortcut created because direct expression
+     * Shortcut for {@code getError().getResponse().getStatus()}. Shortcut created because direct expression
      * can't be used in freemarker expression.
      *
-     * @return status code from context error
-     * @see #getContextError()
+     * @return status code from context error or -1 if no context error
+     * @see #getError()
      */
     @JsonIgnore
-    public int getContextErrorCode() {
-        return contextError.getResponse().getStatus();
+    public int getErrorCode() {
+        return error != null ? error.getResponse().getStatus() : -1;
     }
 
     /**
@@ -103,6 +103,6 @@ public class TemplateView extends View {
      * @return service instance
      */
     public <T> T getService(final Class<T> service) {
-        return getContextInfo().getService(service);
+        return getContext().getService(service);
     }
 }
