@@ -2,7 +2,6 @@ package ru.vyarus.guicey.gsp.views.template;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
-import com.google.inject.Injector;
 import org.glassfish.jersey.server.internal.process.MappableException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,7 +11,6 @@ import ru.vyarus.guicey.gsp.app.util.PathUtils;
 import ru.vyarus.guicey.gsp.app.util.ResourceLookup;
 
 import javax.annotation.Nullable;
-import javax.inject.Provider;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.WebApplicationException;
@@ -36,7 +34,6 @@ public class TemplateContext {
     private final List<String> resourcePaths;
     private Class resourceClass;
     private String annotationTemplate;
-    private final Provider<Injector> injectorProvider;
     private final ErrorRedirect errorRedirect;
     private final HttpServletRequest request;
     private final HttpServletResponse response;
@@ -44,14 +41,12 @@ public class TemplateContext {
     public TemplateContext(final String appName,
                            final String rootUrl,
                            final List<String> resourcePaths,
-                           final Provider<Injector> injectorProvider,
                            final ErrorRedirect errorRedirect,
                            final HttpServletRequest request,
                            final HttpServletResponse response) {
         this.appName = appName;
         this.rootUrl = rootUrl;
         this.resourcePaths = resourcePaths;
-        this.injectorProvider = injectorProvider;
         this.errorRedirect = errorRedirect;
         this.request = request;
         this.response = response;
@@ -102,15 +97,6 @@ public class TemplateContext {
      */
     public HttpServletResponse getResponse() {
         return response;
-    }
-
-    /**
-     * @param service service type
-     * @param <T>     service type
-     * @return service instance obtained from guice context
-     */
-    public <T> T getService(final Class<T> service) {
-        return injectorProvider.get().getInstance(service);
     }
 
     /**

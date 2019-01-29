@@ -5,7 +5,6 @@ import ru.vyarus.guicey.gsp.app.filter.redirect.TemplateRedirect;
 import ru.vyarus.guicey.gsp.views.template.Template;
 import ru.vyarus.guicey.gsp.views.template.TemplateContext;
 
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerResponseContext;
 import javax.ws.rs.container.ContainerResponseFilter;
@@ -32,7 +31,7 @@ public class TemplateErrorResponseFilter implements ContainerResponseFilter {
             // Response.status(400).build() used as response)
             final TemplateContext context = TemplateRedirect.templateContext();
             if (context != null) {
-                context.redirectError(new WebApplicationException(responseContext.getStatus()));
+                context.redirectError(new TemplateRestCodeError(requestContext, responseContext.getStatus()));
             }
         }
     }

@@ -69,7 +69,7 @@ public final class ResourceLookup {
             throws TemplateNotFoundException {
         final String lookup = ResourceLookup.lookup(path, rootPaths);
         if (lookup == null) {
-            final String err = String.format("Template '%s' not found in locations: %s", path, rootPaths);
+            final String err = String.format("Template %s not found in locations: %s", path, rootPaths);
             // logged here because exception most likely will be handled as 404 response
             LOGGER.error(err);
             throw new TemplateNotFoundException(err);
@@ -98,7 +98,7 @@ public final class ResourceLookup {
      */
     public static void existsOrFail(final String path) throws TemplateNotFoundException {
         if (!exists(path)) {
-            final String err = String.format("Template not found on path '%s'", path);
+            final String err = String.format("Template not found on path %s", path);
             // logged here because exception most likely will be handled as 404 response
             LOGGER.error(err);
             throw new TemplateNotFoundException(err);

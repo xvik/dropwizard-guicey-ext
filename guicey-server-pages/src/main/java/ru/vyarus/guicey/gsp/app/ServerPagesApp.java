@@ -6,7 +6,6 @@ import io.dropwizard.setup.Environment;
 import org.glassfish.jersey.server.model.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.vyarus.dropwizard.guice.injector.lookup.InjectorProvider;
 import ru.vyarus.guicey.gsp.ServerPagesBundle;
 import ru.vyarus.guicey.gsp.app.asset.LazyLocationProvider;
 import ru.vyarus.guicey.gsp.app.asset.MultiSourceAssetServlet;
@@ -96,7 +95,6 @@ public class ServerPagesApp {
                 name,
                 fullUriPath,
                 locationsProvider,
-                new InjectorProvider(globalConfig.application),
                 new ErrorRedirect(uriPath, errorPages, spa));
         installTemplatesSupportFilter(context, templateRedirect, spa);
 

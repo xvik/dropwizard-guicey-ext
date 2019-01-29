@@ -21,7 +21,7 @@ class ErrorTemplateTest extends Specification {
         when: "accessing not existing asset"
         def res = new URL("http://localhost:8080/notexisting.html").text
         then: "error page"
-        res.contains("Error: WebApplicationException")
+        res.contains("Error: AssetError")
 
         when: "accessing not existing template"
         res = new URL("http://localhost:8080/notexisting.ftl").text
@@ -46,7 +46,7 @@ class ErrorTemplateTest extends Specification {
         when: "direct 404 rest response"
         res = new URL("http://localhost:8080/sample/notfound").text
         then: "error page"
-        res.contains("Error: WebApplicationException")
+        res.contains("Error: TemplateRestCodeError")
     }
 
     static class App extends Application<Configuration> {

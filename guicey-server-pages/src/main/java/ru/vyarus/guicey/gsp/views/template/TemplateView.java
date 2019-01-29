@@ -1,6 +1,7 @@
 package ru.vyarus.guicey.gsp.views.template;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.base.Throwables;
 import io.dropwizard.views.View;
 import ru.vyarus.guicey.gsp.app.filter.redirect.ErrorRedirect;
 
@@ -18,9 +19,6 @@ import java.nio.charset.Charset;
  * <p>
  * Provides additional information about server pages application and current request through
  * {@link #getContext()}. Error pages could access actual exception with {@link #getError()}.
- * <p>
- * It is also possible to reference any guice bean directly through model with {@link #getService(Class)}.
- * This may be useful in cases when custom model classes could not be used (error pages) or for quick prototyping.
  *
  * @author Vyacheslav Rusakov
  * @since 22.10.2018
@@ -95,14 +93,16 @@ public class TemplateView extends View {
     }
 
     /**
-     * Access for any guice bean directly from model. Useful for very special cases only when custom model could
-     * not be used.
+     * Method intended to be used in very simple error pages in order to quickly show stacktrace.
+     * <p>
+     * Note that in case of direct error code return (404, 500 etc) exception will be "empty"
+     * (exception instance will be created but not thrown).
      *
-     * @param service guice service type
-     * @param <T>     service type
-     * @return service instance
+     * @return current stacktrace as string or null if no context error
+     * @see #getError()
      */
-    public <T> T getService(final Class<T> service) {
-        return getContext().getService(service);
+    @JsonIgnore
+    public String getErrorTrace() {
+        return error != null ? Throwables.getStackTraceAsString(error) : null;
     }
 }

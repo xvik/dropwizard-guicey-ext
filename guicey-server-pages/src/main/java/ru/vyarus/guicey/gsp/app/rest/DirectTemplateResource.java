@@ -43,7 +43,7 @@ public class DirectTemplateResource {
             TemplateContext.getInstance().setResourceClass(null);
             return new TemplateView(path);
         } catch (TemplateNotFoundException ex) {
-            throw new NotFoundException(ex);
+            throw new NotFoundException("Template " + path + " not found", ex);
         }
     }
 

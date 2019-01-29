@@ -95,8 +95,7 @@ import static ru.vyarus.guicey.spa.SpaBundle.SLASH;
  * <p>
  * In order to be able to render direct templates (without supporting rest endpoint) special rest
  * endpoint is registered which handles everything on application path (e.g. "ui/{file:.*}" for example application
- * above). Only POST and GET supported for direct templates. inside such template you can still access
- * guice beans using model {@link ru.vyarus.guicey.gsp.views.template.TemplateView#getService(Class)}.
+ * above). Only POST and GET supported for direct templates.
  * <p>
  * Bundle unifies custom pages handling to be able to use default 404 or 500 pages (for both assets and resources).
  * Use builder {@link ServerPagesBundle.Builder#errorPage(int, String)} method to map template (or pure html)

@@ -13,7 +13,6 @@ import ru.vyarus.guicey.spa.filter.ResponseWrapper;
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.WebApplicationException;
 import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -154,7 +153,7 @@ public class ServerPagesFilter implements Filter {
                              final int error) throws IOException {
         // handle only error codes, preserving redirects (3xx)
         if (error <= ErrorRedirect.CODE_400
-                || !redirect.getErrorRedirect().redirect(req, resp, new WebApplicationException(error))) {
+                || !redirect.getErrorRedirect().redirect(req, resp, new AssetError(req, error))) {
             // if no mapped error page or non error status returned - return error as is
             resp.sendError(error);
         }

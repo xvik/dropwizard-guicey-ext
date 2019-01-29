@@ -1,6 +1,5 @@
 package ru.vyarus.guicey.gsp.app.filter.redirect;
 
-import com.google.inject.Injector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.vyarus.guicey.gsp.app.asset.LazyLocationProvider;
@@ -10,7 +9,6 @@ import ru.vyarus.guicey.gsp.app.util.PathUtils;
 import ru.vyarus.guicey.gsp.app.util.TemplateRequest;
 import ru.vyarus.guicey.gsp.views.template.TemplateContext;
 
-import javax.inject.Provider;
 import javax.servlet.Servlet;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -43,7 +41,6 @@ public class TemplateRedirect {
     private final String app;
     private final String mapping;
     private final LazyLocationProvider locationProvider;
-    private final Provider<Injector> injectorProvider;
     private final ErrorRedirect errorRedirect;
 
     // full rest path (applicationContextPath + rootPath)
@@ -57,13 +54,11 @@ public class TemplateRedirect {
                             final String app,
                             final String mapping,
                             final LazyLocationProvider locationProvider,
-                            final Provider<Injector> injectorProvider,
                             final ErrorRedirect errorRedirect) {
         this.restServlet = restServlet;
         this.app = app;
         this.mapping = mapping;
         this.locationProvider = locationProvider;
-        this.injectorProvider = injectorProvider;
         this.errorRedirect = errorRedirect;
     }
 
@@ -93,7 +88,6 @@ public class TemplateRedirect {
         CONTEXT_TEMPLATE.set(new TemplateContext(app,
                 mapping,
                 locationProvider.get(),
-                injectorProvider,
                 errorRedirect,
                 request,
                 response));

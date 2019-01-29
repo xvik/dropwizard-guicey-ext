@@ -12,45 +12,44 @@ import spock.lang.Specification
 
 /**
  * @author Vyacheslav Rusakov
- * @since 23.01.2019
+ * @since 29.01.2019
  */
-@UseDropwizardApp(value = App, config = 'src/test/resources/conf.yml',
-        configOverride = [
-                @ConfigOverride(key = "server.applicationContextPath", value = "/prefix/")
-        ])
-class NoRootMappingTemplateErrorsTest extends Specification {
+@UseDropwizardApp(value = App, configOverride = [
+        @ConfigOverride(key = "server.rootPath", value = "/rest/*")
+])
+class ShowTraceOnErrorPageTest extends Specification {
 
     def "Check error mapping"() {
 
         when: "accessing not existing asset"
-        def res = new URL("http://localhost:8080/prefix/notexisting.html").text
+        def res = new URL("http://localhost:8080/notexisting.html").text
         then: "error page"
-        res.contains("Error: AssetError")
+        res.startsWith("ru.vyarus.guicey.gsp.app.filter.AssetError: Error serving asset /notexisting.html: 404")
 
         when: "accessing not existing template"
-        res = new URL("http://localhost:8080/prefix/notexisting.ftl").text
+        res = new URL("http://localhost:8080/notexisting.ftl").text
         then: "error page"
-        res.contains("Error: NotFoundException")
+        res.startsWith("javax.ws.rs.NotFoundException: Template notexisting.ftl not found")
 
         when: "accessing not existing path"
-        res = new URL("http://localhost:8080/prefix/notexisting/").text
+        res = new URL("http://localhost:8080/notexisting/").text
         then: "error page"
-        res.contains("Error: NotFoundException")
+        res.startsWith("javax.ws.rs.NotFoundException: Template notexisting/ not found")
 
         when: "error processing template"
-        res = new URL("http://localhost:8080/prefix/sample/error").text
+        res = new URL("http://localhost:8080/sample/error").text
         then: "error page"
-        res.contains("Error: WebApplicationException")
+        res.startsWith("javax.ws.rs.WebApplicationException: HTTP 500 Internal Server Error")
 
         when: "error processing template"
-        res = new URL("http://localhost:8080/prefix/sample/error2").text
+        res = new URL("http://localhost:8080/sample/error2").text
         then: "error page"
-        res.contains("Error: WebApplicationException")
+        res.startsWith("javax.ws.rs.WebApplicationException: error")
 
         when: "direct 404 rest response"
-        res = new URL("http://localhost:8080/prefix/sample/notfound").text
+        res = new URL("http://localhost:8080/sample/notfound").text
         then: "error page"
-        res.contains("Error: TemplateRestCodeError")
+        res.startsWith("ru.vyarus.guicey.gsp.app.rest.support.TemplateRestCodeError: Error processing template rest call app/sample/notfound: 404")
     }
 
     static class App extends Application<Configuration> {
@@ -59,7 +58,7 @@ class NoRootMappingTemplateErrorsTest extends Specification {
         void initialize(Bootstrap<Configuration> bootstrap) {
             // pure dropwizard bundle
             bootstrap.addBundle(ServerPagesBundle.app("app", "/app", "/")
-                    .errorPage("error.ftl")
+                    .errorPage("error2.ftl")
                     .build())
         }
 
