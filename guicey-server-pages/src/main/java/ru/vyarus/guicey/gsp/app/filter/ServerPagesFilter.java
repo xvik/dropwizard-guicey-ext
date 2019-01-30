@@ -1,5 +1,6 @@
 package ru.vyarus.guicey.gsp.app.filter;
 
+import com.google.common.base.Preconditions;
 import io.dropwizard.views.View;
 import io.dropwizard.views.ViewRenderer;
 import org.slf4j.Logger;
@@ -118,8 +119,12 @@ public class ServerPagesFilter implements Filter {
         }
 
         final Matcher matcher = filePattern.matcher(req.getRequestURI());
+        final boolean detected = matcher.find();
+        Preconditions.checkState(!detected || matcher.groupCount() > 0,
+                "File detection pattern %s did not contain file capture group (1)",
+                filePattern.pattern());
         // extracting template name
-        return matcher.find() ? matcher.group(1) : null;
+        return detected ? matcher.group(1) : null;
     }
 
     private boolean isRoot(final HttpServletRequest req) {

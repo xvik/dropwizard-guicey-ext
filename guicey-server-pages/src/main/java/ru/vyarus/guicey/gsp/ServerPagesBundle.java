@@ -332,6 +332,7 @@ public class ServerPagesBundle implements ConfiguredBundle<Configuration> {
          * include them directly into detection regexp (using regex or (|) syntax).
          * <p>
          * Pattern must return detected file name as first matched group (so direct template could be detected).
+         * Pattern is searched (find) inside path, not matched (so simple patterns will also work).
          *
          * @param regex regex for file request detection and file name extraction
          * @return builder instance for chained calls
