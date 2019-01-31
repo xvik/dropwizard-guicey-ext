@@ -1,5 +1,6 @@
 package ru.vyarus.guicey.gsp.app.filter.redirect;
 
+import com.google.common.base.Preconditions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.vyarus.guicey.gsp.app.filter.AssetError;
@@ -72,13 +73,28 @@ public class ErrorRedirect {
 
     /**
      * Note: method is not supposed to be used directly as error object is directly available in model:
-     * {@link ru.vyarus.guicey.gsp.views.template.TemplateView#getError()}.
+     * {@link ru.vyarus.guicey.gsp.views.template.ErrorTemplateView#getError()}.
      *
      * @return thread bound exception to use in error page rendering or null if no error bound
      */
     public static WebApplicationException getContextError() {
-        final ErrorContext context = CONTEXT_ERROR.get();
-        return context != null ? context.exception : null;
+        return getContext().exception;
+    }
+
+    /**
+     * Returned string is {@code request.getRequestURI()} from original request.
+     *
+     * @return url of original page (before redirect to error page)
+     */
+    public static String getContextErrorOriginalUrl() {
+        return getContext().originalUrl;
+    }
+
+    /**
+     * @return true indicate error page rendering, false in all other cases
+     */
+    public static boolean hasContextError() {
+        return CONTEXT_ERROR.get() != null;
     }
 
     private String selectErrorPage(final WebApplicationException exception) {
@@ -183,6 +199,10 @@ public class ErrorRedirect {
         } catch (IOException e) {
             logger.error("Error processing response", e);
         }
+    }
+
+    private static ErrorContext getContext() {
+        return Preconditions.checkNotNull(CONTEXT_ERROR.get(), "No context error");
     }
 
 

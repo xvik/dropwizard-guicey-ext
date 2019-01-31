@@ -309,6 +309,10 @@ public class ServerPagesBundle implements ConfiguredBundle<Configuration> {
          * used to intercept actual exceptions (to be able to access actual exception inside error page).
          * Default dropwizard exception mapper will log error (as for usual rest).
          * <p>
+         * Error pages should use {@link ru.vyarus.guicey.gsp.views.template.ErrorTemplateView} as (base) model
+         * class in order to get access to context exception. It is not required, if error object itself not required
+         * during rendering.
+         * <p>
          * NOTE that error page is returned only if original request accept html response and otherwise no
          * error page will be shown. Intention here is to show human readable errors only for humans.
          *

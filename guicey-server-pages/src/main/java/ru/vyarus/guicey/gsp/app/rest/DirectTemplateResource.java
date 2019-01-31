@@ -4,10 +4,8 @@ package ru.vyarus.guicey.gsp.app.rest;
 import io.dropwizard.views.View;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.vyarus.guicey.gsp.views.template.Template;
-import ru.vyarus.guicey.gsp.views.template.TemplateContext;
-import ru.vyarus.guicey.gsp.views.template.TemplateNotFoundException;
-import ru.vyarus.guicey.gsp.views.template.TemplateView;
+import ru.vyarus.guicey.gsp.app.filter.redirect.ErrorRedirect;
+import ru.vyarus.guicey.gsp.views.template.*;
 
 import javax.ws.rs.*;
 
@@ -41,7 +39,7 @@ public class DirectTemplateResource {
         try {
             // no need to check template paths relative to this universal resource class
             TemplateContext.getInstance().setResourceClass(null);
-            return new TemplateView(path);
+            return ErrorRedirect.hasContextError() ? new ErrorTemplateView(path) : new TemplateView(path);
         } catch (TemplateNotFoundException ex) {
             throw new NotFoundException("Template " + path + " not found", ex);
         }
