@@ -2,12 +2,15 @@ package ru.vyarus.guicey.gsp.app.filter.redirect;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.vyarus.guicey.gsp.app.filter.AssetError;
+import ru.vyarus.guicey.gsp.app.rest.support.TemplateRestCodeError;
 import ru.vyarus.guicey.gsp.app.util.PathUtils;
 import ru.vyarus.guicey.spa.filter.SpaUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.WebApplicationException;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -34,7 +37,7 @@ public class ErrorRedirect {
     public static final int DEFAULT_ERROR_PAGE = -1;
     public static final int CODE_400 = 400;
 
-    private static final ThreadLocal<WebApplicationException> CONTEXT_ERROR = new ThreadLocal<>();
+    private static final ThreadLocal<ErrorContext> CONTEXT_ERROR = new ThreadLocal<>();
     private final Logger logger = LoggerFactory.getLogger(ErrorRedirect.class);
 
     private final Map<Integer, String> errorPages;
@@ -71,10 +74,11 @@ public class ErrorRedirect {
      * Note: method is not supposed to be used directly as error object is directly available in model:
      * {@link ru.vyarus.guicey.gsp.views.template.TemplateView#getError()}.
      *
-     * @return thread bound exception to use in error page rendering
+     * @return thread bound exception to use in error page rendering or null if no error bound
      */
     public static WebApplicationException getContextError() {
-        return CONTEXT_ERROR.get();
+        final ErrorContext context = CONTEXT_ERROR.get();
+        return context != null ? context.exception : null;
     }
 
     private String selectErrorPage(final WebApplicationException exception) {
@@ -86,29 +90,123 @@ public class ErrorRedirect {
         return null;
     }
 
+    @SuppressWarnings("checkstyle:ReturnCount")
     private boolean doRedirect(final HttpServletRequest request,
                                final HttpServletResponse response,
                                final WebApplicationException exception) {
-        final String path = selectErrorPage(exception);
-        // do not redirect errors of error page rendering (prevent loops)
-        if (path != null && !response.isCommitted() && CONTEXT_ERROR.get() == null) {
-            logger.debug("Redirecting to error page: {}", path);
-            // to be able to access exception in error view
-            CONTEXT_ERROR.set(exception);
-            try {
-                request.getRequestDispatcher(path).forward(request, response);
-                // always log 500 error exceptions and other errors if configured
-                logger.info("Serving error page '{}' instead of '{}' response error {}",
-                        path, request.getRequestURL(), exception.getResponse().getStatus());
-                return true;
-            } catch (Exception ex) {
-                // assume normal processing for original request (without error page)
-                logger.error("Failed to serve error page '" + path + "' for request '"
-                        + request.getRequestURL() + "' instead of rest exception:", ex);
-            } finally {
-                CONTEXT_ERROR.remove();
+        // special case: error during error page rendering
+        if (handleErrorRenderingError(exception, request, response)) {
+            // original error code returned instead of error page, response considered processed
+            return true;
+        }
+        if (CONTEXT_ERROR.get() == null) {
+            if (response.isCommitted()) {
+                // committed response may be if user somehow handled response manually
+                logger.warn("Error page can't be shown instead of failed request {} because response"
+                        + "was already closed.", request.getRequestURI());
+            } else {
+                // redirect to error page (note it will be completely new processing cycle, starting from filter)
+                return handleErrorRedirect(exception, request, response);
             }
         }
         return false;
+    }
+
+    private boolean handleErrorRenderingError(final WebApplicationException exception,
+                                              final HttpServletRequest request,
+                                              final HttpServletResponse response) {
+        final ErrorContext context = CONTEXT_ERROR.get();
+        if (context != null && !context.processed) {
+            // logged as debug, because most likely dropwizard will log it (hiding duplicate with debug level)
+            logger.debug("Error page processing error", exception);
+            onUnexpectedError(request.getRequestURI(), context.originalUrl,
+                    context.exception.getResponse().getStatus(), context.exception, response);
+            context.processed = true;
+            // return true to indicate "processed" response
+            return true;
+        }
+        return false;
+    }
+
+    private boolean handleErrorRedirect(final WebApplicationException exception,
+                                        final HttpServletRequest request,
+                                        final HttpServletResponse response) {
+        final String path = selectErrorPage(exception);
+        if (path != null && !response.isCommitted()) {
+            logger.debug("Redirecting to error page: {}", path);
+            // to be able to access exception in error view
+            final ErrorContext context = new ErrorContext(exception, request);
+            CONTEXT_ERROR.set(context);
+            try {
+                request.getRequestDispatcher(path).forward(request, response);
+                // if error page rendering will fail, forward will not throw an exception, so this message
+                // will be incorrect
+                if (!context.processed) {
+                    logger.info("Serving error page '{}' instead of '{}' response error {}",
+                            path, request.getRequestURL(), exception.getResponse().getStatus());
+                }
+                context.processed = true;
+            } catch (Exception ex) {
+                logger.error("Failed to serve error page '" + path + "' for request '"
+                        + request.getRequestURL() + "' instead of rest exception:", ex);
+                onUnexpectedError(path, request.getRequestURI(), exception.getResponse().getStatus(),
+                        exception, response);
+            } finally {
+                CONTEXT_ERROR.remove();
+            }
+            return true;
+        }
+        return false;
+    }
+
+    private void onUnexpectedError(final String errorPage,
+                                   final String originalPage,
+                                   final int code,
+                                   final Exception originalException,
+                                   final HttpServletResponse response) {
+        final String ex;
+        if (originalException instanceof AssetError) {
+            ex = "asset error";
+        } else if (originalException instanceof TemplateRestCodeError) {
+            ex = "direct rest status";
+        } else {
+            ex = "rest exception";
+        }
+        // note exception is not logged here because most likely dropwizard will log rest exception itself
+        logger.error(String.format("Failed to serve error page %s for request %s instead of %s. "
+                        + "Error code %s will be returned instead of error page.",
+                errorPage, originalPage, ex, code));
+        try {
+            response.setStatus(CONTEXT_ERROR.get().exception.getResponse().getStatus());
+            // commit response so jersey will not try to handle it
+            response.flushBuffer();
+        } catch (IOException e) {
+            logger.error("Error processing response", e);
+        }
+    }
+
+
+    /**
+     * Error context object.
+     */
+    @SuppressWarnings("checkstyle:VisibilityModifier")
+    private static class ErrorContext {
+        /**
+         * Exception instance (error leading to error page).
+         */
+        protected WebApplicationException exception;
+        /**
+         * Original request uri (stored because during error page rendering it will be unreachable).
+         */
+        protected String originalUrl;
+        /**
+         * Processing marker used to prevent multiple error handling.
+         */
+        protected boolean processed;
+
+        protected ErrorContext(final WebApplicationException exception, final HttpServletRequest originalRequest) {
+            this.exception = exception;
+            this.originalUrl = originalRequest.getRequestURI();
+        }
     }
 }

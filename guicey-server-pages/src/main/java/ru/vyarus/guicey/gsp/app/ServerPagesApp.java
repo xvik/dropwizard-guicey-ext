@@ -106,8 +106,6 @@ public class ServerPagesApp {
                 .path(SLASH + name)
                 .extended(false)
                 .build());
-
-        environment.jersey().register(this);
     }
 
     /**
