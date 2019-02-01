@@ -67,6 +67,12 @@ public class ErrorRedirect {
     public boolean redirect(final HttpServletRequest request,
                             final HttpServletResponse response,
                             final WebApplicationException exception) {
+        if (response.isCommitted()) {
+            // committed response may be if user somehow handled response manually
+            logger.info("Detected committed response for {}. Error page selection logic ignored.",
+                    request.getRequestURI());
+            return false;
+        }
         return spa.redirect(request, response, exception.getResponse().getStatus())
                 || (SpaUtils.isHtmlRequest(request) && doRedirect(request, response, exception));
     }
@@ -116,14 +122,8 @@ public class ErrorRedirect {
             return true;
         }
         if (CONTEXT_ERROR.get() == null) {
-            if (response.isCommitted()) {
-                // committed response may be if user somehow handled response manually
-                logger.warn("Error page can't be shown instead of failed request {} because response"
-                        + "was already closed.", request.getRequestURI());
-            } else {
-                // redirect to error page (note it will be completely new processing cycle, starting from filter)
-                return handleErrorRedirect(exception, request, response);
-            }
+            // redirect to error page (note it will be completely new processing cycle, starting from filter)
+            return handleErrorRedirect(exception, request, response);
         }
         return false;
     }
@@ -149,7 +149,7 @@ public class ErrorRedirect {
                                         final HttpServletResponse response) {
         final String path = selectErrorPage(exception);
         if (path != null && !response.isCommitted()) {
-            logger.debug("Redirecting to error page: {}", path);
+            logger.debug("Redirecting failed {} request to error page: {}", request.getRequestURI(), path);
             // to be able to access exception in error view
             final ErrorContext context = new ErrorContext(exception, request);
             CONTEXT_ERROR.set(context);
@@ -158,13 +158,10 @@ public class ErrorRedirect {
                 // if error page rendering will fail, forward will not throw an exception, so this message
                 // will be incorrect
                 if (!context.processed) {
-                    logger.info("Serving error page '{}' instead of '{}' response error {}",
+                    logger.info("Serving error page {} instead of {} response error {}",
                             path, request.getRequestURL(), exception.getResponse().getStatus());
                 }
-                context.processed = true;
             } catch (Exception ex) {
-                logger.error("Failed to serve error page '" + path + "' for request '"
-                        + request.getRequestURL() + "' instead of rest exception:", ex);
                 onUnexpectedError(path, request.getRequestURI(), exception.getResponse().getStatus(),
                         exception, response);
             } finally {

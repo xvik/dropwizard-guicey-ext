@@ -1,6 +1,5 @@
 package ru.vyarus.guicey.gsp.app.filter.redirect;
 
-import com.google.common.base.Throwables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.vyarus.guicey.spa.filter.SpaUtils;
@@ -53,11 +52,13 @@ public class SpaSupport {
         if (!enabled) {
             return;
         }
-        if (SpaUtils.isRootPage(req.getRequestURI(), rootMapping)) {
+        final String requestURI = req.getRequestURI();
+        if (SpaUtils.isRootPage(requestURI, rootMapping)) {
             // index page must be not cacheable
             SpaUtils.noCache(res);
         } else {
             req.setAttribute(SPA_ROUTE_POSSIBILITY, true);
+            logger.debug("Request {} could be a SPA route", requestURI);
         }
     }
 
@@ -65,14 +66,14 @@ public class SpaSupport {
      * Perform redirection of SPA into index page (so browser receive index html on spa routing url) if conditions
      * match.
      * <ul>
-     *     <li>SPA support enabled</li>
-     *     <li>It't not already root (see {@link #markPossibleSpaRoute(HttpServletRequest, HttpServletResponse)})</li>
-     *     <li>Request accept html response</li>
-     *     <li>Request doesn't match filter regexp (describing static files)</li>
+     * <li>SPA support enabled</li>
+     * <li>It't not already root (see {@link #markPossibleSpaRoute(HttpServletRequest, HttpServletResponse)})</li>
+     * <li>Request accept html response</li>
+     * <li>Request doesn't match filter regexp (describing static files)</li>
      * </ul>
      *
-     * @param req request instance
-     * @param res response instance
+     * @param req  request instance
+     * @param res  response instance
      * @param code error code (http)
      * @return true if redirection performed, false otherwise (SPA route not recognized)
      */
@@ -81,15 +82,18 @@ public class SpaSupport {
                 && code == 404
                 && req.getAttribute(SPA_ROUTE_POSSIBILITY) != null
                 && SpaUtils.isSpaRoute(req, noRedirect)) {
+
             // redirect to root
             try {
                 logger.debug("Perform SPA route redirect: {} => {}", req.getRequestURI(), target);
                 SpaUtils.doRedirect(req, res, target);
+                return true;
             } catch (Exception ex) {
-                Throwables.throwIfUnchecked(ex);
-                throw new IllegalStateException("Failed to perform SPA redirect", ex);
+                // there should be proper error page showing, but its too complex so just ignore failed spa logic
+                logger.error("Failed to perform SPA redirect for " + req.getRequestURI(), ex);
+                // to avoid possible consequent spa checks in this request
+                req.removeAttribute(SPA_ROUTE_POSSIBILITY);
             }
-            return true;
         }
         return false;
     }

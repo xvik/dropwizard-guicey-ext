@@ -82,6 +82,7 @@ public class ServerPagesFilter implements Filter {
                          final FilterChain chain) throws IOException, ServletException {
         final HttpServletRequest req = (HttpServletRequest) servletRequest;
         final HttpServletResponse resp = (HttpServletResponse) servletResponse;
+        logger.debug("Processing request {}", req.getRequestURI());
 
         spa.markPossibleSpaRoute(req, resp);
 
@@ -137,6 +138,7 @@ public class ServerPagesFilter implements Filter {
         final View view = new DummyView(file);
         for (ViewRenderer renderer : renderers) {
             if (renderer.isRenderable(view)) {
+                logger.debug("Direct {} template {} request detected", renderer.getConfigurationKey(), file);
                 return true;
             }
         }
@@ -156,11 +158,15 @@ public class ServerPagesFilter implements Filter {
     private void handleError(final HttpServletRequest req,
                              final HttpServletResponse resp,
                              final int error) throws IOException {
-        // handle only error codes, preserving redirects (3xx)
-        if (error <= ErrorRedirect.CODE_400
-                || !redirect.getErrorRedirect().redirect(req, resp, new AssetError(req, error))) {
-            // if no mapped error page or non error status returned - return error as is
-            resp.sendError(error);
+        if (error != 0) {
+            logger.debug("Possible asset {} error detected: {}", req.getRequestURI(), error);
+            // handle only error codes, preserving redirects (3xx)
+            if (error <= ErrorRedirect.CODE_400
+                    || !redirect.getErrorRedirect().redirect(req, resp, new AssetError(req, error))) {
+                // if no mapped error page or non error status returned - return error as is
+                logger.debug("Sending direct response code {} for asset {}", error, req.getRequestURI());
+                resp.sendError(error);
+            }
         }
     }
 
