@@ -36,7 +36,7 @@ public final class ViewsSupport {
                              final Configuration configuration,
                              final Environment environment) throws Exception {
         // view bundle must be initialized just once
-        if (!config.isInitialized()) {
+        if (config.requiresInitialization()) {
 
             installViewBundle(config, configuration, environment);
             config.initialized();

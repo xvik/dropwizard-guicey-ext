@@ -45,6 +45,9 @@ public class GlobalConfig {
     @SuppressWarnings("PMD.AvoidFieldNameMatchingMethodName")
     private boolean initialized;
 
+    @SuppressWarnings("PMD.AvoidFieldNameMatchingMethodName")
+    private boolean shutdown;
+
     /**
      * Used to reveal registered application with the same name.
      *
@@ -105,7 +108,7 @@ public class GlobalConfig {
      */
     @SuppressWarnings("unchecked")
     public <T extends Configuration> void setConfigurable(final ViewConfigurable<T> configurable,
-                                                                final String name) {
+                                                          final String name) {
         checkAlreadyInitialized();
         Preconditions.checkState(viewsConfigurationApp == null || viewsConfigurationApp.equals(name),
                 "Global views configuration must be performed by one bundle and '%s' "
@@ -146,10 +149,10 @@ public class GlobalConfig {
     }
 
     /**
-     * @return true when dropwizard views initialized, false otherwise
+     * @return true when dropwizard views not initialized, false otherwise
      */
-    public boolean isInitialized() {
-        return initialized;
+    public boolean requiresInitialization() {
+        return !initialized;
     }
 
     /**
@@ -160,12 +163,35 @@ public class GlobalConfig {
     }
 
     /**
+     * @return true if application was shutdown
+     */
+    public boolean isShutdown() {
+        return shutdown;
+    }
+
+    /**
+     * Mark global config as belonging to shutdown application (used to re-create config).
+     */
+    public void shutdown() {
+        this.shutdown = true;
+    }
+
+    /**
      * Register application resources extension.
      *
      * @param app      application name to apply new resources to
      * @param location classpath location
      */
     public void extendLocation(final String app, final String location) {
+        // if application itself is already registered check its not initialized (extension could be applied)
+        for (ServerPagesApp spa : apps) {
+            if (spa.name.equals(app)) {
+                Preconditions.checkState(!spa.isStarted(),
+                        "Can't extend %s application resources becuase application already initialized",
+                        app);
+                break;
+            }
+        }
         extensions.put(app, location);
     }
 

@@ -8,6 +8,8 @@ import io.dropwizard.setup.Environment;
 import io.dropwizard.views.ViewBundle;
 import io.dropwizard.views.ViewConfigurable;
 import io.dropwizard.views.ViewRenderer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.vyarus.dropwizard.guice.module.installer.bundle.GuiceyBootstrap;
 import ru.vyarus.guicey.gsp.app.DelayedInitializer;
 import ru.vyarus.guicey.gsp.app.GlobalConfig;
@@ -110,12 +112,15 @@ import static ru.vyarus.guicey.spa.SpaBundle.SLASH;
  * @since 22.10.2018
  */
 public class ServerPagesBundle implements ConfiguredBundle<Configuration> {
+
     /**
      * Default pattern for file request detection.
      *
      * @see ServerPagesBundle.Builder#filePattern(String)
      */
     public static final String FILE_REQUEST_PATTERN = "(?:^|/)([^/]+\\.(?:[a-zA-Z\\d]+))(?:\\?.+)?$";
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ServerPagesBundle.class);
 
     // dropwizard initialization is single threaded so using thread local
     // to control asset uniqueness (important for filters registration) and view bundle configuration
@@ -148,7 +153,8 @@ public class ServerPagesBundle implements ConfiguredBundle<Configuration> {
     @Override
     public void run(final Configuration configuration, final Environment environment) throws Exception {
         final GlobalConfig config = GLOBAL_CONFIG.get();
-        if (!config.isInitialized()) {
+        if (config.requiresInitialization()) {
+            LOGGER.debug("Perform global server pages initialization (views configuration)");
             // delayed apps init finalization (common for all registered apps)
             new DelayedInitializer(config, environment);
 
@@ -178,6 +184,8 @@ public class ServerPagesBundle implements ConfiguredBundle<Configuration> {
      */
     public static ServerPagesBundle.Builder app(final String name, final String resourcePath, final String uriPath) {
         initGlobalConfig();
+        LOGGER.debug("Registering server pages application {} on path {} with resources in {}",
+                name, uriPath, resourcePath);
         return new ServerPagesBundle.Builder(true, name, resourcePath, uriPath);
     }
 
@@ -197,6 +205,8 @@ public class ServerPagesBundle implements ConfiguredBundle<Configuration> {
                                                      final String resourcePath,
                                                      final String uriPath) {
         initGlobalConfig();
+        LOGGER.debug("Registering admin server pages application {} on path {} with resources in {}",
+                name, uriPath, resourcePath);
         return new ServerPagesBundle.Builder(false, name, resourcePath, uriPath);
     }
 
@@ -220,12 +230,14 @@ public class ServerPagesBundle implements ConfiguredBundle<Configuration> {
      */
     public static void extendApp(final String name, final String resourcePath) {
         initGlobalConfig();
+        LOGGER.debug("Registering {} server pages application resources extension: {}", name, resourcePath);
         GLOBAL_CONFIG.get().extendLocation(name, resourcePath);
     }
 
     private static void initGlobalConfig() {
         // one config instance must be used for all server pages bundles initialized with single dw app
-        if (GLOBAL_CONFIG.get() == null || GLOBAL_CONFIG.get().isInitialized()) {
+        if (GLOBAL_CONFIG.get() == null || GLOBAL_CONFIG.get().isShutdown()) {
+            LOGGER.debug("Initializing global server pages configuration");
             GLOBAL_CONFIG.set(new GlobalConfig());
         }
     }

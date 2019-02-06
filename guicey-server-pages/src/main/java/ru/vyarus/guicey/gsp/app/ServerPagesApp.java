@@ -61,10 +61,11 @@ public class ServerPagesApp {
     protected TemplateRedirect templateRedirect;
     protected LazyLocationProvider locationsProvider;
 
-    private final GlobalConfig globalConfig;
-
     // intentionally use main bundle class for logging
     private final Logger logger = LoggerFactory.getLogger(ServerPagesBundle.class);
+
+    private final GlobalConfig globalConfig;
+    private boolean started;
 
     public ServerPagesApp(final GlobalConfig globalConfig) {
         this.globalConfig = globalConfig;
@@ -121,6 +122,14 @@ public class ServerPagesApp {
         // delayed compose of extended locations
         locationsProvider.get();
         logger.info(AppReportBuilder.build(this, paths));
+        started = true;
+    }
+
+    /**
+     * @return true if application already started, false otherwise
+     */
+    public boolean isStarted() {
+        return started;
     }
 
     /**

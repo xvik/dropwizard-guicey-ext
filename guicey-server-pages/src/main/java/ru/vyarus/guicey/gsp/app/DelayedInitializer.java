@@ -38,6 +38,9 @@ public class DelayedInitializer implements ApplicationEventListener {
     public void onEvent(final ApplicationEvent event) {
         if (event.getType() == ApplicationEvent.Type.INITIALIZATION_APP_FINISHED) {
             init();
+        } else if (event.getType() == ApplicationEvent.Type.DESTROY_FINISHED) {
+            // mark global config so it could be replaced with new one (for tests)
+            config.shutdown();
         }
     }
 
