@@ -67,12 +67,6 @@ public class ErrorRedirect {
     public boolean redirect(final HttpServletRequest request,
                             final HttpServletResponse response,
                             final WebApplicationException exception) {
-        if (response.isCommitted()) {
-            // committed response may be if user somehow handled response manually
-            logger.info("Detected committed response for {}. Error page selection logic ignored.",
-                    request.getRequestURI());
-            return false;
-        }
         return spa.redirect(request, response, exception.getResponse().getStatus())
                 || (SpaUtils.isHtmlRequest(request) && doRedirect(request, response, exception));
     }
@@ -112,20 +106,13 @@ public class ErrorRedirect {
         return null;
     }
 
-    @SuppressWarnings("checkstyle:ReturnCount")
     private boolean doRedirect(final HttpServletRequest request,
                                final HttpServletResponse response,
                                final WebApplicationException exception) {
-        // special case: error during error page rendering
-        if (handleErrorRenderingError(exception, request, response)) {
-            // original error code returned instead of error page, response considered processed
-            return true;
-        }
-        if (CONTEXT_ERROR.get() == null) {
-            // redirect to error page (note it will be completely new processing cycle, starting from filter)
-            return handleErrorRedirect(exception, request, response);
-        }
-        return false;
+        // special case: error during error page rendering (original error code returned)
+        return handleErrorRenderingError(exception, request, response)
+                // redirect to error page (note it will be completely new processing cycle, starting from filter)
+                || (CONTEXT_ERROR.get() == null && handleErrorRedirect(exception, request, response));
     }
 
     private boolean handleErrorRenderingError(final WebApplicationException exception,
