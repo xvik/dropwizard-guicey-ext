@@ -187,7 +187,7 @@ public class GlobalConfig {
         for (ServerPagesApp spa : apps) {
             if (spa.name.equals(app)) {
                 Preconditions.checkState(!spa.isStarted(),
-                        "Can't extend %s application resources becuase application already initialized",
+                        "Can't extend already initialized server pages application %s",
                         app);
                 break;
             }
