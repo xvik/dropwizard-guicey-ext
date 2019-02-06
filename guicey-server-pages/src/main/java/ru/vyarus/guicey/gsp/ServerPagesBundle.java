@@ -1,6 +1,6 @@
 package ru.vyarus.guicey.gsp;
 
-import com.google.common.base.Throwables;
+import com.google.common.annotations.VisibleForTesting;
 import io.dropwizard.Configuration;
 import io.dropwizard.ConfiguredBundle;
 import io.dropwizard.setup.Bootstrap;
@@ -224,14 +224,32 @@ public class ServerPagesBundle implements ConfiguredBundle<Configuration> {
      * Note that if you just want to add new rest resources then simply prefix resource paths with application name
      * and they will be included automatically (in example above app name is "ui" and note that name is completely
      * internal and may not be the same as path mapping ("/ui" in example above).
+     * <p>
+     * If extended application is not registered no error will be thrown. This behaviour support optional application
+     * extension support (extension will work if extended application registered and will not harm if not).
      *
      * @param name         extended application name
      * @param resourcePath classpath location for additional resources
+     * @throws IllegalStateException if target application is already initialized
      */
     public static void extendApp(final String name, final String resourcePath) {
         initGlobalConfig();
         LOGGER.debug("Registering {} server pages application resources extension: {}", name, resourcePath);
         GLOBAL_CONFIG.get().extendLocation(name, resourcePath);
+    }
+
+    /**
+     * Remove current global configuration. This is required in tests when bundle initialization errors
+     * are checked because otherwise global config is not marked as shutdown and so being re-used. In real application
+     * bundle fails are not tested and so this method will not be required (after app startup global context will be
+     * properly marked and so will not affect consequent tests).
+     * <p>
+     * WARNING: intended to be used by internal tests only (because global context listens for app shutdowns and so
+     * not cause problems neither in usual run nor in tests).
+     */
+    @VisibleForTesting
+    public static void resetGlobalConfig() {
+        GLOBAL_CONFIG.remove();
     }
 
     private static void initGlobalConfig() {
@@ -463,8 +481,8 @@ public class ServerPagesBundle implements ConfiguredBundle<Configuration> {
             try {
                 bundle.run(bootstrap.configuration(), bootstrap.environment());
             } catch (Exception ex) {
-                Throwables.throwIfUnchecked(ex);
-                throw new IllegalStateException("Failed to initialize server pages module", ex);
+                throw new IllegalStateException("Failed to start server pages application "
+                        + bundle.app.name, ex);
             }
         }
     }

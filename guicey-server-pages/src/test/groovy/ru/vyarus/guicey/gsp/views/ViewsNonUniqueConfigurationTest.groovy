@@ -15,6 +15,10 @@ import spock.lang.Specification
  */
 class ViewsNonUniqueConfigurationTest extends Specification {
 
+    void cleanup() {
+        ServerPagesBundle.resetGlobalConfig()
+    }
+
     def "Check duplicate views configuration detection"() {
 
         when: "start app"
