@@ -86,13 +86,14 @@ public class SpaSupport {
             // redirect to root
             try {
                 logger.debug("Perform SPA route redirect: {} => {}", req.getRequestURI(), target);
+                // to avoid possible consequent spa checks in this request
+                // and prevent spa loop on root page rendering errors
+                req.removeAttribute(SPA_ROUTE_POSSIBILITY);
                 SpaUtils.doRedirect(req, res, target);
                 return true;
             } catch (Exception ex) {
                 // there should be proper error page showing, but its too complex so just ignore failed spa logic
                 logger.error("Failed to perform SPA redirect for " + req.getRequestURI(), ex);
-                // to avoid possible consequent spa checks in this request
-                req.removeAttribute(SPA_ROUTE_POSSIBILITY);
             }
         }
         return false;
