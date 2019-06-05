@@ -2,6 +2,8 @@ package ru.vyarus.guicey.gsp;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import io.dropwizard.Configuration;
 import io.dropwizard.ConfiguredBundle;
 import io.dropwizard.setup.Bootstrap;
@@ -25,9 +27,9 @@ import ru.vyarus.guicey.gsp.views.ConfiguredViewBundle;
 import ru.vyarus.guicey.gsp.views.ViewRendererConfigurationModifier;
 import ru.vyarus.guicey.spa.SpaBundle;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.ServiceLoader;
 
 import static com.google.common.base.Preconditions.checkArgument;
@@ -275,7 +277,19 @@ public class ServerPagesBundle implements ConfiguredBundle<Configuration> {
      * @return list of used renderers (supported template engines)
      */
     public List<ViewRenderer> getRenderers() {
-        return new ArrayList<>(config.getRenderers());
+        return ImmutableList.copyOf(config.getRenderers());
+    }
+
+    /**
+     * Method is available for custom views configuration state analysis logic (after startup) or to validate
+     * state in tests.
+     *
+     * @return final views configuration object (unmodifiable)
+     * @throws NullPointerException if views configuration is not yet created (views ot initialized)
+     */
+    public Map<String, Map<String, String>> getViewsConfig() {
+        return ImmutableMap.copyOf(checkNotNull(config.getViewsConfig(),
+                "Views configuration is not created yet"));
     }
 
     @Override
@@ -429,8 +443,7 @@ public class ServerPagesBundle implements ConfiguredBundle<Configuration> {
                              final String uri,
                              final GlobalConfig config) {
             this.config = config;
-            config.addAppName(name);
-            this.app = new ServerPagesApp(config);
+            this.app = config.createApp(name);
 
             app.mainContext = mainContext;
             app.name = checkNotNull(name, "Name is required");
@@ -439,8 +452,6 @@ public class ServerPagesBundle implements ConfiguredBundle<Configuration> {
             checkArgument(path.startsWith(SLASH), "%s is not an absolute path", path);
             checkArgument(!SLASH.equals(path), "%s is the classpath root", path);
             app.resourcePath = path.endsWith(SLASH) ? path : (path + SLASH);
-
-            config.apps.add(app);
         }
 
         /**

@@ -30,31 +30,32 @@ public class ConfiguredViewBundle extends ViewBundle<Configuration> {
     @Override
     @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
     public Map<String, Map<String, String>> getViewConfiguration(final Configuration configuration) {
+        Map<String, Map<String, String>> config;
         if (globalConfig.getConfigurable() == null) {
-            return super.getViewConfiguration(configuration);
+            config = new HashMap<>();
         } else {
-            Map<String, Map<String, String>> config = globalConfig.getConfigurable()
+            config = globalConfig.getConfigurable()
                     .getViewConfiguration(configuration);
             if (config == null) {
                 config = new HashMap<>();
             }
-            // only one bundle could configure global configuration provider, but all bundles
-            // could modify resulted configuration
-            for (String key : globalConfig.getConfigModifiers().keys()) {
-                if (!config.containsKey(key)) {
-                    config.put(key, new HashMap<>());
-                }
-                final Map<String, String> cfg = config.get(key);
-                for (ViewRendererConfigurationModifier modifier
-                        : globalConfig.getConfigModifiers().get(key)) {
-                    modifier.modify(cfg);
-                }
-            }
-            if (globalConfig.isPrintConfiguration()) {
-                logger.info("Views configuration: {}{}", NEWLINE, renderConfig(config));
-            }
-            return config;
         }
+        // only one bundle could configure global configuration provider, but all bundles
+        // could modify resulted configuration
+        for (String key : globalConfig.getConfigModifiers().keys()) {
+            if (!config.containsKey(key)) {
+                config.put(key, new HashMap<>());
+            }
+            final Map<String, String> cfg = config.get(key);
+            for (ViewRendererConfigurationModifier modifier
+                    : globalConfig.getConfigModifiers().get(key)) {
+                modifier.modify(cfg);
+            }
+        }
+        if (globalConfig.isPrintConfiguration()) {
+            logger.info("Views configuration: {}{}", NEWLINE, renderConfig(config));
+        }
+        return globalConfig.viewsConfig(config);
     }
 
     /**

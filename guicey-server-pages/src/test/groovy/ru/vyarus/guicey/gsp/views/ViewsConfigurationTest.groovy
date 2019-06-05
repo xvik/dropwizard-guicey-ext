@@ -44,6 +44,9 @@ class ViewsConfigurationTest extends Specification {
         @Override
         void run(Config configuration, Environment environment) throws Exception {
             assert bundle.getRenderers().size() == 2
+            assert bundle.getViewsConfig() != null
+            // value from yaml
+            assert bundle.getViewsConfig()['freemarker']['cache_storage'] == 'freemarker.cache.NullCacheStorage'
         }
     }
 

@@ -4,23 +4,20 @@ import io.dropwizard.Application
 import io.dropwizard.Configuration
 import io.dropwizard.setup.Bootstrap
 import io.dropwizard.setup.Environment
-import ru.vyarus.dropwizard.guice.test.spock.ConfigOverride
 import ru.vyarus.dropwizard.guice.test.spock.UseDropwizardApp
 import ru.vyarus.guicey.gsp.ServerPagesBundle
 import spock.lang.Specification
 
 /**
  * @author Vyacheslav Rusakov
- * @since 07.02.2019
+ * @since 05.06.2019
  */
-@UseDropwizardApp(value = App, configOverride = [
-        @ConfigOverride(key = "server.rootPath", value = "/rest/*")
-])
-class ViewsConfigCreationTest extends Specification {
+@UseDropwizardApp(value = App)
+class ViewConfigurationModificationTest extends Specification {
 
-    def "Check null views configuration binding"() {
+    def "Check views configuration modification in app"() {
 
-        expect: "created main config map and sub map for freemarker"
+        expect: "application started without errors"
         true
     }
 
@@ -31,18 +28,20 @@ class ViewsConfigCreationTest extends Specification {
         @Override
         void initialize(Bootstrap<Configuration> bootstrap) {
             bundle = ServerPagesBundle.builder()
-                    .viewsConfiguration({ null })
-                    .viewsConfigurationModifier('freemarker', { it['foo'] = 'bar' })
                     .printViewsConfiguration()
                     .build()
             bootstrap.addBundle(bundle)
             // pure dropwizard bundle
-            bootstrap.addBundle(ServerPagesBundle.app("app", "/app", "/").build())
+            bootstrap.addBundle(ServerPagesBundle.app("app", "/app", "/app")
+                    .viewsConfigurationModifier('freemarker', { it['cache_storage'] = "yes" })
+                    .viewsConfigurationModifier('test', { })
+                    .build())
         }
 
         @Override
         void run(Configuration configuration, Environment environment) throws Exception {
-            assert bundle.getViewsConfig()['freemarker']['foo'] == 'bar'
+            assert bundle.getViewsConfig()['freemarker']['cache_storage'] == 'yes'
+            assert bundle.getViewsConfig()['test'].isEmpty()
         }
     }
 }

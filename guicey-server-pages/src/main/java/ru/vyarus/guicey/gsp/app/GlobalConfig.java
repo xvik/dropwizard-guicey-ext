@@ -11,6 +11,7 @@ import ru.vyarus.guicey.gsp.views.ViewRendererConfigurationModifier;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
@@ -22,12 +23,10 @@ import static com.google.common.base.Preconditions.checkState;
  * @author Vyacheslav Rusakov
  * @since 06.12.2018
  */
-@SuppressWarnings("checkstyle:VisibilityModifier")
 public class GlobalConfig {
 
-    public List<ServerPagesApp> apps = new ArrayList<>();
-
     private final List<String> names = new ArrayList<>();
+    private final List<ServerPagesApp> apps = new ArrayList<>();
     private final List<ViewRenderer> renderers = new ArrayList<>();
     private final Multimap<String, ViewRendererConfigurationModifier> configModifiers = LinkedHashMultimap.create();
     // app name -- packages to search resources in
@@ -35,6 +34,8 @@ public class GlobalConfig {
     private ViewConfigurable<Configuration> configurable;
     private boolean viewsSupportRegistered;
     private boolean printConfig;
+    @SuppressWarnings("PMD.AvoidFieldNameMatchingMethodName")
+    private Map<String, Map<String, String>> viewsConfig;
 
     @SuppressWarnings("PMD.AvoidFieldNameMatchingMethodName")
     private boolean initialized;
@@ -60,12 +61,23 @@ public class GlobalConfig {
      * Used to reveal registered application with the same name.
      *
      * @param name server pages application name
+     * @return created application instance
      */
-    public void addAppName(final String name) {
+    public ServerPagesApp createApp(final String name) {
         // important because name used for filter mapping
         checkArgument(!names.contains(name),
                 "Server pages application with name '%s' is already registered", name);
         names.add(name);
+        final ServerPagesApp app = new ServerPagesApp(this);
+        this.apps.add(app);
+        return app;
+    }
+
+    /**
+     * @return list of created server page applications
+     */
+    public List<ServerPagesApp> getApps() {
+        return apps;
     }
 
     /**
@@ -73,6 +85,21 @@ public class GlobalConfig {
      */
     public List<ViewRenderer> getRenderers() {
         return renderers;
+    }
+
+    /**
+     * @return final views configuration or null if not yet initialized
+     */
+    public Map<String, Map<String, String>> getViewsConfig() {
+        return viewsConfig;
+    }
+
+    /**
+     * @param viewsConfig final views config
+     */
+    public Map<String, Map<String, String>> viewsConfig(final Map<String, Map<String, String>> viewsConfig) {
+        this.viewsConfig = viewsConfig;
+        return viewsConfig;
     }
 
     /**
