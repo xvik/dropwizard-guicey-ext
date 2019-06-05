@@ -96,6 +96,7 @@ public class GlobalConfig {
 
     /**
      * @param viewsConfig final views config
+     * @return provided view config
      */
     public Map<String, Map<String, String>> viewsConfig(final Map<String, Map<String, String>> viewsConfig) {
         this.viewsConfig = viewsConfig;
