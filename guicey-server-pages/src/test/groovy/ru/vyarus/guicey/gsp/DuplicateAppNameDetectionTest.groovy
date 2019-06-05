@@ -31,14 +31,16 @@ class DuplicateAppNameDetectionTest extends Specification {
         when: "starting app"
         new DropwizardAppRule<>(GAppInit).before()
         then: "duplicate name error"
-        ex = thrown(IllegalArgumentException)
-        ex.message == 'Server pages application with name \'app\' is already registered'
+        ex = thrown(IllegalStateException)
+        ex.message == 'Duplicate server pages support initialization (ServerPagesBundle.builder())'
     }
 
     static class AppInit extends Application<Configuration> {
 
         @Override
         void initialize(Bootstrap<Configuration> bootstrap) {
+            bootstrap.addBundle(ServerPagesBundle.builder().build())
+
             bootstrap.addBundle(ServerPagesBundle.app("app", "/app", "/app")
                     .indexPage("index.html").build())
 
@@ -55,6 +57,8 @@ class DuplicateAppNameDetectionTest extends Specification {
 
         @Override
         void initialize(Bootstrap<Configuration> bootstrap) {
+            bootstrap.addBundle(ServerPagesBundle.builder().build())
+
             bootstrap.addBundle(GuiceBundle.builder()
                     .bundles(new GuiceyBundle() {
                 @Override

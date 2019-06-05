@@ -40,6 +40,8 @@ class FilePatternChangeTest extends Specification {
 
         @Override
         void initialize(Bootstrap<Configuration> bootstrap) {
+            bootstrap.addBundle(ServerPagesBundle.builder().build())
+
             // pure dropwizard bundle
             bootstrap.addBundle(ServerPagesBundle.app("app", "/app", "/")
                     // everything is a file, except direct .html files call

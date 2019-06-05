@@ -9,9 +9,7 @@ import io.dropwizard.setup.Environment
 import ru.vyarus.dropwizard.guice.test.spock.ConfigOverride
 import ru.vyarus.dropwizard.guice.test.spock.UseDropwizardApp
 import ru.vyarus.guicey.gsp.ServerPagesBundle
-import ru.vyarus.guicey.spa.SpaBundle
 import spock.lang.Specification
-
 
 /**
  * @author Vyacheslav Rusakov
@@ -49,7 +47,7 @@ class MultipleBundlesMappingTest extends Specification {
         res = new URL("http://localhost:8080/2/some/").text
         then: "error"
         res.contains("Sample page")
-        
+
         when: "accessing not existing admin page"
         res = new URL("http://localhost:8081/a2/some/").text
         then: "error"
@@ -95,12 +93,14 @@ class MultipleBundlesMappingTest extends Specification {
 
         @Override
         void initialize(Bootstrap<Configuration> bootstrap) {
+            bootstrap.addBundle(ServerPagesBundle.builder().build())
+
             bootstrap.addBundle(ServerPagesBundle.app("app1", "/app", "/1")
                     .indexPage('index.html').spaRouting().build())
-            bootstrap.addBundle(ServerPagesBundle.app("app2", "/app","/2")
+            bootstrap.addBundle(ServerPagesBundle.app("app2", "/app", "/2")
                     .indexPage('index.html').spaRouting().build())
 
-            bootstrap.addBundle(ServerPagesBundle.adminApp("aapp1", "/app","/a1")
+            bootstrap.addBundle(ServerPagesBundle.adminApp("aapp1", "/app", "/a1")
                     .indexPage('index.html').spaRouting().build())
             bootstrap.addBundle(ServerPagesBundle.adminApp("aapp2", "/app", "/a2")
                     .indexPage('index.html').spaRouting().build())

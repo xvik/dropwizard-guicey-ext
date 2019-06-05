@@ -13,8 +13,10 @@ import java.util.Map;
  * Each modifier is registered for exact renderer and so don't have to deal with map of maps (global configuration).
  *
  * @author Vyacheslav Rusakov
- * @see ru.vyarus.guicey.gsp.ServerPagesBundle.Builder#viewsConfigurationModifier(
+ * @see ru.vyarus.guicey.gsp.ServerPagesBundle.AppBuilder#viewsConfigurationModifier(
  *String, ViewRendererConfigurationModifier)
+ * @see ru.vyarus.guicey.gsp.ServerPagesBundle.ViewsBuilder#viewsConfigurationModifier(
+ *  String, ViewRendererConfigurationModifier)
  * @since 06.12.2018
  */
 public interface ViewRendererConfigurationModifier {
@@ -25,7 +27,7 @@ public interface ViewRendererConfigurationModifier {
      * Modifiers execution order is not predefined.
      *
      * @param config configuration map for exact renderer
-     * @see ru.vyarus.guicey.gsp.ServerPagesBundle.Builder#printViewsConfiguration()
+     * @see ru.vyarus.guicey.gsp.ServerPagesBundle.ViewsBuilder#printViewsConfiguration()
      */
     void modify(Map<String, String> config);
 }

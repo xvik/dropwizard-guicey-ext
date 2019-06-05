@@ -50,6 +50,8 @@ class ExtendedFromGuiceyTest extends Specification {
 
         @Override
         void initialize(Bootstrap<Configuration> bootstrap) {
+            bootstrap.addBundle(ServerPagesBundle.builder().build())
+
             // pure dropwizard bundle
             bootstrap.addBundle(ServerPagesBundle.app("app", "/app", "/")
                     .indexPage("index.html")

@@ -4,34 +4,35 @@ import io.dropwizard.Application
 import io.dropwizard.Configuration
 import io.dropwizard.setup.Bootstrap
 import io.dropwizard.setup.Environment
-import ru.vyarus.dropwizard.guice.test.spock.ConfigOverride
-import ru.vyarus.dropwizard.guice.test.spock.UseDropwizardApp
+import io.dropwizard.testing.junit.DropwizardAppRule
 import ru.vyarus.guicey.gsp.ServerPagesBundle
 import spock.lang.Specification
 
 /**
  * @author Vyacheslav Rusakov
- * @since 07.02.2019
+ * @since 05.06.2019
  */
-@UseDropwizardApp(value = App, configOverride = [
-        @ConfigOverride(key = "server.rootPath", value = "/rest/*")
-])
-class PrintEmptyConfigurationTest extends Specification {
+class NoViewsSupportTest extends Specification {
 
-    def "Check empty config printing"() {
+    void cleanup() {
+        ServerPagesBundle.resetGlobalConfig()
+    }
 
-        expect: "created main config empty map correctlu prointed"
-        true
+    def "Check view support absence detection"() {
+
+        when: "starting app"
+        new DropwizardAppRule<>(App).before()
+        then: "no views support detected"
+        def ex = thrown(IllegalStateException)
+        ex.message == 'Server pages support bundle was not installed: use ServerPagesBundle.builder() to create bundle'
+
     }
 
     static class App extends Application<Configuration> {
 
         @Override
         void initialize(Bootstrap<Configuration> bootstrap) {
-            bootstrap.addBundle(ServerPagesBundle.builder()
-                    .viewsConfiguration({ null })
-                    .printViewsConfiguration()
-                    .build())
+            // NO global setup
 
             // pure dropwizard bundle
             bootstrap.addBundle(ServerPagesBundle.app("app", "/app", "/").build())

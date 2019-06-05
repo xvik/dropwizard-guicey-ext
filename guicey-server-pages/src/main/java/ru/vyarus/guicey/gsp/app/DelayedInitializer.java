@@ -12,7 +12,8 @@ import ru.vyarus.guicey.gsp.app.util.PathUtils;
 import java.util.Set;
 
 /**
- * Delayed applications initializer. Delaying is required to grant all configurations were performed.
+ * Delayed applications initializer. Delaying is required to be sure that all configurations were performed
+ * (most importantly, all applications extension paths registered).
  *
  * @author Vyacheslav Rusakov
  * @since 18.01.2019

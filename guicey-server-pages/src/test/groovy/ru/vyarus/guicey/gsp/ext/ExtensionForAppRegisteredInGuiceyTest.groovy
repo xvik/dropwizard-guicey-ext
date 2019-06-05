@@ -53,6 +53,8 @@ class ExtensionForAppRegisteredInGuiceyTest extends Specification {
             // extension registered before application
             ServerPagesBundle.extendApp("app", "/ext")
 
+            bootstrap.addBundle(ServerPagesBundle.builder().build())
+
             // app registere inside guicey bundle
             bootstrap.addBundle(GuiceBundle.builder()
                     .bundles(new GuiceyBundle() {

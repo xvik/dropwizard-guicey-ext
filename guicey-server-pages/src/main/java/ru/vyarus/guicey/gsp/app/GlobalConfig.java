@@ -1,14 +1,11 @@
 package ru.vyarus.guicey.gsp.app;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Multimap;
-import io.dropwizard.Application;
 import io.dropwizard.Configuration;
 import io.dropwizard.views.ViewConfigurable;
 import io.dropwizard.views.ViewRenderer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import ru.vyarus.guicey.gsp.ServerPagesBundle;
 import ru.vyarus.guicey.gsp.views.ViewRendererConfigurationModifier;
 
 import java.util.ArrayList;
@@ -16,6 +13,7 @@ import java.util.Collection;
 import java.util.List;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkState;
 
 /**
  * Global configuration object shared by all server page bundles. Contains configuration for global views creation.
@@ -26,20 +24,16 @@ import static com.google.common.base.Preconditions.checkArgument;
  */
 @SuppressWarnings("checkstyle:VisibilityModifier")
 public class GlobalConfig {
-    public Application application;
+
     public List<ServerPagesApp> apps = new ArrayList<>();
-
-    private final Logger logger = LoggerFactory.getLogger(GlobalConfig.class);
-
-    private ViewConfigurable<Configuration> configurable;
-    // server bundle name performed views configuration
-    private String viewsConfigurationApp;
 
     private final List<String> names = new ArrayList<>();
     private final List<ViewRenderer> renderers = new ArrayList<>();
     private final Multimap<String, ViewRendererConfigurationModifier> configModifiers = LinkedHashMultimap.create();
     // app name -- packages to search resources in
     private final Multimap<String, String> extensions = LinkedHashMultimap.create();
+    private ViewConfigurable<Configuration> configurable;
+    private boolean viewsSupportRegistered;
     private boolean printConfig;
 
     @SuppressWarnings("PMD.AvoidFieldNameMatchingMethodName")
@@ -47,6 +41,20 @@ public class GlobalConfig {
 
     @SuppressWarnings("PMD.AvoidFieldNameMatchingMethodName")
     private boolean shutdown;
+
+    public void globalBundleCreated() {
+        checkState(!viewsSupportRegistered,
+                "Duplicate server pages support initialization (%s.builder())",
+                ServerPagesBundle.class.getSimpleName());
+        viewsSupportRegistered = true;
+    }
+
+    /**
+     * @return true if global bundle was created (assuming its registered), false otherwise
+     */
+    public boolean isViewsSupportRegistered() {
+        return viewsSupportRegistered;
+    }
 
     /**
      * Used to reveal registered application with the same name.
@@ -103,19 +111,11 @@ public class GlobalConfig {
      * Could be configured only by one bundle in order to simplify configuration.
      *
      * @param configurable dropwizard views configuration binding
-     * @param name         server pages application name which performs configuration
      * @param <T>          configuration type
      */
     @SuppressWarnings("unchecked")
-    public <T extends Configuration> void setConfigurable(final ViewConfigurable<T> configurable,
-                                                          final String name) {
-        checkAlreadyInitialized();
-        Preconditions.checkState(viewsConfigurationApp == null || viewsConfigurationApp.equals(name),
-                "Global views configuration must be performed by one bundle and '%s' "
-                        + "already configured it.", viewsConfigurationApp);
-        logger.debug("Global views configurable configured by '{}' server pages bundle", name);
+    public <T extends Configuration> void setConfigurable(final ViewConfigurable<T> configurable) {
         this.configurable = (ViewConfigurable<Configuration>) configurable;
-        this.viewsConfigurationApp = name;
     }
 
     /**
@@ -123,6 +123,9 @@ public class GlobalConfig {
      * @param modifier modifier for exact renderer config
      */
     public void addConfigModifier(final String name, final ViewRendererConfigurationModifier modifier) {
+        // it is possible to throw this check if server pages application is registered inside GuiceyBundle
+        // and ServerPagesBundle is installed before GuiceBundle. In this case simply move ServerPagesBundle
+        // registration after GuiceBundle
         checkAlreadyInitialized();
         configModifiers.put(name, modifier);
     }
@@ -146,13 +149,6 @@ public class GlobalConfig {
      */
     public void printConfiguration() {
         this.printConfig = true;
-    }
-
-    /**
-     * @return true when dropwizard views not initialized, false otherwise
-     */
-    public boolean requiresInitialization() {
-        return !initialized;
     }
 
     /**
@@ -186,9 +182,8 @@ public class GlobalConfig {
         // if application itself is already registered check its not initialized (extension could be applied)
         for (ServerPagesApp spa : apps) {
             if (spa.name.equals(app)) {
-                Preconditions.checkState(!spa.isStarted(),
-                        "Can't extend already initialized server pages application %s",
-                        app);
+                checkState(!spa.isStarted(),
+                        "Can't extend already initialized server pages application %s", app);
                 break;
             }
         }
@@ -205,6 +200,6 @@ public class GlobalConfig {
 
 
     private void checkAlreadyInitialized() {
-        Preconditions.checkState(!initialized, "Global initialization already performed");
+        checkState(!initialized, "Global initialization already performed");
     }
 }

@@ -13,7 +13,6 @@ import spock.lang.Specification
 import javax.ws.rs.GET
 import javax.ws.rs.Path
 import javax.ws.rs.WebApplicationException
-import javax.xml.ws.Response
 
 /**
  * @author Vyacheslav Rusakov
@@ -47,6 +46,8 @@ class NonErrorInterceptionTest extends Specification {
 
         @Override
         void initialize(Bootstrap<Configuration> bootstrap) {
+            bootstrap.addBundle(ServerPagesBundle.builder().build())
+
             // pure dropwizard bundle
             bootstrap.addBundle(ServerPagesBundle.app("app", "/app", "/")
                     .errorPage("error.html")

@@ -1,32 +1,27 @@
-package ru.vyarus.guicey.gsp.admin
+package ru.vyarus.guicey.gsp.views
 
 import io.dropwizard.Application
 import io.dropwizard.Configuration
 import io.dropwizard.setup.Bootstrap
 import io.dropwizard.setup.Environment
-import ru.vyarus.dropwizard.guice.GuiceBundle
 import ru.vyarus.dropwizard.guice.test.spock.ConfigOverride
 import ru.vyarus.dropwizard.guice.test.spock.UseDropwizardApp
 import ru.vyarus.guicey.gsp.ServerPagesBundle
-import ru.vyarus.guicey.gsp.support.app.SampleTemplateResource
 import spock.lang.Specification
 
 /**
  * @author Vyacheslav Rusakov
- * @since 21.01.2019
+ * @since 05.06.2019
  */
 @UseDropwizardApp(value = App, configOverride = [
         @ConfigOverride(key = "server.rootPath", value = "/rest/*")
 ])
-class AdminResourceMappingTest extends Specification {
+class SuccessRendererDetectionTest extends Specification {
 
-    def "Chek custom resource mapping"() {
+    def "Check success requirement check"() {
 
-        when: "accessing template through resource"
-        String res = new URL("http://localhost:8081/appp/sample/tt").text
-        then: "template mapped"
-        res.contains("name: tt")
-
+        expect: "required template renderer present"
+        true
     }
 
     static class App extends Application<Configuration> {
@@ -34,14 +29,9 @@ class AdminResourceMappingTest extends Specification {
         @Override
         void initialize(Bootstrap<Configuration> bootstrap) {
             bootstrap.addBundle(ServerPagesBundle.builder().build())
-
             // pure dropwizard bundle
-            bootstrap.addBundle(ServerPagesBundle.adminApp("app", "/app", "/appp/")
-                    .indexPage("index.html")
-                    .build())
-            // register resource using guicey to check correct initialization
-            bootstrap.addBundle(GuiceBundle.builder()
-                    .extensions(SampleTemplateResource.class)
+            bootstrap.addBundle(ServerPagesBundle.app("app", "/app", "/")
+                    .requireRenderers('freemarker')
                     .build())
         }
 

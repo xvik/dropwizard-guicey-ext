@@ -15,16 +15,12 @@ import ru.vyarus.guicey.gsp.app.filter.redirect.SpaSupport;
 import ru.vyarus.guicey.gsp.app.filter.redirect.TemplateRedirect;
 import ru.vyarus.guicey.gsp.app.rest.DirectTemplateResource;
 import ru.vyarus.guicey.gsp.app.rest.log.ResourcePath;
-import ru.vyarus.guicey.gsp.app.rest.support.TemplateAnnotationFilter;
 import ru.vyarus.guicey.gsp.app.util.PathUtils;
 import ru.vyarus.guicey.spa.SpaBundle;
 
 import javax.servlet.DispatcherType;
 import java.nio.charset.StandardCharsets;
-import java.util.EnumSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
+import java.util.*;
 
 import static ru.vyarus.guicey.spa.SpaBundle.SLASH;
 
@@ -41,9 +37,10 @@ import static ru.vyarus.guicey.spa.SpaBundle.SLASH;
  * @since 11.01.2019
  */
 @SuppressWarnings({"checkstyle:VisibilityModifier", "checkstyle:ClassDataAbstractionCoupling",
-        "PMD.ExcessiveImports"})
+        "PMD.ExcessiveImports", "PMD.TooManyFields"})
 public class ServerPagesApp {
 
+    public final Map<Integer, String> errorPages = new TreeMap<>();
     public boolean mainContext;
     public String name;
     public String resourcePath;
@@ -52,20 +49,15 @@ public class ServerPagesApp {
     public String indexFile = "";
     // regexp for file requests detection (to recognize asset or direct template render)
     public String fileRequestPattern = ServerPagesBundle.FILE_REQUEST_PATTERN;
-
+    // required template renderer names
+    public List<String> requiredRenderers;
     public boolean spaSupport;
     public String spaNoRedirectRegex = SpaBundle.DEFAULT_PATTERN;
-
-    public final Map<Integer, String> errorPages = new TreeMap<>();
-
     protected TemplateRedirect templateRedirect;
     protected LazyLocationProvider locationsProvider;
-
-    // intentionally use main bundle class for logging
-    private final Logger logger = LoggerFactory.getLogger(ServerPagesBundle.class);
-
-    private final GlobalConfig globalConfig;
     private boolean started;
+    private final Logger logger = LoggerFactory.getLogger(ServerPagesApp.class);
+    private final GlobalConfig globalConfig;
 
     public ServerPagesApp(final GlobalConfig globalConfig) {
         this.globalConfig = globalConfig;
@@ -99,9 +91,6 @@ public class ServerPagesApp {
                 new ErrorRedirect(uriPath, errorPages, spa));
         installTemplatesSupportFilter(context, templateRedirect, spa);
 
-        // @Template annotation support (even with multiple registrations should be created just once)
-        // note: applied only to annotated resources!
-        environment.jersey().register(TemplateAnnotationFilter.class);
         // Default direct templates rendering rest (dynamically registered to handle "$appName/*")
         environment.jersey().getResourceConfig().registerResources(Resource.builder(DirectTemplateResource.class)
                 .path(SLASH + name)

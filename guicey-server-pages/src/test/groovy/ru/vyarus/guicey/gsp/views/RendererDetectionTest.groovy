@@ -1,6 +1,5 @@
 package ru.vyarus.guicey.gsp.views
 
-
 import io.dropwizard.Application
 import io.dropwizard.Configuration
 import io.dropwizard.setup.Bootstrap
@@ -11,38 +10,32 @@ import spock.lang.Specification
 
 /**
  * @author Vyacheslav Rusakov
- * @since 26.01.2019
+ * @since 05.06.2019
  */
-class ViewsNonUniqueConfigurationTest extends Specification {
+class RendererDetectionTest extends Specification {
 
     void cleanup() {
         ServerPagesBundle.resetGlobalConfig()
     }
 
-    def "Check duplicate views configuration detection"() {
+    def "Check renderer requirement check"() {
 
-        when: "start app"
+        when: "starting app"
         new DropwizardAppRule<>(App).before()
-        then: "duplicate views config error"
+        then: "absent renderer detected"
         def ex = thrown(IllegalStateException)
-        ex.message == 'Global views configuration must be performed by one bundle and \'app1\' already configured it.'
-
-        cleanup:
-        ServerPagesBundle.GLOBAL_CONFIG.remove()
+        ex.message == 'Required template engines are missed for server pages application \'app\': fooo (available engines: freemarker, mustache)'
     }
 
     static class App extends Application<Configuration> {
 
         @Override
         void initialize(Bootstrap<Configuration> bootstrap) {
-            // pure dropwizard bundle
-            bootstrap.addBundle(ServerPagesBundle.app("app1", "/app", "/app1")
-                    .viewsConfiguration({ [:] })
-                    .build())
+            bootstrap.addBundle(ServerPagesBundle.builder().build())
 
-            // duplicate views config
-            bootstrap.addBundle(ServerPagesBundle.app("app2", "/app", "/app2")
-                    .viewsConfiguration({ [:] })
+            // pure dropwizard bundle
+            bootstrap.addBundle(ServerPagesBundle.app("app", "/app", "/app")
+                    .requireRenderers("fooo")
                     .build())
         }
 
@@ -50,5 +43,4 @@ class ViewsNonUniqueConfigurationTest extends Specification {
         void run(Configuration configuration, Environment environment) throws Exception {
         }
     }
-
 }

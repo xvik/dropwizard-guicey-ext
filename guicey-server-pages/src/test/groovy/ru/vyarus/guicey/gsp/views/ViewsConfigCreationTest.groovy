@@ -29,12 +29,13 @@ class ViewsConfigCreationTest extends Specification {
 
         @Override
         void initialize(Bootstrap<Configuration> bootstrap) {
-            // pure dropwizard bundle
-            bootstrap.addBundle(ServerPagesBundle.app("app", "/app", "/")
+            bootstrap.addBundle(ServerPagesBundle.builder()
                     .viewsConfiguration({ null })
                     .viewsConfigurationModifier('freemarker', { assert it != null })
                     .printViewsConfiguration()
                     .build())
+            // pure dropwizard bundle
+            bootstrap.addBundle(ServerPagesBundle.app("app", "/app", "/").build())
         }
 
         @Override

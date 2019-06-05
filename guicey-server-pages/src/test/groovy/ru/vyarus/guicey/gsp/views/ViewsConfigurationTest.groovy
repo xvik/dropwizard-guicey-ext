@@ -30,14 +30,15 @@ class ViewsConfigurationTest extends Specification {
 
         @Override
         void initialize(Bootstrap<Config> bootstrap) {
-            // pure dropwizard bundle
-            bundle = ServerPagesBundle.app("app", "/app", "/")
+            bundle = ServerPagesBundle.builder()
                     .viewsConfiguration({ it.views })
                     // used to assert global config binding
                     .viewsConfigurationModifier('freemarker', { assert it['cache_storage'] != null })
                     .printViewsConfiguration()
                     .build()
             bootstrap.addBundle(bundle)
+            // pure dropwizard bundle
+            bootstrap.addBundle(ServerPagesBundle.app("app", "/app", "/").build())
         }
 
         @Override

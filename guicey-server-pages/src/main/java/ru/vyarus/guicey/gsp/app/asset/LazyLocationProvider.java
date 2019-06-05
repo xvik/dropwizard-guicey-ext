@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 
 /**
  * Provides all classpath locations to search static resources in (registered during app registration and
- * all extensions ({@link ru.vyarus.guicey.gsp.ServerPagesBundle.Builder#extendApp(String, String)})).
+ * all extensions ({@link ru.vyarus.guicey.gsp.ServerPagesBundle#extendApp(String, String)})).
  * Required because extensions initialization is not synchronized with main bundle and so extensions could
  * be registered after application bundle initialization.
  *

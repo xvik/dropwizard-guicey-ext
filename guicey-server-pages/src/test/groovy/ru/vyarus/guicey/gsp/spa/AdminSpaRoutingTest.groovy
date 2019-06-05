@@ -4,7 +4,6 @@ import io.dropwizard.Application
 import io.dropwizard.Configuration
 import io.dropwizard.setup.Bootstrap
 import io.dropwizard.setup.Environment
-import ru.vyarus.dropwizard.guice.test.spock.ConfigOverride
 import ru.vyarus.dropwizard.guice.test.spock.UseDropwizardApp
 import ru.vyarus.guicey.gsp.ServerPagesBundle
 import spock.lang.Specification
@@ -34,6 +33,8 @@ class AdminSpaRoutingTest extends Specification {
 
         @Override
         void initialize(Bootstrap<Configuration> bootstrap) {
+            bootstrap.addBundle(ServerPagesBundle.builder().build())
+
             // pure dropwizard bundle
             bootstrap.addBundle(ServerPagesBundle.adminApp("app", "/app", "/app")
                     .indexPage("index.html")

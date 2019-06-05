@@ -10,7 +10,7 @@ import java.nio.charset.Charset;
 
 /**
  * Error template rendering model. Must be used for error pages (registered in main bundle
- * {@link ru.vyarus.guicey.gsp.ServerPagesBundle.Builder#errorPage(int, String)}). Provides access to original
+ * {@link ru.vyarus.guicey.gsp.ServerPagesBundle.AppBuilder#errorPage(int, String)}). Provides access to original
  * error and original (failed) page url (note that it can't be taken from current context request because
  * error page is rendered as usual page and so current request will contain error page url only).
  * <p>
@@ -52,7 +52,7 @@ public class ErrorTemplateView extends TemplateView {
 
     /**
      * Returns exception object only during rendering of configured error page
-     * (from {@link ru.vyarus.guicey.gsp.ServerPagesBundle.Builder#errorPage(int, String)}).
+     * (from {@link ru.vyarus.guicey.gsp.ServerPagesBundle.AppBuilder#errorPage(int, String)}).
      * For all other cases (from error pages) method is useless.
      *
      * @return exception object or null (for normal template rendering)

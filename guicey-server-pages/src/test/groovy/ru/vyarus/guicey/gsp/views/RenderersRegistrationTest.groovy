@@ -32,16 +32,18 @@ class RenderersRegistrationTest extends Specification {
 
         @Override
         void initialize(Bootstrap<Configuration> bootstrap) {
-            // pure dropwizard bundle
-            bundle = ServerPagesBundle.app("app", "/app", "/")
-                    .addViewRenderers(new CustomRenderer("r1"), new CustomRenderer("r2"))
+            bundle = ServerPagesBundle.builder()
+                    .addViewRenderers(
+                            new CustomRenderer("r1"), new CustomRenderer("r2"),
+                            new CustomRenderer("r2"), new CustomRenderer("r3"))
                     .printViewsConfiguration()
                     .build()
             bootstrap.addBundle(bundle)
+            // pure dropwizard bundle
+            bootstrap.addBundle(ServerPagesBundle.app("app", "/app", "/").build())
 
-            bootstrap.addBundle(ServerPagesBundle.app("app2", "/app", "/2")
-                    .addViewRenderers(new CustomRenderer("r2"), new CustomRenderer("r3"))
-                    .build())
+
+            bootstrap.addBundle(ServerPagesBundle.app("app2", "/app", "/2").build())
         }
 
         @Override

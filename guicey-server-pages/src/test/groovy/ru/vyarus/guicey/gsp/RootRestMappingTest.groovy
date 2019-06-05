@@ -41,6 +41,8 @@ class RootRestMappingTest extends Specification {
         @Override
         void initialize(Bootstrap<Configuration> bootstrap) {
             // pure dropwizard bundle
+            bootstrap.addBundle(ServerPagesBundle.builder().build())
+
             bootstrap.addBundle(ServerPagesBundle.app("app", "/app", "/app")
                     .indexPage("template.ftl")
                     .build())

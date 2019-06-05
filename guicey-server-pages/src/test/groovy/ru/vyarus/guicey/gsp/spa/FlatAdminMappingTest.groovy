@@ -33,6 +33,8 @@ class FlatAdminMappingTest extends Specification {
 
         @Override
         void initialize(Bootstrap<Configuration> bootstrap) {
+            bootstrap.addBundle(ServerPagesBundle.builder().build())
+
             bootstrap.addBundle(ServerPagesBundle
                     .adminApp("app", "/app", "/app")
                     .indexPage("index.html")

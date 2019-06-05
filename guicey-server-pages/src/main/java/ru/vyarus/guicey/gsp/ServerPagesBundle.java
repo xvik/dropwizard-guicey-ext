@@ -1,6 +1,7 @@
 package ru.vyarus.guicey.gsp;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
 import io.dropwizard.Configuration;
 import io.dropwizard.ConfiguredBundle;
 import io.dropwizard.setup.Bootstrap;
@@ -11,51 +12,70 @@ import io.dropwizard.views.ViewRenderer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.vyarus.dropwizard.guice.module.installer.bundle.GuiceyBootstrap;
+import ru.vyarus.dropwizard.guice.module.installer.util.Reporter;
 import ru.vyarus.guicey.gsp.app.DelayedInitializer;
 import ru.vyarus.guicey.gsp.app.GlobalConfig;
 import ru.vyarus.guicey.gsp.app.ServerPagesApp;
+import ru.vyarus.guicey.gsp.app.ServerPagesAppBundle;
 import ru.vyarus.guicey.gsp.app.filter.redirect.ErrorRedirect;
 import ru.vyarus.guicey.gsp.app.rest.support.TemplateAnnotationFilter;
 import ru.vyarus.guicey.gsp.app.rest.support.TemplateErrorResponseFilter;
 import ru.vyarus.guicey.gsp.app.rest.support.TemplateExceptionListener;
+import ru.vyarus.guicey.gsp.views.ConfiguredViewBundle;
 import ru.vyarus.guicey.gsp.views.ViewRendererConfigurationModifier;
-import ru.vyarus.guicey.gsp.views.ViewsSupport;
 import ru.vyarus.guicey.spa.SpaBundle;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.ServiceLoader;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static ru.vyarus.guicey.spa.SpaBundle.SLASH;
 
 /**
- * Bundle unifies dropwizard-views and dropwizard-assets bundles in order to bring serer templating
+ * Bundle unifies dropwizard-views and dropwizard-assets bundles in order to bring server templating
  * simplicity like with jsp. The main goal is to make views rendering through rest endpoints hidden and
- * make template calls by their files to simplify static resources references (css ,js, images etc.).
+ * make template calls by their files to simplify static resources references (css ,js, images etc.). Also,
+ * errors handling is unified (like in usual servlets, but individually for server pages application).
  * <p>
- * This is dropwizard bundle (not guicey bundle) so register it directly in bootstrap object. This is
- * required to be able to register multiple server applications. It could be also be registered within
- * {@link ru.vyarus.dropwizard.guice.module.installer.bundle.GuiceyBundle} using builder register method
- * ({@link ServerPagesBundle.Builder#register(GuiceyBootstrap)}).
+ * First of all global server pages support bundle must be installed ({@link #builder()}, preferably directly in the
+ * application class). This will activates dropwizard-views support ({@link ViewBundle}). Do not register
+ * {@link ViewBundle} it manually!
  * <p>
- * Bundle could be registered multiple times: one bundle per one server application. Also, each application
- * could be "extended" using {@link ServerPagesBundle#extendApp(String, String)}. This way extra
+ * Each server pages application is also registered
+ * as separate bundle (using {@link #app(String, String, String)} or {@link #adminApp(String, String, String)}).
+ * <p>
+ * Views configuration could be mapped from yaml file in main bundle:
+ * {@link ViewsBuilder#viewsConfiguration(ViewConfigurable)}. In order to fine tune configuration use
+ * {@link AppBuilder#viewsConfigurationModifier(String, ViewRendererConfigurationModifier)} which could be used by
+ * applications directly in order to apply required defaults. But pay attention that multiple apps could collide in
+ * configuration (configure the same property)! Do manual properties merge instead of direct value set where possible
+ * to maintain applications compatibility (e.g. you declare admin dashboard and main users app, which both use
+ * freemarker and require default templates).
+ * <p>
+ * Renderers (pluggable template engines support) are loaded with service lookup mechanism (default for
+ * dropwizard-views) but additional renderers could be registered with
+ * {@link ViewsBuilder#addViewRenderers(ViewRenderer...)}. Most likely, server page apps will be bundled as 3rd party
+ * bundles and so they can't be sure what template engines are installed in target application. Use
+ * {@link AppBuilder#requireRenderers(String...)} to declare required template engines for each application and
+ * fail fast if no required templates engine. Without required engines declaration template files will be served like
+ * static files when direct template requested and rendering will fail for rest-mapped template.
+ * <p>
+ * Pay attention that application bundles are dropwizard bundles (not guicey bundles) so register it directly in
+ * bootstrap object. This is required to be able to register multiple server applications. It could be also be
+ * registered within {@link ru.vyarus.dropwizard.guice.module.installer.bundle.GuiceyBundle} using builder register
+ * method ({@link AppBuilder#register(GuiceyBootstrap)}).
+ * <p>
+ * Each application could be "extended" using {@link ServerPagesBundle#extendApp(String, String)}. This way extra
  * classpath location is mapped into application root. Pages from extended context could reference resources from
  * the main context (most likely common root template will be used). Also, extended mapping could override
- * resources from the primary location (but not that in case of multiple extensions order is not granted).
- * Obvious case for extensions feature is dashboards, when extensions adds extra pages to common dashboard
+ * resources from the primary location (but note that in case of multiple extensions order is not granted).
+ * Obvious case for extensions feature is dashboards, when extensions add extra pages to common dashboard
  * application, but all new pages still use common master template.
  * <p>
- * Bundle registers {@link ViewBundle} automatically. Do not register it manually! It is required in order to
- * control list of used renderers (supported template engines). Only one bundle could provide views configuration
- * (binding from main yaml configuration), but any bundle could modify this configuration (to tune exact
- * template engine). Renderers are loaded with service lookup mechanism (default for views) but additional
- * renderers could be registered in any bundle.
- * This conceptual inconsistency (single views bundle, many server pages bundles) should be kept in mind while
- * planning applications.
- * <p>
- * Work scheme: assets servlet is registered on the configured path in order to serve static assets
+ * Application work scheme: assets servlet is registered on the configured path in order to serve static assets
  * (customized version of dropwizard {@link io.dropwizard.servlets.assets.AssetServlet} used which could
  * recognize both primary and extended locations). Special filter above servlet detects file calls (by extension,
  * but checks if requested file is template (and that's why list of supported templates is required)). If request
@@ -92,7 +112,7 @@ import static ru.vyarus.guicey.spa.SpaBundle.SLASH;
  * <p>
  * Note that all resources, started from application name prefix are considered to be used in application.
  * {@link ServerPagesBundle#extendApp(String, String)} mechanism is used only to declare additional static resources
- * (or direct templates). But in order to add new pages, handled by resources you dont need to do anything -
+ * (or direct templates). But in order to add new pages, handled by rest resources you dont need to do anything -
  * they just must start with correct prefix (you can see all application resources in console just after startup).
  * <p>
  * In order to be able to render direct templates (without supporting rest endpoint) special rest
@@ -100,7 +120,7 @@ import static ru.vyarus.guicey.spa.SpaBundle.SLASH;
  * above). Only POST and GET supported for direct templates.
  * <p>
  * Bundle unifies custom pages handling to be able to use default 404 or 500 pages (for both assets and resources).
- * Use builder {@link ServerPagesBundle.Builder#errorPage(int, String)} method to map template (or pure html)
+ * Use builder {@link AppBuilder#errorPage(int, String)} method to map template (or pure html)
  * to response code (to be shown instead).
  * <p>
  * Bundle could also enable filter from {@link ru.vyarus.guicey.spa.SpaBundle} in order to support single
@@ -111,12 +131,13 @@ import static ru.vyarus.guicey.spa.SpaBundle.SLASH;
  * @see <a href="https://www.dropwizard.io/1.3.5/docs/manual/views.html">dropwizard views</a>
  * @since 22.10.2018
  */
+@SuppressWarnings("PMD.ExcessiveImports")
 public class ServerPagesBundle implements ConfiguredBundle<Configuration> {
 
     /**
      * Default pattern for file request detection.
      *
-     * @see ServerPagesBundle.Builder#filePattern(String)
+     * @see AppBuilder#filePattern(String)
      */
     public static final String FILE_REQUEST_PATTERN = "(?:^|/)([^/]+\\.(?:[a-zA-Z\\d]+))(?:\\?.+)?$";
 
@@ -126,88 +147,75 @@ public class ServerPagesBundle implements ConfiguredBundle<Configuration> {
     // to control asset uniqueness (important for filters registration) and view bundle configuration
     private static final ThreadLocal<GlobalConfig> GLOBAL_CONFIG = new ThreadLocal<>();
 
-    @SuppressWarnings("PMD.AvoidFieldNameMatchingMethodName")
-    private final ServerPagesApp app = new ServerPagesApp(GLOBAL_CONFIG.get());
+    private final GlobalConfig config;
+
+    public ServerPagesBundle(final GlobalConfig config) {
+        this.config = config;
+        config.globalBundleCreated();
+    }
 
     /**
-     * Method is available for custom template detection logic (similar that used inside server pages filter)
-     * or to validate state in tests.
+     * Creates global server pages support bundle which must be registered in the application. Bundle
+     * installs standard dropwizard views bundle ({@link ViewBundle}). If views bundle is manually declared in
+     * application, it must be removed (to avoid duplicates). View bundle owning is required for proper configuration
+     * and to know all used template engines (renderers).
      * <p>
-     * Returned list represent global set of listeners (not only registered by this bundle, but by all bundles).
+     * After global support is registered, server pages applications may be declared with
+     * {@link #app(String, String, String)} and {@link #adminApp(String, String, String)}.
      * <p>
-     * NOTE: the full list of bundles will be available only after startup! Before start, only currently
-     * registered renderes will be available (or even no at all).
+     * It is assumed that global bundles support is registered directly in the dropwizard application
+     * (and not transitively in some bundle) and server page applications themselves could be registered
+     * nearby (in dropwizard application) or in any bundle (for example, some dashboard bundle just registers
+     * dashboard application, assuming that global server pages support would be activated).
      *
-     * @return list of used renderers (supported template engines)
+     * @return global views bundle builder
      */
-    public List<ViewRenderer> getRenderers() {
-        return new ArrayList<>(GLOBAL_CONFIG.get().getRenderers());
-    }
-
-    @Override
-    public void initialize(final Bootstrap<?> bootstrap) {
-        GLOBAL_CONFIG.get().application = bootstrap.getApplication();
-        GLOBAL_CONFIG.get().apps.add(app);
-    }
-
-    @Override
-    public void run(final Configuration configuration, final Environment environment) throws Exception {
-        final GlobalConfig config = GLOBAL_CONFIG.get();
-        if (config.requiresInitialization()) {
-            LOGGER.debug("Perform global server pages initialization (views configuration)");
-            // delayed apps init finalization (common for all registered apps)
-            new DelayedInitializer(config, environment);
-
-            // template rest errors interception (global handlers)
-            environment.jersey().register(TemplateErrorResponseFilter.class);
-            environment.jersey().register(TemplateExceptionListener.class);
-
-            // global dropwizard ViewBundle installation
-            ViewsSupport.setup(config, configuration, environment);
-        }
-
-        // app specific initialization (create servlets, filters, etc)
-        app.setup(environment);
+    public static ViewsBuilder builder() {
+        return new ServerPagesBundle.ViewsBuilder(getOrCreateConfig());
     }
 
     /**
-     * Register SPA application in main context.
-     * Note: application names must be unique (when you register multiple server pages applications).
+     * Register application in main context.
+     * Application names must be unique (when you register multiple server pages applications).
      * <p>
-     * Application could be extended with {@link ServerPagesBundle.Builder#extendApp(String, String)} in another
+     * Application could be extended with {@link AppBuilder#extendApp(String, String)} in another
      * bundle.
+     * <p>
+     * NOTE global server pages support bundle must be installed with {@link #builder()} in dropwizard application.
      *
      * @param name         application name (used as servlet name)
      * @param resourcePath path to application resources (classpath)
      * @param uriPath      mapping uri
-     * @return builder instance for SPA configuration
+     * @return builder instance for server pages application configuration
+     * @see #builder()  for server pages applications global support
      */
-    public static ServerPagesBundle.Builder app(final String name, final String resourcePath, final String uriPath) {
-        initGlobalConfig();
+    public static AppBuilder app(final String name, final String resourcePath, final String uriPath) {
         LOGGER.debug("Registering server pages application {} on path {} with resources in {}",
                 name, uriPath, resourcePath);
-        return new ServerPagesBundle.Builder(true, name, resourcePath, uriPath);
+        return new AppBuilder(true, name, resourcePath, uriPath, getOrCreateConfig());
     }
 
     /**
-     * Register SPA application in admin context.
-     * Note: application names must be unique (when you register multiple server pages applications).
+     * Register application in admin context.
+     * Application names must be unique (when you register multiple server pages applications).
      * <p>
-     * Application could be extended with {@link ServerPagesBundle.Builder#extendApp(String, String)} in another
+     * Application could be extended with {@link AppBuilder#extendApp(String, String)} in another
      * bundle.
+     * <p>
+     * NOTE global server pages support bundle must be installed with {@link #builder()} in dropwizard application.
      *
      * @param name         application name (used as servlet name)
      * @param resourcePath path to application resources (classpath)
      * @param uriPath      mapping uri
-     * @return builder instance for SPA configuration
+     * @return builder instance for server pages application configuration
+     * @see #builder()  for server pages applications global support
      */
-    public static ServerPagesBundle.Builder adminApp(final String name,
-                                                     final String resourcePath,
-                                                     final String uriPath) {
-        initGlobalConfig();
+    public static AppBuilder adminApp(final String name,
+                                      final String resourcePath,
+                                      final String uriPath) {
         LOGGER.debug("Registering admin server pages application {} on path {} with resources in {}",
                 name, uriPath, resourcePath);
-        return new ServerPagesBundle.Builder(false, name, resourcePath, uriPath);
+        return new AppBuilder(false, name, resourcePath, uriPath, getOrCreateConfig());
     }
 
     /**
@@ -233,9 +241,8 @@ public class ServerPagesBundle implements ConfiguredBundle<Configuration> {
      * @throws IllegalStateException if target application is already initialized
      */
     public static void extendApp(final String name, final String resourcePath) {
-        initGlobalConfig();
         LOGGER.debug("Registering {} server pages application resources extension: {}", name, resourcePath);
-        GLOBAL_CONFIG.get().extendLocation(name, resourcePath);
+        getOrCreateConfig().extendLocation(name, resourcePath);
     }
 
     /**
@@ -252,33 +259,206 @@ public class ServerPagesBundle implements ConfiguredBundle<Configuration> {
         GLOBAL_CONFIG.remove();
     }
 
-    private static void initGlobalConfig() {
+    private static GlobalConfig getOrCreateConfig() {
         // one config instance must be used for all server pages bundles initialized with single dw app
         if (GLOBAL_CONFIG.get() == null || GLOBAL_CONFIG.get().isShutdown()) {
             LOGGER.debug("Initializing global server pages configuration");
             GLOBAL_CONFIG.set(new GlobalConfig());
         }
+        return GLOBAL_CONFIG.get();
     }
 
     /**
-     * Server pages bundle builder.
+     * Method is available for custom template detection logic (similar that used inside server pages filter)
+     * or to validate state in tests.
+     *
+     * @return list of used renderers (supported template engines)
      */
-    public static class Builder {
-        private final ServerPagesBundle bundle = new ServerPagesBundle();
+    public List<ViewRenderer> getRenderers() {
+        return new ArrayList<>(config.getRenderers());
+    }
 
-        protected Builder(final boolean mainContext,
-                          final String name,
-                          final String path,
-                          final String uri) {
-            GLOBAL_CONFIG.get().addAppName(name);
+    @Override
+    public void initialize(final Bootstrap<?> bootstrap) {
+        // not needed
+    }
 
-            bundle.app.mainContext = mainContext;
-            bundle.app.name = checkNotNull(name, "Name is required");
-            bundle.app.uriPath = uri.endsWith(SLASH) ? uri : (uri + SLASH);
+    @Override
+    public void run(final Configuration configuration, final Environment environment) throws Exception {
+        LOGGER.debug("Perform global server pages initialization (views configuration)");
+        // delayed apps init finalization (common for all registered apps)
+        new DelayedInitializer(config, environment);
+
+        // @Template annotation support (even with multiple registrations should be created just once)
+        // note: applied only to annotated resources!
+        environment.jersey().register(TemplateAnnotationFilter.class);
+
+        // template rest errors interception (global handlers)
+        environment.jersey().register(TemplateErrorResponseFilter.class);
+        environment.jersey().register(TemplateExceptionListener.class);
+
+        // automatically add engines from classpath lookup
+        final Iterable<ViewRenderer> renderers = ServiceLoader.load(ViewRenderer.class);
+        renderers.forEach(config::addRenderers);
+        Preconditions.checkState(!config.getRenderers().isEmpty(),
+                "No template engines found (dropwizard views renderer)");
+
+        // configure views bundle (can't be registered in bootstrap as this point is in run phase)
+        new ConfiguredViewBundle(config).run(configuration, environment);
+        config.initialized();
+
+        final StringBuilder res = new StringBuilder("Available dropwizard-views renderers:")
+                .append(Reporter.NEWLINE).append(Reporter.NEWLINE);
+        for (ViewRenderer renderer : config.getRenderers()) {
+            res.append(Reporter.TAB).append(String.format(
+                    "%-15s (%s)", renderer.getConfigurationKey(), renderer.getClass().getName()))
+                    .append(Reporter.NEWLINE);
+        }
+        LOGGER.info(res.toString());
+    }
+
+    /**
+     * Global server pages support bundle builder.
+     */
+    public static class ViewsBuilder {
+
+        private final GlobalConfig config;
+
+        protected ViewsBuilder(final GlobalConfig config) {
+            this.config = config;
+        }
+
+        /**
+         * Additional view renderers (template engines support) to use for {@link ViewBundle} configuration.
+         * Duplicate renderers are checked by renderer key (e.g. "freemarker" or "mustache") and removed.
+         * <p>
+         * NOTE: default renderers are always loaded with service loader mechanism so registered listeners could only
+         * extend the list of registered renderers (for those renderers which does not provide descriptor
+         * for service loading).
+         *
+         * @param renderers renderers to use for global dropwizard views configuration
+         * @return builder instance for chained calls
+         * @see ViewBundle#ViewBundle(Iterable)
+         */
+        public ViewsBuilder addViewRenderers(final ViewRenderer... renderers) {
+            config.addRenderers(renderers);
+            return this;
+        }
+
+        /**
+         * Configures configuration provider for {@link ViewBundle} (usually mapping from yaml configuration).
+         * <p>
+         * Note that if you need to just modify configuration in one of server pages bundles, you can do this
+         * with {@link #viewsConfigurationModifier(String, ViewRendererConfigurationModifier)} - special mechanism
+         * to overcome global views limitation.
+         *
+         * @param configurable views configuration lookup.
+         * @param <T>          configuration object type
+         * @return builder instance for chained calls
+         * @see ViewBundle#getViewConfiguration(Configuration)
+         * @see #viewsConfigurationModifier(String, ViewRendererConfigurationModifier)
+         * @see #printViewsConfiguration()
+         */
+        public <T extends Configuration> ViewsBuilder viewsConfiguration(
+                final ViewConfigurable<T> configurable) {
+            config.setConfigurable(configurable);
+            return this;
+        }
+
+        /**
+         * Dropwizard views configuration modification. In contrast to views configuration object provider
+         * ({@link #viewsConfiguration(ViewConfigurable)}), this method is not global and so modifications
+         * from all registered server page applications will be applied.
+         * <p>
+         * The main use case is configuration of the exact template engine. For example, in case of freemarker
+         * this could be used to apply auto includes:
+         * <pre>{@code  .viewsConfigurationModifier("freemarker", config -> config
+         *                         // expose master template
+         *                         .put("auto_include", "/com/my/app/ui/master.ftl"))}</pre>
+         * <p>
+         * Note that configuration object is still global (because dropwizard views support is global) and so
+         * multiple server page applications could modify configuration. For example, if multiple applications will
+         * declare auto includes (example above) then only one include will be actually used. Use
+         * {@link ViewsBuilder#printViewsConfiguration()} to see the final view configuration.
+         *
+         * @param name     renderer name (e.g. freemarker, mustache, etc.)
+         * @param modifier modification callback
+         * @return builder instance for chained calls
+         */
+        public ViewsBuilder viewsConfigurationModifier(
+                final String name,
+                final ViewRendererConfigurationModifier modifier) {
+            // note: no need to log about it because it's global config (logs will appear if application register
+            // configurer)
+            config.addConfigModifier(name, modifier);
+            return this;
+        }
+
+        /**
+         * Prints configuration object used for dropwizard views bundle ({@link ViewBundle}). Note that
+         * initial views configuration object binding is configured with
+         * {@link #viewsConfiguration(ViewConfigurable)} and it could be modified with
+         * {@link #viewsConfigurationModifier(String, ViewRendererConfigurationModifier)}. Printing of the final
+         * configuration (after all modification) could be useful for debugging.
+         *
+         * @return builder instance for chained calls
+         */
+        public ViewsBuilder printViewsConfiguration() {
+            config.printConfiguration();
+            return this;
+        }
+
+        /**
+         * @return configured dropwizard bundle instance
+         */
+        public ServerPagesBundle build() {
+            return new ServerPagesBundle(config);
+        }
+    }
+
+    /**
+     * Server pages application bundle builder.
+     */
+    public static class AppBuilder {
+        private final GlobalConfig config;
+        private final ServerPagesApp app;
+
+        protected AppBuilder(final boolean mainContext,
+                             final String name,
+                             final String path,
+                             final String uri,
+                             final GlobalConfig config) {
+            this.config = config;
+            config.addAppName(name);
+            this.app = new ServerPagesApp(config);
+
+            app.mainContext = mainContext;
+            app.name = checkNotNull(name, "Name is required");
+            app.uriPath = uri.endsWith(SLASH) ? uri : (uri + SLASH);
 
             checkArgument(path.startsWith(SLASH), "%s is not an absolute path", path);
             checkArgument(!SLASH.equals(path), "%s is the classpath root", path);
-            bundle.app.resourcePath = path.endsWith(SLASH) ? path : (path + SLASH);
+            app.resourcePath = path.endsWith(SLASH) ? path : (path + SLASH);
+
+            config.apps.add(app);
+        }
+
+        /**
+         * Specifies required template types (view renderes) for application. This setting is optional and used only for
+         * immediate application startup failing when no required renderer is configured in global server pages bundle
+         * ({@link ServerPagesBundle#builder()}).
+         * <p>
+         * Without declaring required renderer, application will simply serve template files "as is" when no
+         * appropriate renderer found (because template file will not be recognized as template).
+         * <p>
+         * Renderer name is a renderer configuration key, defined in {@link ViewRenderer#getConfigurationKey()}.
+         *
+         * @param names required renderer names
+         * @return builder instance for chained calls
+         */
+        public AppBuilder requireRenderers(final String... names) {
+            app.requiredRenderers = Arrays.asList(names);
+            return this;
         }
 
         /**
@@ -286,7 +466,7 @@ public class ServerPagesBundle implements ConfiguredBundle<Configuration> {
          *
          * @return builder instance for chained calls
          */
-        public ServerPagesBundle.Builder spaRouting() {
+        public AppBuilder spaRouting() {
             return spaRouting(null);
         }
 
@@ -298,17 +478,18 @@ public class ServerPagesBundle implements ConfiguredBundle<Configuration> {
          * @see SpaBundle for more info how it works
          * @see SpaBundle.Builder#preventRedirectRegex(String) for more info about regexp
          */
-        public ServerPagesBundle.Builder spaRouting(final String noRedirectRegex) {
+        public AppBuilder spaRouting(final String noRedirectRegex) {
             if (noRedirectRegex != null) {
-                bundle.app.spaNoRedirectRegex = noRedirectRegex;
+                app.spaNoRedirectRegex = noRedirectRegex;
             }
-            bundle.app.spaSupport = true;
+            app.spaSupport = true;
             return this;
         }
 
         /**
-         * Index page may also be a template. If index view is handled with a rest then simply leave as "" (default).
-         * In this case resource on path "{restPath}/{appMapping}/" will be used as root page.
+         * Declares index page (served for "/" calls). Index page may also be a template. If index view is handled
+         * with a rest then simply leave as "" (default): resource on path "{restPath}/{appMapping}/"
+         * will be used as root page.
          * <p>
          * Pay attention that index is not set by default to "index.html" because most likely it would be some
          * template handled with rest resource (and so it would be too often necessary to override default).
@@ -316,8 +497,8 @@ public class ServerPagesBundle implements ConfiguredBundle<Configuration> {
          * @param name index file name (by default "")
          * @return builder instance for chained calls
          */
-        public ServerPagesBundle.Builder indexPage(final String name) {
-            bundle.app.indexFile = name;
+        public AppBuilder indexPage(final String name) {
+            app.indexFile = name;
             return this;
         }
 
@@ -329,7 +510,7 @@ public class ServerPagesBundle implements ConfiguredBundle<Configuration> {
          * @return builder instance for chained calls
          * @see #errorPage(int, String) for registereing error page on exact return code
          */
-        public ServerPagesBundle.Builder errorPage(final String path) {
+        public AppBuilder errorPage(final String path) {
             return errorPage(ErrorRedirect.DEFAULT_ERROR_PAGE, path);
         }
 
@@ -352,10 +533,10 @@ public class ServerPagesBundle implements ConfiguredBundle<Configuration> {
          * @return builder instance for chained calls
          * @see #errorPage(String) for global errors page
          */
-        public ServerPagesBundle.Builder errorPage(final int code, final String path) {
+        public AppBuilder errorPage(final int code, final String path) {
             checkArgument(code >= ErrorRedirect.CODE_400 || code == ErrorRedirect.DEFAULT_ERROR_PAGE,
                     "Only error codes (4xx, 5xx) allowed for mapping");
-            bundle.app.errorPages.put(code, path);
+            app.errorPages.put(code, path);
             return this;
         }
 
@@ -372,58 +553,16 @@ public class ServerPagesBundle implements ConfiguredBundle<Configuration> {
          * @return builder instance for chained calls
          * @see #FILE_REQUEST_PATTERN default pattern
          */
-        public ServerPagesBundle.Builder filePattern(final String regex) {
-            bundle.app.fileRequestPattern = checkNotNull(regex, "Regex can't be null");
+        public AppBuilder filePattern(final String regex) {
+            app.fileRequestPattern = checkNotNull(regex, "Regex can't be null");
             return this;
         }
 
         /**
-         * Additional view renderers (template engines support) to use for {@link ViewBundle} configuration.
-         * Duplicate renderers are checked by renderer key (e.g. "freemarker" or "mustache") and removed.
-         * <p>
-         * NOTE: default renderers are always loaded with service loader mechanism so registered listeners could only
-         * extend the list of registered renderers (for those renderers which does not provide descriptor
-         * for service loading).
-         * <p>
-         * Option is global and if two or more server page bundles will configure it,
-         * all registered renderers will be used.
-         *
-         * @param renderers renderers to use for global dropwizard views configuration
-         * @return builder instance for chained calls
-         * @see ViewBundle#ViewBundle(Iterable)
-         */
-        public ServerPagesBundle.Builder addViewRenderers(final ViewRenderer... renderers) {
-            GLOBAL_CONFIG.get().addRenderers(renderers);
-            return this;
-        }
-
-        /**
-         * Configures configuration provider for {@link ViewBundle} (usually mapping from yaml configuration).
-         * <p>
-         * Only one bundle could perform this configuration (usually the one directly in application). If
-         * two multiple bundles try to configure this then error will be thrown.
-         * <p>
-         * Note that if you need to just modify configuration in one of server pages bundles, you can do this
-         * with {@link #viewsConfigurationModifier(String, ViewRendererConfigurationModifier)} - special mechanism
-         * to overcome global views limitation.
-         *
-         * @param configurable views configuration lookup.
-         * @param <T>          configuration object type
-         * @return builder instance for chained calls
-         * @see ViewBundle#getViewConfiguration(Configuration)
-         * @see #viewsConfigurationModifier(String, ViewRendererConfigurationModifier)
-         * @see #printViewsConfiguration()
-         */
-        public <T extends Configuration> ServerPagesBundle.Builder viewsConfiguration(
-                final ViewConfigurable<T> configurable) {
-            GLOBAL_CONFIG.get().setConfigurable(configurable, bundle.app.name);
-            return this;
-        }
-
-        /**
-         * Dropwizard views configuration modification. In contrast to views configuration object provider
-         * ({@link #viewsConfiguration(ViewConfigurable)}), this method is not global and so modifications
-         * from all registered server bundles will be applied.
+         * Dropwizard views configuration modification. Views configuration could be bound only in global server pages
+         * support bundle ({@link ViewsBuilder#viewsConfiguration(ViewConfigurable)}). But it's often required to
+         * "tune" template engine specifically for application. This method allows global views configuration
+         * modification for exact server pages application.
          * <p>
          * The main use case is configuration of the exact template engine. For example, in case of freemarker
          * this could be used to apply auto includes:
@@ -431,31 +570,21 @@ public class ServerPagesBundle implements ConfiguredBundle<Configuration> {
          *                         // expose master template
          *                         .put("auto_include", "/com/my/app/ui/master.ftl"))}</pre>
          * <p>
-         * Note: it may be useful to print the resulted configuration with {@link #printViewsConfiguration()}
-         * in order to see all such changes.
+         * Note that configuration object is still global (becuase dropwizard views support is global) and so
+         * multiple server pages applications could modify configuration. For example, if multiple applications will
+         * declare auto includes (example above) then only one include will be actually used. Use
+         * {@link ViewsBuilder#printViewsConfiguration()} to see the final view configuration.
          *
          * @param name     renderer name (e.g. freemarker, mustache, etc.)
          * @param modifier modification callback
          * @return builder instance for chained calls
          */
-        public ServerPagesBundle.Builder viewsConfigurationModifier(
+        public AppBuilder viewsConfigurationModifier(
                 final String name,
                 final ViewRendererConfigurationModifier modifier) {
-            GLOBAL_CONFIG.get().addConfigModifier(name, modifier);
-            return this;
-        }
-
-        /**
-         * Prints configuration object used for dropwizard views bundle ({@link ViewBundle}). Note that
-         * initial views configuration object binding is configured with
-         * {@link #viewsConfiguration(ViewConfigurable)} and it could be modified with
-         * {@link #viewsConfigurationModifier(String, ViewRendererConfigurationModifier)}. Printing of the final
-         * configuration (after all modification) could be useful for debugging.
-         *
-         * @return builder instance for chained calls
-         */
-        public ServerPagesBundle.Builder printViewsConfiguration() {
-            GLOBAL_CONFIG.get().printConfiguration();
+            // in case of multiple applications, it should be obvious from logs who changed config
+            LOGGER.info("Server pages application '%s' modifies '%s' section of views configuration");
+            config.addConfigModifier(name, modifier);
             return this;
         }
 
@@ -465,8 +594,8 @@ public class ServerPagesBundle implements ConfiguredBundle<Configuration> {
          *
          * @return configured dropwizard bundle instance
          */
-        public ServerPagesBundle build() {
-            return bundle;
+        public ServerPagesAppBundle build() {
+            return new ServerPagesAppBundle(config, app);
         }
 
         /**
@@ -477,12 +606,13 @@ public class ServerPagesBundle implements ConfiguredBundle<Configuration> {
          * @param bootstrap guicey bootstrap object
          */
         public void register(final GuiceyBootstrap bootstrap) {
+            final ServerPagesAppBundle bundle = build();
             bundle.initialize(bootstrap.bootstrap());
             try {
                 bundle.run(bootstrap.configuration(), bootstrap.environment());
             } catch (Exception ex) {
                 throw new IllegalStateException("Failed to start server pages application "
-                        + bundle.app.name, ex);
+                        + app.name, ex);
             }
         }
     }

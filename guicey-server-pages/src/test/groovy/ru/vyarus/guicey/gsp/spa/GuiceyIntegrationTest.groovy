@@ -43,6 +43,8 @@ class GuiceyIntegrationTest extends Specification {
 
         @Override
         void initialize(Bootstrap<Configuration> bootstrap) {
+            bootstrap.addBundle(ServerPagesBundle.builder().build())
+
             bootstrap.addBundle(GuiceBundle.builder().bundles(new AppBundle()).build())
         }
 
