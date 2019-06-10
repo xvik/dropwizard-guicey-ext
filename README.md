@@ -64,5 +64,9 @@ Sql proxies could be used as usual guice beans without extra efforts to use them
 
 Correct redirect to index page for html5 client routing urls (e.g. html5 routing enabled by default in Angular 2). 
 
+#### [Guicey Server Pages](guicey-gsp)
+
+JSP like simplicity for dropwizard-views.
+
 ---
 [![java lib generator](http://img.shields.io/badge/Powered%20by-%20Java%20lib%20generator-green.svg?style=flat-square)](https://github.com/xvik/generator-lib-java)
