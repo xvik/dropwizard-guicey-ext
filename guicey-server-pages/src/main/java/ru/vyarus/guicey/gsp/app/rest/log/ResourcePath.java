@@ -17,12 +17,12 @@ public class ResourcePath implements Comparable<ResourcePath> {
 
     private final ResourceMethod method;
     private final Resource resource;
-    private final Class klass;
+    private final Class<?> klass;
     private final String url;
 
     public ResourcePath(final ResourceMethod method,
                         final Resource resource,
-                        final Class klass,
+                        final Class<?> klass,
                         final String url) {
         this.method = method;
         this.resource = resource;
@@ -47,7 +47,7 @@ public class ResourcePath implements Comparable<ResourcePath> {
     /**
      * @return resource type
      */
-    public Class getKlass() {
+    public Class<?> getKlass() {
         return klass;
     }
 

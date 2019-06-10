@@ -25,6 +25,7 @@ import ru.vyarus.guicey.gsp.app.rest.support.TemplateErrorResponseFilter;
 import ru.vyarus.guicey.gsp.app.rest.support.TemplateExceptionListener;
 import ru.vyarus.guicey.gsp.views.ConfiguredViewBundle;
 import ru.vyarus.guicey.gsp.views.ViewRendererConfigurationModifier;
+import ru.vyarus.guicey.gsp.views.template.ManualErrorHandling;
 import ru.vyarus.guicey.spa.SpaBundle;
 
 import java.util.Arrays;
@@ -537,6 +538,13 @@ public class ServerPagesBundle implements ConfiguredBundle<Configuration> {
          * <p>
          * NOTE that error page is returned only if original request accept html response and otherwise no
          * error page will be shown. Intention here is to show human readable errors only for humans.
+         * <p>
+         * IMPORTANT: GSP errors mechanism override ExceptionMapper and dropwizard-view ErrorEntityWriter mechanisms
+         * because exception is detected before them and request is redirected to error page. Both ExceptionMapper
+         * and EntityWriter would be called, but their result will be ignored (still, ExceptionMapper is useful
+         * for errors logging). This was done to avoid influence of global ExceptionMapper's to be sure custom
+         * error page used. It is possible to ignore GSP error mechanism for exact rest methods by using
+         * {@link ManualErrorHandling} annotation.
          *
          * @param code error code to map page onto
          * @param path either path to static resource (inside registered classpath path) or resource url

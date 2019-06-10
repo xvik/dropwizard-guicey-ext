@@ -1,5 +1,6 @@
 package ru.vyarus.guicey.gsp.app.rest.support;
 
+import ru.vyarus.guicey.gsp.views.template.ManualErrorHandling;
 import ru.vyarus.guicey.gsp.views.template.Template;
 import ru.vyarus.guicey.gsp.views.template.TemplateContext;
 
@@ -9,10 +10,11 @@ import javax.ws.rs.container.ResourceInfo;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.ext.Provider;
 import java.io.IOException;
+import java.lang.reflect.Method;
 
 /**
  * Request filter for {@link Template} annotated resources read configured template path (to be used in model).
- * Record matched resource class so relative templates could be checked realtive to class even
+ * Record matched resource class so relative templates could be checked relative to class even
  * when template path is specified directly into model.
  *
  * @author Vyacheslav Rusakov
@@ -38,6 +40,9 @@ public class TemplateAnnotationFilter implements ContainerRequestFilter {
             if (!tpl.isEmpty()) {
                 context.setAnnotationTemplate(tpl);
             }
+            final Method method = info.getResourceMethod();
+            context.setManualErrorHandling(resourceClass.isAnnotationPresent(ManualErrorHandling.class)
+                    || (method != null && method.isAnnotationPresent(ManualErrorHandling.class)));
         }
     }
 }

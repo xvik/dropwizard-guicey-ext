@@ -3,8 +3,10 @@ package ru.vyarus.guicey.gsp.app;
 import ru.vyarus.guicey.gsp.app.filter.redirect.ErrorRedirect;
 import ru.vyarus.guicey.gsp.app.rest.log.ResourcePath;
 import ru.vyarus.guicey.gsp.app.util.PathUtils;
+import ru.vyarus.guicey.gsp.views.template.ManualErrorHandling;
 import ru.vyarus.guicey.spa.SpaBundle;
 
+import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.Set;
 
@@ -57,11 +59,16 @@ public final class AppReportBuilder {
                                         final Set<ResourcePath> paths) {
         res.append(TAB).append("Mapped handlers:").append(NEWLINE);
         for (ResourcePath handle : paths) {
-            res.append(TAB).append(TAB).append(String.format("%-7s %s  (%s #%s)",
+            final Method handlingMethod = handle.getMethod().getInvocable().getHandlingMethod();
+            final boolean disabledErrors = handle.getKlass().isAnnotationPresent(ManualErrorHandling.class)
+                    || (handlingMethod != null && handlingMethod.isAnnotationPresent(ManualErrorHandling.class));
+
+            res.append(TAB).append(TAB).append(String.format("%-7s %s  (%s #%s)%s",
                     handle.getMethod().getHttpMethod(),
                     PathUtils.cleanUpPath(app.fullUriPath + handle.getUrl().substring(app.name.length() + 1)),
                     handle.getKlass().getName(),
-                    handle.getMethod().getInvocable().getDefinitionMethod().getName()
+                    handle.getMethod().getInvocable().getDefinitionMethod().getName(),
+                    disabledErrors ? " [DISABLED ERRORS]" : ""
             )).append(NEWLINE);
         }
     }

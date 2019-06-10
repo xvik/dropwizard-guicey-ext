@@ -32,11 +32,12 @@ public class TemplateContext {
     private final String appName;
     private final String rootUrl;
     private final List<String> resourcePaths;
-    private Class resourceClass;
-    private String annotationTemplate;
     private final ErrorRedirect errorRedirect;
     private final HttpServletRequest request;
     private final HttpServletResponse response;
+    private Class resourceClass;
+    private String annotationTemplate;
+    private boolean manualErrorHandling;
 
     public TemplateContext(final String appName,
                            final String rootUrl,
@@ -50,6 +51,14 @@ public class TemplateContext {
         this.errorRedirect = errorRedirect;
         this.request = request;
         this.response = response;
+    }
+
+    /**
+     * @return thread bound template context instance
+     */
+    public static TemplateContext getInstance() {
+        return Preconditions.checkNotNull(TemplateRedirect.templateContext(),
+                "No template context found for current thread");
     }
 
     /**
@@ -120,6 +129,19 @@ public class TemplateContext {
     }
 
     /**
+     * Disables GSP error pages support. Activated by presence of {@link ManualErrorHandling} annotation on resource
+     * method or resource itself. Used by {@link ru.vyarus.guicey.gsp.app.rest.support.TemplateAnnotationFilter}.
+     * <p>
+     * May be set manually, but it is not recommended - prefer annotations usage to clearly declare "exceptions" from
+     * global errors handling.
+     *
+     * @param manualErrors true to disable GSP errors handling, false to activate GSP error pages
+     */
+    public void setManualErrorHandling(final boolean manualErrors) {
+        this.manualErrorHandling = manualErrors;
+    }
+
+    /**
      * Lookup relative template path either relative to reosurce class (if annotated with {@link Template} or
      * in one of pre-configured classpath locations. If passed template is null it will be
      * taken from {@link Template} annotation from resource class.
@@ -177,15 +199,8 @@ public class TemplateContext {
      */
     public boolean redirectError(final Throwable ex) {
         // use request with original uri instead of rest mapped and raw response (not hk proxy)
-        return errorRedirect.redirect(getRequest(), getResponse(), wrap(ex));
-    }
-
-    /**
-     * @return thread bound template context instance
-     */
-    public static TemplateContext getInstance() {
-        return Preconditions.checkNotNull(TemplateRedirect.templateContext(),
-                "No template context found for current thread");
+        // may be disabled by @ManualErrorHandling annotation
+        return !manualErrorHandling && errorRedirect.redirect(getRequest(), getResponse(), wrap(ex));
     }
 
     private WebApplicationException wrap(final Throwable exception) {
