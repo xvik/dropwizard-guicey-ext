@@ -602,7 +602,8 @@ public class ServerPagesBundle implements ConfiguredBundle<Configuration> {
                 final String name,
                 final ViewRendererConfigurationModifier modifier) {
             // in case of multiple applications, it should be obvious from logs who changed config
-            LOGGER.info("Server pages application '%s' modifies '%s' section of views configuration");
+            LOGGER.info("Server pages application '{}' modifies '{}' section of views configuration",
+                    app.name, name);
             config.addConfigModifier(name, modifier);
             return this;
         }
