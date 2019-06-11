@@ -32,9 +32,10 @@ class WebjarsIntegrationTest extends Specification {
         void initialize(Bootstrap<Configuration> bootstrap) {
             bootstrap.addBundle(ServerPagesBundle.builder().build())
             // pure dropwizard bundle
-            bootstrap.addBundle(ServerPagesBundle.app("app", "/app", "/").build())
+            bootstrap.addBundle(ServerPagesBundle.app("app", "/app", "/")
+                    .attachWebjars()
+                    .build())
 
-            ServerPagesBundle.extendApp("app", "META-INF/resources/webjars/")
         }
 
         @Override

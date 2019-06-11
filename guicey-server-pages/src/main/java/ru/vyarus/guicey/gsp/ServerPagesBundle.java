@@ -202,10 +202,13 @@ public class ServerPagesBundle implements ConfiguredBundle<Configuration> {
      * Register application in admin context.
      * Application names must be unique (when you register multiple server pages applications).
      * <p>
+     * You can't register admin application on admin context root because there is already dropwizard
+     * admin servlet {@link com.codahale.metrics.servlets.AdminServlet}.
+     * <p>
      * Application could be extended with {@link AppBuilder#extendApp(String, String)} in another
      * bundle.
      * <p>
-     * NOTE global server pages support bundle must be installed with {@link #builder()} in dropwizard application.
+     * NOTE: global server pages support bundle must be installed with {@link #builder()} in dropwizard application.
      *
      * @param name         application name (used as servlet name)
      * @param resourcePath path to application resources (classpath)
@@ -556,6 +559,20 @@ public class ServerPagesBundle implements ConfiguredBundle<Configuration> {
             checkArgument(code >= ErrorRedirect.CODE_400 || code == ErrorRedirect.DEFAULT_ERROR_PAGE,
                     "Only error codes (4xx, 5xx) allowed for mapping");
             app.errorPages.put(code, path);
+            return this;
+        }
+
+        /**
+         * Shortcut for {@code ServerPagesBundle.extendApp("name", "META-INF/resources/webjars/"}).
+         * Useful if you want to use resources from webjars. All webjars package resources under the same path
+         * (e.g. META-INF/resources/webjars/jquery/3.4.1/dist/jquery.min.js), so after enabling webjars support
+         * you can reference any resource from webjar (in classpath) (e.g. as
+         * {@code <script src="jquery/3.4.1/dist/jquery.min.js">}).
+         *
+         * @return builder instance for chained calls
+         */
+        public AppBuilder attachWebjars() {
+            extendApp(app.name, "META-INF/resources/webjars/");
             return this;
         }
 

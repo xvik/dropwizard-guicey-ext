@@ -738,26 +738,33 @@ appear in classpath.
 
 #### Webjars usage
 
-There is no direct support for [webjars](https://www.webjars.org/), but you can attach required resources to 
-application using extensions mechanism. 
+If you want to use resources from [webjars](https://www.webjars.org/) in GSP application:
 
-For example, adding jquery:
+```java
+bootstrap.addBundle(ServerPagesBundle.app("com.project.ui", "/com/app/ui/", "/")
+                    .attachWebjars()
+                    .build())
+```
+
+For example, to add jquery:
 
 ```groovy
 compile 'org.webjars.npm:jquery:3.4.1'
 ```
 
-Adding general webjars package binding to application:
-
-```java
-ServerPagesBundle.extendApp("com.project.ui", "META-INF/resources/webjars/")
-```
-
-And now we can use:
+And it could be referenced as:
 
 ```html
 <script src="jquery/3.4.1/dist/jquery.min.js"/>
 ```
 
+
+Under the hood `.attachWebjars()` use extensions mechanism and adds 
+`META-INF/resources/webjars/` as application resources path:
+
+```java
+ServerPagesBundle.extendApp("app name", "META-INF/resources/webjars/")
+```
+
 Note: you can always see the content of webjar on [webjars site](https://www.webjars.org/) by clicking
-on package "Files" column.
+on package "Files" column. Use everything after "META-INF/resources/webjars/" to reference file.
