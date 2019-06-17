@@ -1,4 +1,5 @@
-* Add Guicey Server Pages module bringing JSP like usage simplicity to dropwizard-views
+### 0.7.0 (2019-06-17)
+* Add Guicey Server Pages module (bringing JSP like usage simplicity to dropwizard-views)
 
 ### 0.6.0 (2018-11-28)
 * Add lifecycle-annotations module
