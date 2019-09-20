@@ -1,3 +1,19 @@
+* Update to guicey 5.0.0
+    - Ext version now aligned with guicey the same way as dropwizard modules: guiceyVersion-number (5.0.0-0)  
+* [lifecycle-annotations]
+    - LifecycleAnnotationsBundle declared as unique to prevent default bundle registration by lookup in case of manual customization
+* [eventbus]
+    - EventBusBundle declared as unique to prevent side effects of duplicate registrations    
+* [spa]
+    - Removed `SpaBundle.register(GuiceyBundle)` as now dropwizard bundles supported directly    
+* [server-pages]
+    - Removed `ServerPagesBundle.register(GuiceyBundle)` as now dropwizard bundles supported directly
+* [jdbi3]
+    - JdbiBundle declared as unique (it will not work with multiple instances)
+* [jdbi]
+    - JdbiBundle declared as unique (it will not work with multiple instances)    
+    - module deprecated (because dropwizard-jdbi was deprecated and moved to separate repo https://github.com/dropwizard/dropwizard-jdbi)
+
 ### 0.7.0 (2019-06-17)
 * Add Guicey Server Pages module (bringing JSP like usage simplicity to dropwizard-views)
 

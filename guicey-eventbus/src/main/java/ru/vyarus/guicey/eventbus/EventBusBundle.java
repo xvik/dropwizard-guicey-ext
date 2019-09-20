@@ -4,11 +4,9 @@ import com.google.common.eventbus.EventBus;
 import com.google.inject.TypeLiteral;
 import com.google.inject.matcher.Matcher;
 import com.google.inject.matcher.Matchers;
-import org.eclipse.jetty.util.component.AbstractLifeCycle;
-import org.eclipse.jetty.util.component.LifeCycle;
 import ru.vyarus.dropwizard.guice.injector.lookup.InjectorLookup;
-import ru.vyarus.dropwizard.guice.module.installer.bundle.GuiceyBootstrap;
-import ru.vyarus.dropwizard.guice.module.installer.bundle.GuiceyBundle;
+import ru.vyarus.dropwizard.guice.module.context.unique.item.UniqueGuiceyBundle;
+import ru.vyarus.dropwizard.guice.module.installer.bundle.GuiceyEnvironment;
 import ru.vyarus.guicey.eventbus.module.EventBusModule;
 import ru.vyarus.guicey.eventbus.module.TypeLiteralAdapterMatcher;
 import ru.vyarus.guicey.eventbus.report.EventSubscribersReporter;
@@ -31,14 +29,16 @@ import ru.vyarus.guicey.eventbus.service.EventSubscribersInfo;
  * </code></pre>
  * <p>
  * Reflection is used for registered listeners printing (no way otherwise to get registered subscribers).
- * If there will be any probelms with it, simply disable reporting.
+ * If there will be any problems with it, simply disable reporting.
+ * <p>
+ * Only one bundle instance will be actually used (in case of multiple registrations).
  *
  * @author Vyacheslav Rusakov
  * @see <a href="https://github.com/google/guava/wiki/EventBusExplained">eventbus documentation</a>
  * @see EventSubscribersInfo for subscribers info access
  * @since 12.10.2016
  */
-public class EventBusBundle implements GuiceyBundle {
+public class EventBusBundle extends UniqueGuiceyBundle {
 
     private final EventBus eventbus;
     private Matcher<? super TypeLiteral<?>> typeMatcher = Matchers.any();
@@ -92,24 +92,16 @@ public class EventBusBundle implements GuiceyBundle {
     }
 
     @Override
-    public void initialize(final GuiceyBootstrap bootstrap) {
-        bootstrap.modules(new EventBusModule(eventbus, typeMatcher));
+    public void run(final GuiceyEnvironment environment) {
+        environment.modules(new EventBusModule(eventbus, typeMatcher));
 
         if (report) {
-            registerReport(bootstrap);
+            environment.onStartup(() -> {
+                final EventSubscribersReporter reporter = new EventSubscribersReporter();
+                InjectorLookup.getInjector(environment.application()).get()
+                        .injectMembers(reporter);
+                reporter.report();
+            });
         }
-    }
-
-    private void registerReport(final GuiceyBootstrap bootstrap) {
-        bootstrap.environment().lifecycle().addLifeCycleListener(
-                new AbstractLifeCycle.AbstractLifeCycleListener() {
-                    @Override
-                    public void lifeCycleStarted(final LifeCycle event) {
-                        final EventSubscribersReporter reporter = new EventSubscribersReporter();
-                        InjectorLookup.getInjector(bootstrap.application()).get()
-                                .injectMembers(reporter);
-                        reporter.report();
-                    }
-                });
     }
 }

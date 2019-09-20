@@ -6,8 +6,9 @@ import io.dropwizard.Configuration;
 import io.dropwizard.db.PooledDataSourceFactory;
 import org.jdbi.v3.core.Jdbi;
 import org.jdbi.v3.core.spi.JdbiPlugin;
+import ru.vyarus.dropwizard.guice.module.context.unique.item.UniqueGuiceyBundle;
 import ru.vyarus.dropwizard.guice.module.installer.bundle.GuiceyBootstrap;
-import ru.vyarus.dropwizard.guice.module.installer.bundle.GuiceyBundle;
+import ru.vyarus.dropwizard.guice.module.installer.bundle.GuiceyEnvironment;
 import ru.vyarus.guicey.jdbi3.dbi.ConfigAwareProvider;
 import ru.vyarus.guicey.jdbi3.dbi.SimpleDbiProvider;
 import ru.vyarus.guicey.jdbi3.installer.MapperInstaller;
@@ -43,6 +44,8 @@ import java.util.function.Consumer;
  * <li>Classes implementing {@link org.jdbi.v3.core.mapper.RowMapper} are registered
  * automatically.</li>
  * </ul>
+ * <p>
+ *  Only one bundle instance will be actually used (in case of multiple registrations).
  *
  * @author Vyacheslav Rusakov
  * @see UnitManager for manual unit of work definition
@@ -51,7 +54,7 @@ import java.util.function.Consumer;
  * customization details
  * @since 31.08.2018
  */
-public final class JdbiBundle implements GuiceyBundle {
+public final class JdbiBundle extends UniqueGuiceyBundle {
 
     private final ConfigAwareProvider<Jdbi, ?> jdbi;
     private List<Class<? extends Annotation>> txAnnotations = ImmutableList
@@ -104,18 +107,21 @@ public final class JdbiBundle implements GuiceyBundle {
 
     @Override
     public void initialize(final GuiceyBootstrap bootstrap) {
-        final Jdbi jdbi = this.jdbi.get(bootstrap.configuration(), bootstrap.environment());
+        bootstrap.installers(
+                RepositoryInstaller.class,
+                MapperInstaller.class);
+
+    }
+
+    @Override
+    public void run(final GuiceyEnvironment environment) {
+        final Jdbi jdbi = this.jdbi.get(environment.configuration(), environment.environment());
         plugins.forEach(jdbi::installPlugin);
         if (configurer != null) {
             configurer.accept(jdbi);
         }
 
-        bootstrap
-                .installers(
-                        RepositoryInstaller.class,
-                        MapperInstaller.class)
-                .modules(
-                        new JdbiModule(jdbi, txAnnotations));
+        environment.modules(new JdbiModule(jdbi, txAnnotations));
     }
 
     /**

@@ -8,11 +8,12 @@ import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
- * Annotation for marking initialization methods on guice beans to be called after server startup.
+ * Annotation for marking initialization methods on guice beans to be called after server startup. Note that
+ * this method will not be called under guicey lightweight test or environment command start.
  * <p>
  * In contrast to {@link javax.annotation.PostConstruct} which is called on
  * {@link io.dropwizard.lifecycle.Managed#start()} (during server initialization),
- * annotated methods are called only after complete server startup (when application is ready to serve requests.
+ * annotated methods are called only after complete server startup (when application is ready to serve requests).
  *
  * @author Vyacheslav Rusakov
  * @since 08.11.2018

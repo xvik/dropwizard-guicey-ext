@@ -49,7 +49,7 @@ subprojects {
     sourceCompatibility = 1.8
 
     ext {
-        guicey = '4.2.2'
+        guicey = '5.0.0-SNAPSHOT'
         guiceExtAnn = '1.3.0'
     }
 
@@ -58,7 +58,8 @@ subprojects {
             mavenBom "ru.vyarus:dropwizard-guicey:$guicey"
         }
         dependencies {
-            dependency "ru.vyarus:dropwizard-guicey:$guicey"
+            // jdbi deprecated by dropwizard and moved to separate module https://github.com/dropwizard/dropwizard-jdbi
+            dependency "io.dropwizard:dropwizard-jdbi:2.0.0-rc9"
             dependency "ru.vyarus:guice-ext-annotations:$guiceExtAnn"
         }
     }

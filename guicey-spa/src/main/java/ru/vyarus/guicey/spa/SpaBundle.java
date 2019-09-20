@@ -8,7 +8,6 @@ import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.vyarus.dropwizard.guice.module.installer.bundle.GuiceyBootstrap;
 import ru.vyarus.guicey.spa.filter.SpaRoutingFilter;
 
 import javax.servlet.DispatcherType;
@@ -178,17 +177,6 @@ public class SpaBundle implements Bundle {
          */
         public SpaBundle build() {
             return bundle;
-        }
-
-        /**
-         * Use when spa bundle must be registered withing guicey bundle
-         * (guicey bundle could register custom application, e.g. for administration).
-         *
-         * @param bootstrap guicey bootstrap object
-         */
-        public void register(final GuiceyBootstrap bootstrap) {
-            bundle.initialize(null);
-            bundle.run(bootstrap.environment());
         }
     }
 }

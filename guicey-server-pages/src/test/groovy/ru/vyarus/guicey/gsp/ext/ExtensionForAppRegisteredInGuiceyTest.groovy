@@ -55,16 +55,18 @@ class ExtensionForAppRegisteredInGuiceyTest extends Specification {
 
             bootstrap.addBundle(ServerPagesBundle.builder().build())
 
-            // app registere inside guicey bundle
+            // app registered inside guicey bundle
             bootstrap.addBundle(GuiceBundle.builder()
                     .bundles(new GuiceyBundle() {
-                @Override
-                void initialize(GuiceyBootstrap gb) {
-                    ServerPagesBundle.app("app", "/app", "/")
-                            .indexPage("index.html")
-                            .register(gb)
-                }
-            }).build())
+                        @Override
+                        void initialize(GuiceyBootstrap gb) {
+                            gb.dropwizardBundles(
+                                    ServerPagesBundle.app("app", "/app", "/")
+                                            .indexPage("index.html")
+                                            .build()
+                            )
+                        }
+                    }).build())
         }
 
         @Override

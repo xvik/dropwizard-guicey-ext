@@ -54,7 +54,8 @@ class GuiceyIntegrationTest extends Specification {
     static class AppBundle implements GuiceyBundle {
         @Override
         void initialize(GuiceyBootstrap bootstrap) {
-            SpaBundle.app('app', '/app', '/').register(bootstrap)
+            bootstrap.dropwizardBundles(
+                    SpaBundle.app('app', '/app', '/').build())
         }
     }
 }

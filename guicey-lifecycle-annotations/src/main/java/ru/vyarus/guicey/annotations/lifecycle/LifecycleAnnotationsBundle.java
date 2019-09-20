@@ -3,8 +3,8 @@ package ru.vyarus.guicey.annotations.lifecycle;
 import com.google.inject.TypeLiteral;
 import com.google.inject.matcher.Matcher;
 import com.google.inject.matcher.Matchers;
-import ru.vyarus.dropwizard.guice.module.installer.bundle.GuiceyBootstrap;
-import ru.vyarus.dropwizard.guice.module.installer.bundle.GuiceyBundle;
+import ru.vyarus.dropwizard.guice.module.context.unique.item.UniqueGuiceyBundle;
+import ru.vyarus.dropwizard.guice.module.installer.bundle.GuiceyEnvironment;
 import ru.vyarus.guice.ext.core.util.ObjectPackageMatcher;
 import ru.vyarus.guicey.annotations.lifecycle.module.DropwizardLifecycleListener;
 import ru.vyarus.guicey.annotations.lifecycle.module.LifecycleAnnotationsModule;
@@ -12,10 +12,10 @@ import ru.vyarus.guicey.annotations.lifecycle.module.LifecycleAnnotationsModule;
 /**
  * Bundle enabled usage of lifecycle annotations in guice beans. Supported annotations:
  * <ul>
- *     <li>{@link javax.annotation.PostConstruct} - same as {@link io.dropwizard.lifecycle.Managed#start()}</li>
- *     <li>{@link PostStartup} - called after server startup
- *     (dropwizard {@link io.dropwizard.lifecycle.ServerLifecycleListener} used)</li>
- *     <li>{@link javax.annotation.PreDestroy} - same as {@link io.dropwizard.lifecycle.Managed#stop()}</li>
+ * <li>{@link javax.annotation.PostConstruct} - same as {@link io.dropwizard.lifecycle.Managed#start()}</li>
+ * <li>{@link PostStartup} - called after server startup
+ * (dropwizard {@link io.dropwizard.lifecycle.ServerLifecycleListener} used)</li>
+ * <li>{@link javax.annotation.PreDestroy} - same as {@link io.dropwizard.lifecycle.Managed#stop()}</li>
  * </ul>
  * <p>
  * The main intention is to replace usages of {@link io.dropwizard.lifecycle.Managed} beans with annotations, because
@@ -32,11 +32,12 @@ import ru.vyarus.guicey.annotations.lifecycle.module.LifecycleAnnotationsModule;
  * <pre>{@code
  *      builder.bundles(new LifecycleAnnotationsBundle("package.to.apply"))
  * }</pre>
+ * (only one instance of bundle will be used)
  *
  * @author Vyacheslav Rusakov
  * @since 08.11.2018
  */
-public class LifecycleAnnotationsBundle implements GuiceyBundle {
+public class LifecycleAnnotationsBundle extends UniqueGuiceyBundle {
 
     private final Matcher<? super TypeLiteral<?>> typeMatcher;
 
@@ -68,13 +69,14 @@ public class LifecycleAnnotationsBundle implements GuiceyBundle {
     }
 
     @Override
-    public void initialize(final GuiceyBootstrap bootstrap) {
+    public void run(final GuiceyEnvironment environment) {
         final LifecycleAnnotationsModule module = new LifecycleAnnotationsModule(typeMatcher);
         final DropwizardLifecycleListener lifecycle = new DropwizardLifecycleListener(module.getCollector());
 
-        bootstrap.modules(module);
-        // do not register as extension to not put additional beans into the guice context
-        bootstrap.environment().lifecycle().manage(lifecycle);
-        bootstrap.environment().lifecycle().addServerLifecycleListener(lifecycle);
+        environment
+                .modules(module)
+                // do not register as extension to not put additional beans into the guice context
+                .manage(lifecycle)
+                .listen(lifecycle);
     }
 }

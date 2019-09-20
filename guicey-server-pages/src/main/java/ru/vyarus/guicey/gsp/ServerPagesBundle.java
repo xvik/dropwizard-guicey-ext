@@ -373,7 +373,7 @@ public class ServerPagesBundle implements ConfiguredBundle<Configuration> {
          * @param configurable views configuration lookup.
          * @param <T>          configuration object type
          * @return builder instance for chained calls
-         * @see ViewBundle#getViewConfiguration(Configuration)
+         * @see ViewBundle#getViewConfiguration(Object)
          * @see #viewsConfigurationModifier(String, ViewRendererConfigurationModifier)
          * @see #printViewsConfiguration()
          */
@@ -626,31 +626,10 @@ public class ServerPagesBundle implements ConfiguredBundle<Configuration> {
         }
 
         /**
-         * Note: if bundle is used inside guicey bundle then use {@link #register(GuiceyBootstrap)} for
-         * bundle installation.
-         *
          * @return configured dropwizard bundle instance
          */
         public ServerPagesAppBundle build() {
             return new ServerPagesAppBundle(config, app);
-        }
-
-        /**
-         * Use when server pages bundle must be registered within guicey bundle
-         * (guicey bundle could register custom application, e.g. for administration or simply register
-         * customizations for existing application).
-         *
-         * @param bootstrap guicey bootstrap object
-         */
-        public void register(final GuiceyBootstrap bootstrap) {
-            final ServerPagesAppBundle bundle = build();
-            bundle.initialize(bootstrap.bootstrap());
-            try {
-                bundle.run(bootstrap.configuration(), bootstrap.environment());
-            } catch (Exception ex) {
-                throw new IllegalStateException("Failed to start server pages application "
-                        + app.name, ex);
-            }
         }
     }
 }

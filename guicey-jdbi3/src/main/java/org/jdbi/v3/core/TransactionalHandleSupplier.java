@@ -34,6 +34,11 @@ public class TransactionalHandleSupplier implements HandleSupplier {
     }
 
     @Override
+    public Jdbi getJdbi() {
+        return jdbi;
+    }
+
+    @Override
     public <V> V invokeInContext(final ExtensionMethod extensionMethod,
                                  final ConfigRegistry config,
                                  final Callable<V> task)

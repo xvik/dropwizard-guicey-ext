@@ -2,8 +2,9 @@ package ru.vyarus.guicey.jdbi3.installer.repository;
 
 import com.google.common.base.Preconditions;
 import com.google.inject.Binder;
+import com.google.inject.Binding;
+import com.google.inject.Stage;
 import com.google.inject.matcher.Matchers;
-import org.aopalliance.intercept.MethodInterceptor;
 import ru.vyarus.dropwizard.guice.module.installer.FeatureInstaller;
 import ru.vyarus.dropwizard.guice.module.installer.install.binding.BindingInstaller;
 import ru.vyarus.dropwizard.guice.module.installer.util.Reporter;
@@ -44,22 +45,22 @@ public class RepositoryInstaller implements FeatureInstaller<Object>, BindingIns
 
     @Override
     @SuppressWarnings({"unchecked", "checkstyle:Indentation"})
-    public <T> void install(final Binder binder, final Class<? extends T> type, final boolean lazy) {
+    public void bindExtension(final Binder binder, final Class<?> type, final boolean lazy) {
         Preconditions.checkState(!lazy, "@LazyBinding not supported");
 
         // jdbi on demand proxy creator: laziness required to wait for global configuration complete
         // to let proxy factory create method configs with all global configurations (mappers)
-        final Provider<T> jdbiProxy = new SqlObjectProvider(type);
+        final Provider<Object> jdbiProxy = new SqlObjectProvider(type);
         binder.requestInjection(jdbiProxy);
 
         // prepare non abstract implementation class (instantiated by guice)
-        final Class<? extends T> guiceType = DynamicClassGenerator.generate(type);
-        binder.bind((Class<T>) type).to(guiceType).in(Singleton.class);
+        final Class guiceType = DynamicClassGenerator.generate(type);
+        binder.bind(type).to(guiceType).in(Singleton.class);
 
         // interceptor registered for each dao and redirect calls to actual jdbi proxy
         // (at this point all guice interceptors are already involved)
         binder.bindInterceptor(Matchers.subclassesOf(type), NoSyntheticMatcher.instance(),
-                (MethodInterceptor) invocation -> {
+                invocation -> {
                     try {
                         return invocation.getMethod().invoke(jdbiProxy.get(), invocation.getArguments());
                     } catch (InvocationTargetException th) {
@@ -67,7 +68,18 @@ public class RepositoryInstaller implements FeatureInstaller<Object>, BindingIns
                         throw th.getCause();
                     }
                 });
-        reporter.line(String.format("(%s)", type.getName()));
+    }
+
+    @Override
+    public <T> void checkBinding(final Binder binder, final Class<T> type, final Binding<T> manualBinding) {
+        // it's impossible to bind manually abstract type in guice
+    }
+
+    @Override
+    public void installBinding(final Binder binder, final Class<?> type) {
+        if (binder.currentStage() != Stage.TOOL) {
+            reporter.line(String.format("(%s)", type.getName()));
+        }
     }
 
     @Override

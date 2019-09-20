@@ -56,11 +56,13 @@ class GuiceyIntegrationTest extends Specification {
     static class AppBundle implements GuiceyBundle {
         @Override
         void initialize(GuiceyBootstrap bootstrap) {
-            ServerPagesBundle
-                    .app('app', '/app', '/')
-                    .indexPage('index.html')
-                    .spaRouting()
-                    .register(bootstrap)
+            bootstrap.dropwizardBundles(
+                    ServerPagesBundle
+                            .app('app', '/app', '/')
+                            .indexPage('index.html')
+                            .spaRouting()
+                            .build()
+            )
         }
     }
 }

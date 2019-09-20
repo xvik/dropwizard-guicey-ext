@@ -61,15 +61,18 @@ class DuplicateAppNameDetectionTest extends Specification {
 
             bootstrap.addBundle(GuiceBundle.builder()
                     .bundles(new GuiceyBundle() {
-                @Override
-                void initialize(GuiceyBootstrap gb) {
-                    ServerPagesBundle.app("app", "/app", "/app")
-                            .indexPage("index.html").register(gb)
-
-                    ServerPagesBundle.app("app", "/app", "/app")
-                            .indexPage("index.html").register(gb)
-                }
-            })
+                        @Override
+                        void initialize(GuiceyBootstrap gb) {
+                            gb.dropwizardBundles(
+                                    ServerPagesBundle.app("app", "/app", "/app")
+                                            .indexPage("index.html")
+                                            .build(),
+                                    ServerPagesBundle.app("app", "/app", "/app")
+                                            .indexPage("index.html")
+                                            .build()
+                            )
+                        }
+                    })
                     .build())
         }
 

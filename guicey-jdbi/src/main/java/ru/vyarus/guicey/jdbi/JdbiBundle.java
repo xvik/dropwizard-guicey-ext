@@ -5,8 +5,9 @@ import com.google.common.collect.Lists;
 import io.dropwizard.Configuration;
 import io.dropwizard.db.PooledDataSourceFactory;
 import org.skife.jdbi.v2.DBI;
+import ru.vyarus.dropwizard.guice.module.context.unique.item.UniqueGuiceyBundle;
 import ru.vyarus.dropwizard.guice.module.installer.bundle.GuiceyBootstrap;
-import ru.vyarus.dropwizard.guice.module.installer.bundle.GuiceyBundle;
+import ru.vyarus.dropwizard.guice.module.installer.bundle.GuiceyEnvironment;
 import ru.vyarus.guicey.jdbi.dbi.ConfigAwareProvider;
 import ru.vyarus.guicey.jdbi.dbi.SimpleDbiProvider;
 import ru.vyarus.guicey.jdbi.installer.MapperInstaller;
@@ -36,6 +37,8 @@ import java.util.List;
  * <li>Classes implementing {@link org.skife.jdbi.v2.tweak.ResultSetMapper} are registered
  * automatically.</li>
  * </ul>
+ * <p>
+ * Only one bundle instance will be actually used (in case of multiple registrations).
  *
  * @author Vyacheslav Rusakov
  * @see ru.vyarus.guicey.jdbi.unit.UnitManager for manual unit of work definition
@@ -44,7 +47,7 @@ import java.util.List;
  * customization details
  * @since 4.12.2016
  */
-public final class JdbiBundle implements GuiceyBundle {
+public final class JdbiBundle extends UniqueGuiceyBundle {
 
     private final ConfigAwareProvider<DBI, ?> dbi;
     private List<Class<? extends Annotation>> txAnnotations = ImmutableList
@@ -72,14 +75,15 @@ public final class JdbiBundle implements GuiceyBundle {
 
     @Override
     public void initialize(final GuiceyBootstrap bootstrap) {
-        final DBI jdbi = this.dbi.get(bootstrap.configuration(), bootstrap.environment());
+        bootstrap.installers(
+                RepositoryInstaller.class,
+                MapperInstaller.class);
+    }
 
-        bootstrap
-                .installers(
-                        RepositoryInstaller.class,
-                        MapperInstaller.class)
-                .modules(
-                        new JdbiModule(jdbi, txAnnotations));
+    @Override
+    public void run(final GuiceyEnvironment environment) {
+        final DBI jdbi = this.dbi.get(environment.configuration(), environment.environment());
+        environment.modules(new JdbiModule(jdbi, txAnnotations));
     }
 
     /**

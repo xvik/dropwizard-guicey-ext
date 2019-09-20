@@ -1,6 +1,7 @@
 package ru.vyarus.guicey.jdbi3.installer;
 
 import com.google.inject.Binder;
+import com.google.inject.Binding;
 import com.google.inject.multibindings.Multibinder;
 import org.jdbi.v3.core.mapper.RowMapper;
 import ru.vyarus.dropwizard.guice.module.installer.FeatureInstaller;
@@ -34,9 +35,18 @@ public class MapperInstaller implements FeatureInstaller<RowMapper>,
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    public <T> void install(final Binder binder, final Class<? extends T> type, final boolean lazy) {
+    public void bindExtension(final Binder binder, final Class<?> type, final boolean lazy) {
         binder.bind(type).in(Singleton.class);
+    }
+
+    @Override
+    public <T> void checkBinding(final Binder binder, final Class<T> type, final Binding<T> manualBinding) {
+        // nothing to do
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public void installBinding(final Binder binder, final Class<?> type) {
         // just combine mappers in set and special bean, installed by module will bind it to dbi
         Multibinder.newSetBinder(binder, RowMapper.class).addBinding()
                 .to((Class<? extends RowMapper>) type);
