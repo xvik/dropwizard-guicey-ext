@@ -23,7 +23,7 @@ allprojects {
     apply plugin: 'project-report'
     apply plugin: 'com.jfrog.bintray'
 
-    repositories { jcenter(); mavenCentral(); mavenLocal() }
+    repositories { jcenter(); mavenCentral(); mavenLocal(); maven { url 'https://jitpack.io' } }
 
     bintray {
         user = findProperty('bintrayUser')
@@ -56,7 +56,9 @@ subprojects {
 
     dependencyManagement {
         imports {
-            mavenBom "ru.vyarus:dropwizard-guicey:$guicey"
+            // temporal switch to jitpack
+//            mavenBom "ru.vyarus:dropwizard-guicey:$guicey"
+            mavenBom 'com.github.xvik:dropwizard-guicey:82d8ffe861'
         }
         dependencies {
             // jdbi deprecated by dropwizard and moved to separate module https://github.com/dropwizard/dropwizard-jdbi
@@ -70,7 +72,8 @@ subprojects {
         provided 'com.google.code.findbugs:jsr305:3.0.2'
         provided 'com.google.code.findbugs:annotations:3.0.1'
 
-        compile "ru.vyarus:dropwizard-guicey"
+//        compile "ru.vyarus:dropwizard-guicey"
+        compile 'com.github.xvik:dropwizard-guicey:82d8ffe861'
 
         testCompile "org.spockframework:spock-core"
         testCompile "io.dropwizard:dropwizard-testing"
