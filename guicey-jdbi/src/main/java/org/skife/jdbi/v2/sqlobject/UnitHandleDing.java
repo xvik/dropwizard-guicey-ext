@@ -33,6 +33,7 @@ public class UnitHandleDing implements HandleDing {
         // no need to track it here because unit of work control scope
     }
 
+    @SuppressWarnings("PMD.LinguisticNaming")
     @Override
     public SqlObjectContext setContext(final SqlObjectContext context) {
         final Handle handle = getHandle();

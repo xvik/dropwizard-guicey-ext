@@ -74,7 +74,7 @@ public class TransactionTemplate {
         } else {
             manager.beginUnit();
             try {
-                return isNewTransaction(config, action);
+                return inNewTransaction(config, action);
             } finally {
                 manager.endUnit();
             }
@@ -97,7 +97,7 @@ public class TransactionTemplate {
     }
 
     @SuppressWarnings("PMD.AvoidThrowingRawExceptionTypes")
-    private <T> T isNewTransaction(final TxConfig config, final TxAction<T> action) {
+    private <T> T inNewTransaction(final TxConfig config, final TxAction<T> action) {
         final Handle h = manager.get();
         h.setReadOnly(config.isReadOnly());
         final HandleCallback<T, RuntimeException> callback = handle -> {

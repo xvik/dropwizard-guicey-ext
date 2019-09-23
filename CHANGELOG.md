@@ -1,5 +1,8 @@
 * Update to guicey 5.0.0
-    - Ext version now aligned with guicey the same way as dropwizard modules: guiceyVersion-number (5.0.0-0)  
+    - Ext version now aligned with guicey the same way as dropwizard modules: guiceyVersion-number (5.0.0-0)
+* [bom]
+    - Add com.h2database:h2:1.4.199 
+    - Add io.dropwizard.modules:dropwizard-flyway:1.3.0-4     
 * [lifecycle-annotations]
     - LifecycleAnnotationsBundle declared as unique to prevent default bundle registration by lookup in case of manual customization
 * [eventbus]
