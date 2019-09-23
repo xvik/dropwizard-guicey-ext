@@ -100,6 +100,12 @@ subprojects {
         }
     }
 
+    jar {
+        manifest {
+            attributes 'Automatic-Module-Name': project.name.replace('guicey-', 'dropwizard-guicey.')
+        }
+    }
+
     bintray {
         publications = ['maven']
     }

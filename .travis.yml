@@ -1,7 +1,10 @@
 language: java
 dist: xenial
 
-jdk: openjdk8
+matrix:
+  include:
+    - jdk: openjdk8
+    - jdk: openjdk11
 
 before_install: chmod +x gradlew
 env:
