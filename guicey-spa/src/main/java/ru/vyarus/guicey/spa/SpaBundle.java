@@ -1,20 +1,18 @@
 package ru.vyarus.guicey.spa;
 
 import com.google.common.base.Joiner;
-import io.dropwizard.Bundle;
 import io.dropwizard.jetty.setup.ServletEnvironment;
 import io.dropwizard.servlets.assets.AssetServlet;
-import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.vyarus.dropwizard.guice.module.installer.bundle.GuiceyBundle;
+import ru.vyarus.dropwizard.guice.module.installer.bundle.GuiceyEnvironment;
 import ru.vyarus.guicey.spa.filter.SpaRoutingFilter;
 
 import javax.servlet.DispatcherType;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.EnumSet;
-import java.util.List;
 import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkArgument;
@@ -26,29 +24,25 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * When user bookmark such url or simply refresh page, browser requests complete url on server
  * and server must support it: redirect to main index page (without changing url, so client could handle routing).
  * <p>
- * Bundle is pure dropwizard bundle.
- * <p>
  * Use dropwizard-assets servlet internally, but wraps it with special filter, which reacts on resource not found
  * errors (by default, all calls pass to assets filter!). Applies no-cache header for index page.
  * <p>
  * You can register multiple SPA applications on main or admin contexts (or both).
- * All applications must have unique names. In case of duplicate names or mapping on the same path, error
- * will be thrown.
+ * All applications must have unique names. In case of duplicate names only one application will be registered
+ * (not registered bundle would be visible on
+ * {@link ru.vyarus.dropwizard.guice.GuiceBundle.Builder#printDiagnosticInfo()} report).
+ * Error will be thrown if multiple applications would mapped on the same path.
  *
  * @author Vyacheslav Rusakov
  * @since 02.04.2017
  */
 @SuppressWarnings("PMD.ImmutableField")
-public class SpaBundle implements Bundle {
+public class SpaBundle implements GuiceyBundle {
 
     public static final String SLASH = "/";
     public static final String DEFAULT_PATTERN =
             "\\.(html|css|js|png|jpg|jpeg|gif|ico|xml|rss|txt|eot|svg|ttf|woff|woff2|cur)"
                     + "(\\?((r|v|rel|rev)=[\\-\\.\\w]*)?)?$";
-
-    // dropwizard initialization is single threaded so using thread local
-    // to control asset uniqueness (important for filters registration)
-    private static final ThreadLocal<List<String>> USED_NAMES = new ThreadLocal<>();
 
     private final Logger logger = LoggerFactory.getLogger(SpaBundle.class);
 
@@ -59,30 +53,10 @@ public class SpaBundle implements Bundle {
     private String indexFile = "index.html";
     private String noRedirectRegex = DEFAULT_PATTERN;
 
-
     @Override
-    public void initialize(final Bootstrap<?> bootstrap) {
-        USED_NAMES.remove();
-    }
-
-    @Override
-    public void run(final Environment environment) {
-
-        List<String> used = USED_NAMES.get();
-        if (used == null) {
-            used = new ArrayList<>();
-            USED_NAMES.set(used);
-        }
-        // important because name used for filter mapping
-        checkArgument(!used.contains(assetName),
-                "SPA with name '%s' is already registered", assetName);
-        used.add(assetName);
-
-        init(environment);
-    }
-
-    private void init(final Environment environment) {
-        final ServletEnvironment context = mainContext ? environment.servlets() : environment.admin();
+    public void run(final GuiceyEnvironment environment) {
+        final Environment env = environment.environment();
+        final ServletEnvironment context = mainContext ? env.servlets() : env.admin();
 
         final Set<String> clash = context.addServlet(assetName,
                 new AssetServlet(resourcePath, uriPath, indexFile, StandardCharsets.UTF_8))
@@ -100,6 +74,17 @@ public class SpaBundle implements Bundle {
 
         logger.info("SPA '{}' for source '{}' registered on uri '{}' in {} context",
                 assetName, resourcePath, uriPath + '*', mainContext ? "main" : "admin");
+    }
+
+    @Override
+    public int hashCode() {
+        return assetName.hashCode();
+    }
+
+    @Override
+    public boolean equals(final Object obj) {
+        // consider bundles with the same name as equal and register only one of them
+        return obj instanceof SpaBundle && assetName.equals(((SpaBundle) obj).assetName);
     }
 
     /**

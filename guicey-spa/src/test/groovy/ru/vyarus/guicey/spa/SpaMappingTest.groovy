@@ -8,6 +8,7 @@ import io.dropwizard.Application
 import io.dropwizard.Configuration
 import io.dropwizard.setup.Bootstrap
 import io.dropwizard.setup.Environment
+import ru.vyarus.dropwizard.guice.GuiceBundle
 import ru.vyarus.dropwizard.guice.test.spock.ConfigOverride
 import ru.vyarus.dropwizard.guice.test.spock.UseDropwizardApp
 import spock.lang.Specification
@@ -74,32 +75,31 @@ class SpaMappingTest extends Specification {
         def http = new HTTPBuilder('http://localhost:8080/')
 
         when: "calling with html type"
-        http.get(path: '/same', contentType : ContentType.HTML)
+        http.get(path: '/same', contentType: ContentType.HTML)
 
         then: "redirect"
         true
 
         when: "calling with text type"
-        http.get(path: '/same', contentType : ContentType.TEXT)
+        http.get(path: '/same', contentType: ContentType.TEXT)
 
         then: "no redirect"
         def ex = thrown(HttpResponseException)
         ex.response.status == 404
 
         when: "calling with unknown content type"
-        http.get(path: '/same', contentType : "abrakadabra")
+        http.get(path: '/same', contentType: "abrakadabra")
 
         then: "no redirect"
         ex = thrown(HttpResponseException)
         ex.response.status == 404
 
         when: "calling with empty type"
-        http.get(path: '/same', contentType : " ")
+        http.get(path: '/same', contentType: " ")
 
         then: "no redirect"
         ex = thrown(HttpResponseException)
         ex.response.status == 404
-
 
 
     }
@@ -121,7 +121,9 @@ class SpaMappingTest extends Specification {
 
         @Override
         void initialize(Bootstrap<Configuration> bootstrap) {
-            bootstrap.addBundle(SpaBundle.app("app", "/app", "/").build())
+            bootstrap.addBundle(GuiceBundle.builder()
+                    .bundles(SpaBundle.app("app", "/app", "/").build())
+                    .build())
         }
 
         @Override

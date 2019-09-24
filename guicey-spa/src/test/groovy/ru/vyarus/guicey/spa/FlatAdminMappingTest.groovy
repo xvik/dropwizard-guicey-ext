@@ -4,10 +4,9 @@ import io.dropwizard.Application
 import io.dropwizard.Configuration
 import io.dropwizard.setup.Bootstrap
 import io.dropwizard.setup.Environment
-import ru.vyarus.dropwizard.guice.test.spock.ConfigOverride
+import ru.vyarus.dropwizard.guice.GuiceBundle
 import ru.vyarus.dropwizard.guice.test.spock.UseDropwizardApp
 import spock.lang.Specification
-
 
 /**
  * @author Vyacheslav Rusakov
@@ -34,7 +33,9 @@ class FlatAdminMappingTest extends Specification {
 
         @Override
         void initialize(Bootstrap<Configuration> bootstrap) {
-            bootstrap.addBundle(SpaBundle.adminApp("app", "/app", "/app").build())
+            bootstrap.addBundle(GuiceBundle.builder()
+                    .bundles(SpaBundle.adminApp("app", "/app", "/app").build())
+                    .build())
         }
 
         @Override

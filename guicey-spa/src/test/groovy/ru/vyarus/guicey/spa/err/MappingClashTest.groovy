@@ -5,6 +5,7 @@ import io.dropwizard.Configuration
 import io.dropwizard.setup.Bootstrap
 import io.dropwizard.setup.Environment
 import org.junit.Rule
+import ru.vyarus.dropwizard.guice.GuiceBundle
 import ru.vyarus.dropwizard.guice.test.StartupErrorRule
 import ru.vyarus.guicey.spa.SpaBundle
 import spock.lang.Specification
@@ -33,8 +34,11 @@ class MappingClashTest extends Specification {
 
         @Override
         void initialize(Bootstrap<Configuration> bootstrap) {
-            bootstrap.addBundle(SpaBundle.app("app1", "/app", "/app").build())
-            bootstrap.addBundle(SpaBundle.app("app2", "/app", "/app").build())
+            bootstrap.addBundle(GuiceBundle.builder()
+                    .bundles(
+                            SpaBundle.app("app1", "/app", "/app").build(),
+                            SpaBundle.app("app2", "/app", "/app").build())
+                    .build())
         }
 
         @Override

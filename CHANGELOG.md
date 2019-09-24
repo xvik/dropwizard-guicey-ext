@@ -9,6 +9,9 @@
 * [eventbus]
     - EventBusBundle declared as unique to prevent side effects of duplicate registrations    
 * [spa]
+    - SpaBundle is guicey bundle now
+        * Error not thrown now on duplicate bundle registration with the same application name.
+          Instead only deduplication mechanism is used so only one bundle would be used.
     - Removed `SpaBundle.register(GuiceyBundle)` as now dropwizard bundles supported directly    
 * [server-pages]
     - Removed `ServerPagesBundle.register(GuiceyBundle)` as now dropwizard bundles supported directly

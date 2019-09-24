@@ -4,6 +4,7 @@ import io.dropwizard.Application
 import io.dropwizard.Configuration
 import io.dropwizard.setup.Bootstrap
 import io.dropwizard.setup.Environment
+import ru.vyarus.dropwizard.guice.GuiceBundle
 import ru.vyarus.dropwizard.guice.test.spock.ConfigOverride
 import ru.vyarus.dropwizard.guice.test.spock.UseDropwizardApp
 import spock.lang.Specification
@@ -30,9 +31,11 @@ class CustomIndexTest extends Specification {
 
         @Override
         void initialize(Bootstrap<Configuration> bootstrap) {
-            bootstrap.addBundle(SpaBundle
-                    .app("app", "/app", "/")
-                    .indexPage("idx.htm")
+            bootstrap.addBundle(GuiceBundle.builder()
+                    .bundles(SpaBundle
+                            .app("app", "/app", "/")
+                            .indexPage("idx.htm")
+                            .build())
                     .build())
         }
 
