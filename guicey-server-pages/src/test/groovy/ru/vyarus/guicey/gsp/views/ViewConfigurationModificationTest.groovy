@@ -4,6 +4,7 @@ import io.dropwizard.Application
 import io.dropwizard.Configuration
 import io.dropwizard.setup.Bootstrap
 import io.dropwizard.setup.Environment
+import ru.vyarus.dropwizard.guice.GuiceBundle
 import ru.vyarus.dropwizard.guice.test.spock.UseDropwizardApp
 import ru.vyarus.guicey.gsp.ServerPagesBundle
 import spock.lang.Specification
@@ -30,11 +31,13 @@ class ViewConfigurationModificationTest extends Specification {
             bundle = ServerPagesBundle.builder()
                     .printViewsConfiguration()
                     .build()
-            bootstrap.addBundle(bundle)
-            // pure dropwizard bundle
-            bootstrap.addBundle(ServerPagesBundle.app("app", "/app", "/app")
-                    .viewsConfigurationModifier('freemarker', { it['cache_storage'] = "yes" })
-                    .viewsConfigurationModifier('test', { })
+            bootstrap.addBundle(GuiceBundle.builder()
+                    .bundles(
+                            bundle,
+                            ServerPagesBundle.app("app", "/app", "/app")
+                                    .viewsConfigurationModifier('freemarker', { it['cache_storage'] = "yes" })
+                                    .viewsConfigurationModifier('test', {})
+                                    .build())
                     .build())
         }
 

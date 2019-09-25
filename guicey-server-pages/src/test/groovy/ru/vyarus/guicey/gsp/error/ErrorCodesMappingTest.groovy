@@ -4,6 +4,7 @@ import io.dropwizard.Application
 import io.dropwizard.Configuration
 import io.dropwizard.setup.Bootstrap
 import io.dropwizard.setup.Environment
+import ru.vyarus.dropwizard.guice.GuiceBundle
 import ru.vyarus.dropwizard.guice.test.spock.ConfigOverride
 import ru.vyarus.dropwizard.guice.test.spock.UseDropwizardApp
 import ru.vyarus.guicey.gsp.ServerPagesBundle
@@ -56,18 +57,19 @@ class ErrorCodesMappingTest extends Specification {
 
         @Override
         void initialize(Bootstrap<Configuration> bootstrap) {
-            bootstrap.addBundle(ServerPagesBundle.builder().build())
-
-            // pure dropwizard bundle
-            bootstrap.addBundle(ServerPagesBundle.app("err", "/err", "/")
-                    .errorPage(403, "error.ftl")
-                    .errorPage(405, "error2.ftl")
+            bootstrap.addBundle(GuiceBundle.builder()
+                    .extensions(ErrorResource)
+                    .bundles(
+                            ServerPagesBundle.builder().build(),
+                            ServerPagesBundle.app("err", "/err", "/")
+                                    .errorPage(403, "error.ftl")
+                                    .errorPage(405, "error2.ftl")
+                                    .build())
                     .build())
         }
 
         @Override
         void run(Configuration configuration, Environment environment) throws Exception {
-            environment.jersey().register(ErrorResource)
         }
     }
 

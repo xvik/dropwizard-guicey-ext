@@ -5,6 +5,7 @@ import io.dropwizard.Configuration
 import io.dropwizard.setup.Bootstrap
 import io.dropwizard.setup.Environment
 import io.dropwizard.testing.junit.DropwizardAppRule
+import ru.vyarus.dropwizard.guice.GuiceBundle
 import ru.vyarus.guicey.gsp.ServerPagesBundle
 import spock.lang.Specification
 
@@ -32,10 +33,13 @@ class NoViewsSupportTest extends Specification {
 
         @Override
         void initialize(Bootstrap<Configuration> bootstrap) {
-            // NO global setup
 
-            // pure dropwizard bundle
-            bootstrap.addBundle(ServerPagesBundle.app("app", "/app", "/").build())
+
+            bootstrap.addBundle(GuiceBundle.builder()
+                    .bundles(
+                            // NO global setup
+                            ServerPagesBundle.app("app", "/app", "/").build())
+                    .build())
         }
 
         @Override

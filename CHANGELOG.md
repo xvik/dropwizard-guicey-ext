@@ -12,9 +12,10 @@
     - SpaBundle is guicey bundle now
         * Error not thrown now on duplicate bundle registration with the same application name.
           Instead only deduplication mechanism is used so only one bundle would be used.
-    - Removed `SpaBundle.register(GuiceyBundle)` as now dropwizard bundles supported directly    
+    - Removed `SpaBundle.register(GuiceyBundle)` as redundant    
 * [server-pages]
-    - Removed `ServerPagesBundle.register(GuiceyBundle)` as now dropwizard bundles supported directly
+    - ServerPagesBundle and application bundle are guicey bundles now
+    - Removed `ServerPagesBundle.register(GuiceyBundle)` as redundant
 * [jdbi3]
     - JdbiBundle declared as unique (it will not work with multiple instances)
 * [jdbi]

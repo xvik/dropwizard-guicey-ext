@@ -4,6 +4,7 @@ import io.dropwizard.Application
 import io.dropwizard.Configuration
 import io.dropwizard.setup.Bootstrap
 import io.dropwizard.setup.Environment
+import ru.vyarus.dropwizard.guice.GuiceBundle
 import ru.vyarus.dropwizard.guice.test.spock.ConfigOverride
 import ru.vyarus.dropwizard.guice.test.spock.UseDropwizardApp
 import spock.lang.Specification
@@ -23,7 +24,7 @@ class FilePatternChangeTest extends Specification {
         String res = new URL("http://localhost:8080/css/style.css").text
         then: "ok"
         res.contains("sample page css")
-        
+
         when: "accessing template page"
         res = new URL("http://localhost:8080/template.ftl").text
         then: "template rendered"
@@ -40,12 +41,13 @@ class FilePatternChangeTest extends Specification {
 
         @Override
         void initialize(Bootstrap<Configuration> bootstrap) {
-            bootstrap.addBundle(ServerPagesBundle.builder().build())
-
-            // pure dropwizard bundle
-            bootstrap.addBundle(ServerPagesBundle.app("app", "/app", "/")
-                    // everything is a file, except direct .html files call
-                    .filePattern("(?:^|/)([^/]+\\.(?:(?!html)|(?:css)|(?:ftl)))(?:\\?.+)?\$")
+            bootstrap.addBundle(GuiceBundle.builder()
+                    .bundles(
+                            ServerPagesBundle.builder().build(),
+                            ServerPagesBundle.app("app", "/app", "/")
+                            // everything is a file, except direct .html files call
+                                    .filePattern("(?:^|/)([^/]+\\.(?:(?!html)|(?:css)|(?:ftl)))(?:\\?.+)?\$")
+                                    .build())
                     .build())
         }
 

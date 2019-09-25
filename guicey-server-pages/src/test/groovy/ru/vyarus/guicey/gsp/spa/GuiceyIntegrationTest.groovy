@@ -43,9 +43,10 @@ class GuiceyIntegrationTest extends Specification {
 
         @Override
         void initialize(Bootstrap<Configuration> bootstrap) {
-            bootstrap.addBundle(ServerPagesBundle.builder().build())
-
-            bootstrap.addBundle(GuiceBundle.builder().bundles(new AppBundle()).build())
+            bootstrap.addBundle(GuiceBundle.builder()
+                    .bundles(ServerPagesBundle.builder().build(),
+                            new AppBundle())
+                    .build())
         }
 
         @Override
@@ -56,7 +57,7 @@ class GuiceyIntegrationTest extends Specification {
     static class AppBundle implements GuiceyBundle {
         @Override
         void initialize(GuiceyBootstrap bootstrap) {
-            bootstrap.dropwizardBundles(
+            bootstrap.bundles(
                     ServerPagesBundle
                             .app('app', '/app', '/')
                             .indexPage('index.html')

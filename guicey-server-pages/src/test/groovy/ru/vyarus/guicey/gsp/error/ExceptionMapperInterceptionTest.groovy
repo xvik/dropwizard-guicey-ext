@@ -4,6 +4,7 @@ import io.dropwizard.Application
 import io.dropwizard.Configuration
 import io.dropwizard.setup.Bootstrap
 import io.dropwizard.setup.Environment
+import ru.vyarus.dropwizard.guice.GuiceBundle
 import ru.vyarus.dropwizard.guice.test.spock.ConfigOverride
 import ru.vyarus.dropwizard.guice.test.spock.UseDropwizardApp
 import ru.vyarus.guicey.gsp.ServerPagesBundle
@@ -15,6 +16,7 @@ import javax.ws.rs.GET
 import javax.ws.rs.Path
 import javax.ws.rs.core.Response
 import javax.ws.rs.ext.ExceptionMapper
+import javax.ws.rs.ext.Provider
 
 /**
  * @author Vyacheslav Rusakov
@@ -43,18 +45,18 @@ class ExceptionMapperInterceptionTest extends Specification {
 
         @Override
         void initialize(Bootstrap<Configuration> bootstrap) {
-            bootstrap.addBundle(ServerPagesBundle.builder().build())
-
-            // pure dropwizard bundle
-            bootstrap.addBundle(ServerPagesBundle.app("test.app", "/app", "/")
-                    .errorPage("error.ftl")
+            bootstrap.addBundle(GuiceBundle.builder()
+                    .extensions(ErrRest, ExHandler)
+                    .bundles(
+                            ServerPagesBundle.builder().build(),
+                            ServerPagesBundle.app("test.app", "/app", "/")
+                                    .errorPage("error.ftl")
+                                    .build())
                     .build())
         }
 
         @Override
         void run(Configuration configuration, Environment environment) throws Exception {
-            environment.jersey().register(ErrRest)
-            environment.jersey().register(ExHandler)
         }
     }
 
@@ -77,6 +79,7 @@ class ExceptionMapperInterceptionTest extends Specification {
         }
     }
 
+    @Provider
     public static class ExHandler implements ExceptionMapper<IllegalArgumentException> {
         @Override
         Response toResponse(IllegalArgumentException exception) {

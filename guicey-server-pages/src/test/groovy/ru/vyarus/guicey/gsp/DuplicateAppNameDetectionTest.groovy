@@ -6,8 +6,6 @@ import io.dropwizard.setup.Bootstrap
 import io.dropwizard.setup.Environment
 import io.dropwizard.testing.junit.DropwizardAppRule
 import ru.vyarus.dropwizard.guice.GuiceBundle
-import ru.vyarus.dropwizard.guice.module.installer.bundle.GuiceyBootstrap
-import ru.vyarus.dropwizard.guice.module.installer.bundle.GuiceyBundle
 import spock.lang.Specification
 
 /**
@@ -39,13 +37,16 @@ class DuplicateAppNameDetectionTest extends Specification {
 
         @Override
         void initialize(Bootstrap<Configuration> bootstrap) {
-            bootstrap.addBundle(ServerPagesBundle.builder().build())
-
-            bootstrap.addBundle(ServerPagesBundle.app("app", "/app", "/app")
-                    .indexPage("index.html").build())
-
-            bootstrap.addBundle(ServerPagesBundle.app("app", "/app", "/app")
-                    .indexPage("index.html").build())
+            bootstrap.addBundle(GuiceBundle.builder()
+                    .bundles(
+                            ServerPagesBundle.builder().build(),
+                            ServerPagesBundle.app("app", "/app", "/app")
+                                    .indexPage("index.html")
+                                    .build(),
+                            ServerPagesBundle.app("app", "/app", "/app")
+                                    .indexPage("index.html")
+                                    .build())
+                    .build())
         }
 
         @Override
@@ -57,22 +58,14 @@ class DuplicateAppNameDetectionTest extends Specification {
 
         @Override
         void initialize(Bootstrap<Configuration> bootstrap) {
-            bootstrap.addBundle(ServerPagesBundle.builder().build())
-
             bootstrap.addBundle(GuiceBundle.builder()
-                    .bundles(new GuiceyBundle() {
-                        @Override
-                        void initialize(GuiceyBootstrap gb) {
-                            gb.dropwizardBundles(
-                                    ServerPagesBundle.app("app", "/app", "/app")
-                                            .indexPage("index.html")
-                                            .build(),
-                                    ServerPagesBundle.app("app", "/app", "/app")
-                                            .indexPage("index.html")
-                                            .build()
-                            )
-                        }
-                    })
+                    .bundles(ServerPagesBundle.builder().build(),
+                            ServerPagesBundle.app("app", "/app", "/app")
+                                    .indexPage("index.html")
+                                    .build(),
+                            ServerPagesBundle.app("app", "/app", "/app")
+                                    .indexPage("index.html")
+                                    .build())
                     .build())
         }
 

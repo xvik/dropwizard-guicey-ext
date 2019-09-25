@@ -6,6 +6,7 @@ import io.dropwizard.Application
 import io.dropwizard.Configuration
 import io.dropwizard.setup.Bootstrap
 import io.dropwizard.setup.Environment
+import ru.vyarus.dropwizard.guice.GuiceBundle
 import ru.vyarus.dropwizard.guice.test.spock.ConfigOverride
 import ru.vyarus.dropwizard.guice.test.spock.UseDropwizardApp
 import ru.vyarus.guicey.gsp.ServerPagesBundle
@@ -93,17 +94,26 @@ class MultipleBundlesMappingTest extends Specification {
 
         @Override
         void initialize(Bootstrap<Configuration> bootstrap) {
-            bootstrap.addBundle(ServerPagesBundle.builder().build())
-
-            bootstrap.addBundle(ServerPagesBundle.app("app1", "/app", "/1")
-                    .indexPage('index.html').spaRouting().build())
-            bootstrap.addBundle(ServerPagesBundle.app("app2", "/app", "/2")
-                    .indexPage('index.html').spaRouting().build())
-
-            bootstrap.addBundle(ServerPagesBundle.adminApp("aapp1", "/app", "/a1")
-                    .indexPage('index.html').spaRouting().build())
-            bootstrap.addBundle(ServerPagesBundle.adminApp("aapp2", "/app", "/a2")
-                    .indexPage('index.html').spaRouting().build())
+            bootstrap.addBundle(GuiceBundle.builder()
+                    .bundles(
+                            ServerPagesBundle.builder().build(),
+                            ServerPagesBundle.app("app1", "/app", "/1")
+                                    .indexPage('index.html')
+                                    .spaRouting()
+                                    .build(),
+                            ServerPagesBundle.app("app2", "/app", "/2")
+                                    .indexPage('index.html')
+                                    .spaRouting()
+                                    .build(),
+                            ServerPagesBundle.adminApp("aapp1", "/app", "/a1")
+                                    .indexPage('index.html')
+                                    .spaRouting()
+                                    .build(),
+                            ServerPagesBundle.adminApp("aapp2", "/app", "/a2")
+                                    .indexPage('index.html')
+                                    .spaRouting()
+                                    .build())
+                    .build())
         }
 
         @Override

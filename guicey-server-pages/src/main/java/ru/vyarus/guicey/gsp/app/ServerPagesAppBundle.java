@@ -1,11 +1,9 @@
 package ru.vyarus.guicey.gsp.app;
 
 import com.google.common.base.Preconditions;
-import io.dropwizard.Configuration;
-import io.dropwizard.ConfiguredBundle;
-import io.dropwizard.setup.Bootstrap;
-import io.dropwizard.setup.Environment;
 import io.dropwizard.views.ViewRenderer;
+import ru.vyarus.dropwizard.guice.module.installer.bundle.GuiceyBundle;
+import ru.vyarus.dropwizard.guice.module.installer.bundle.GuiceyEnvironment;
 import ru.vyarus.guicey.gsp.ServerPagesBundle;
 
 import java.util.ArrayList;
@@ -22,10 +20,10 @@ import java.util.List;
  * @author Vyacheslav Rusakov
  * @since 05.06.2019
  */
-public class ServerPagesAppBundle implements ConfiguredBundle<Configuration> {
+public class ServerPagesAppBundle implements GuiceyBundle {
 
     private static final String COMMA = ", ";
-    
+
     private final GlobalConfig config;
     private final ServerPagesApp app;
 
@@ -35,19 +33,16 @@ public class ServerPagesAppBundle implements ConfiguredBundle<Configuration> {
     }
 
     @Override
-    public void initialize(final Bootstrap<?> bootstrap) {
-        Preconditions.checkState(config.isViewsSupportRegistered(),
-                "Server pages support bundle was not installed: use %s.builder() to create bundle",
-                ServerPagesBundle.class.getSimpleName());
-    }
-
-    @Override
-    public void run(final Configuration configuration, final Environment environment) throws Exception {
+    public void run(final GuiceyEnvironment environment) {
         validateRequirements();
-        app.setup(environment);
+        app.setup(environment.environment());
     }
 
     private void validateRequirements() {
+        Preconditions.checkState(config.isViewsSupportRegistered(),
+                "Server pages support bundle was not installed: use %s.builder() to create bundle",
+                ServerPagesBundle.class.getSimpleName());
+
         if (app.requiredRenderers == null) {
             return;
         }

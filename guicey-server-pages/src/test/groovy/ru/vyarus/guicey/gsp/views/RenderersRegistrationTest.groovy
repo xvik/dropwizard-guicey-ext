@@ -6,6 +6,7 @@ import io.dropwizard.setup.Bootstrap
 import io.dropwizard.setup.Environment
 import io.dropwizard.views.View
 import io.dropwizard.views.ViewRenderer
+import ru.vyarus.dropwizard.guice.GuiceBundle
 import ru.vyarus.dropwizard.guice.test.spock.ConfigOverride
 import ru.vyarus.dropwizard.guice.test.spock.UseDropwizardApp
 import ru.vyarus.guicey.gsp.ServerPagesBundle
@@ -38,17 +39,19 @@ class RenderersRegistrationTest extends Specification {
                             new CustomRenderer("r2"), new CustomRenderer("r3"))
                     .printViewsConfiguration()
                     .build()
-            bootstrap.addBundle(bundle)
-            // pure dropwizard bundle
-            bootstrap.addBundle(ServerPagesBundle.app("app", "/app", "/").build())
-
-
-            bootstrap.addBundle(ServerPagesBundle.app("app2", "/app", "/2").build())
+            bootstrap.addBundle(GuiceBundle.builder()
+                    .bundles(
+                            bundle,
+                            ServerPagesBundle.app("app", "/app", "/").build(),
+                            ServerPagesBundle.app("app2", "/app", "/2").build())
+                    .build())
         }
 
         @Override
         void run(Configuration configuration, Environment environment) throws Exception {
-            assert bundle.getRenderers().collect {it.getConfigurationKey()} as Set == ['freemarker', 'mustache', 'r1', 'r2', 'r3'] as Set
+            assert bundle.getRenderers().collect {
+                it.getConfigurationKey()
+            } as Set == ['freemarker', 'mustache', 'r1', 'r2', 'r3'] as Set
         }
     }
 

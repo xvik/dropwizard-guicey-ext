@@ -32,15 +32,13 @@ class ResourceMappingTest extends Specification {
 
         @Override
         void initialize(Bootstrap<Configuration> bootstrap) {
-            bootstrap.addBundle(ServerPagesBundle.builder().build())
-
-            // pure dropwizard bundle
-            bootstrap.addBundle(ServerPagesBundle.app("app", "/app", "/")
-                    .indexPage("index.html")
-                    .build())
-            // register resource using guicey to check correct initialization
             bootstrap.addBundle(GuiceBundle.builder()
-                    .extensions(SampleTemplateResource.class)
+                    .extensions(SampleTemplateResource)
+                    .bundles(
+                            ServerPagesBundle.builder().build(),
+                            ServerPagesBundle.app("app", "/app", "/")
+                                    .indexPage("index.html")
+                                    .build())
                     .build())
         }
 

@@ -5,6 +5,7 @@ import io.dropwizard.Configuration
 import io.dropwizard.setup.Bootstrap
 import io.dropwizard.setup.Environment
 import io.dropwizard.testing.junit.DropwizardAppRule
+import ru.vyarus.dropwizard.guice.GuiceBundle
 import ru.vyarus.guicey.gsp.ServerPagesBundle
 import spock.lang.Specification
 
@@ -31,11 +32,12 @@ class RendererDetectionTest extends Specification {
 
         @Override
         void initialize(Bootstrap<Configuration> bootstrap) {
-            bootstrap.addBundle(ServerPagesBundle.builder().build())
-
-            // pure dropwizard bundle
-            bootstrap.addBundle(ServerPagesBundle.app("app", "/app", "/app")
-                    .requireRenderers("fooo")
+            bootstrap.addBundle(GuiceBundle.builder()
+                    .bundles(
+                            ServerPagesBundle.builder().build(),
+                            ServerPagesBundle.app("app", "/app", "/app")
+                                    .requireRenderers("fooo")
+                                    .build())
                     .build())
         }
 

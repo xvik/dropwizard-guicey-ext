@@ -4,6 +4,7 @@ import io.dropwizard.Application
 import io.dropwizard.Configuration
 import io.dropwizard.setup.Bootstrap
 import io.dropwizard.setup.Environment
+import ru.vyarus.dropwizard.guice.GuiceBundle
 import ru.vyarus.dropwizard.guice.test.spock.ConfigOverride
 import ru.vyarus.dropwizard.guice.test.spock.UseDropwizardApp
 import spock.lang.Specification
@@ -40,11 +41,12 @@ class RootRestMappingTest extends Specification {
 
         @Override
         void initialize(Bootstrap<Configuration> bootstrap) {
-            // pure dropwizard bundle
-            bootstrap.addBundle(ServerPagesBundle.builder().build())
-
-            bootstrap.addBundle(ServerPagesBundle.app("app", "/app", "/app")
-                    .indexPage("template.ftl")
+            bootstrap.addBundle(GuiceBundle.builder()
+                    .bundles(
+                            ServerPagesBundle.builder().build(),
+                            ServerPagesBundle.app("app", "/app", "/app")
+                                    .indexPage("template.ftl")
+                                    .build())
                     .build())
         }
 

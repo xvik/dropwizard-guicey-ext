@@ -50,20 +50,19 @@ class ExtendedFromGuiceyTest extends Specification {
 
         @Override
         void initialize(Bootstrap<Configuration> bootstrap) {
-            bootstrap.addBundle(ServerPagesBundle.builder().build())
-
-            // pure dropwizard bundle
-            bootstrap.addBundle(ServerPagesBundle.app("app", "/app", "/")
-                    .indexPage("index.html")
-                    .build())
-
             bootstrap.addBundle(GuiceBundle.builder()
-                    .bundles(new GuiceyBundle() {
-                @Override
-                void initialize(GuiceyBootstrap gb) {
-                    ServerPagesBundle.extendApp("app", "/ext")
-                }
-            }).build())
+                    .bundles(
+                            ServerPagesBundle.builder().build(),
+                            ServerPagesBundle.app("app", "/app", "/")
+                                    .indexPage("index.html")
+                                    .build(),
+                            new GuiceyBundle() {
+                                @Override
+                                void initialize(GuiceyBootstrap gb) {
+                                    ServerPagesBundle.extendApp("app", "/ext")
+                                }
+                            })
+                    .build())
         }
 
         @Override

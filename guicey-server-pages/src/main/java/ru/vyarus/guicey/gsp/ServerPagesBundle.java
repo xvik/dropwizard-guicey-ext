@@ -5,15 +5,13 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import io.dropwizard.Configuration;
-import io.dropwizard.ConfiguredBundle;
-import io.dropwizard.setup.Bootstrap;
-import io.dropwizard.setup.Environment;
 import io.dropwizard.views.ViewBundle;
 import io.dropwizard.views.ViewConfigurable;
 import io.dropwizard.views.ViewRenderer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.vyarus.dropwizard.guice.module.installer.bundle.GuiceyBootstrap;
+import ru.vyarus.dropwizard.guice.module.context.unique.item.UniqueGuiceyBundle;
+import ru.vyarus.dropwizard.guice.module.installer.bundle.GuiceyEnvironment;
 import ru.vyarus.dropwizard.guice.module.installer.util.Reporter;
 import ru.vyarus.guicey.gsp.app.DelayedInitializer;
 import ru.vyarus.guicey.gsp.app.GlobalConfig;
@@ -65,11 +63,6 @@ import static ru.vyarus.guicey.spa.SpaBundle.SLASH;
  * {@link AppBuilder#requireRenderers(String...)} to declare required template engines for each application and
  * fail fast if no required templates engine. Without required engines declaration template files will be served like
  * static files when direct template requested and rendering will fail for rest-mapped template.
- * <p>
- * Pay attention that application bundles are dropwizard bundles (not guicey bundles) so register it directly in
- * bootstrap object. This is required to be able to register multiple server applications. It could be also be
- * registered within {@link ru.vyarus.dropwizard.guice.module.installer.bundle.GuiceyBundle} using builder register
- * method ({@link AppBuilder#register(GuiceyBootstrap)}).
  * <p>
  * Each application could be "extended" using {@link ServerPagesBundle#extendApp(String, String)}. This way extra
  * classpath location is mapped into application root. Pages from extended context could reference resources from
@@ -135,7 +128,7 @@ import static ru.vyarus.guicey.spa.SpaBundle.SLASH;
  * @since 22.10.2018
  */
 @SuppressWarnings("PMD.ExcessiveImports")
-public class ServerPagesBundle implements ConfiguredBundle<Configuration> {
+public class ServerPagesBundle extends UniqueGuiceyBundle {
 
     /**
      * Default pattern for file request detection.
@@ -297,23 +290,18 @@ public class ServerPagesBundle implements ConfiguredBundle<Configuration> {
     }
 
     @Override
-    public void initialize(final Bootstrap<?> bootstrap) {
-        // not needed
-    }
-
-    @Override
-    public void run(final Configuration configuration, final Environment environment) throws Exception {
+    public void run(final GuiceyEnvironment environment) throws Exception {
         LOGGER.debug("Perform global server pages initialization (views configuration)");
         // delayed apps init finalization (common for all registered apps)
-        new DelayedInitializer(config, environment);
+        new DelayedInitializer(config, environment.environment());
 
         // @Template annotation support (even with multiple registrations should be created just once)
         // note: applied only to annotated resources!
-        environment.jersey().register(TemplateAnnotationFilter.class);
+        environment.register(TemplateAnnotationFilter.class);
 
         // template rest errors interception (global handlers)
-        environment.jersey().register(TemplateErrorResponseFilter.class);
-        environment.jersey().register(TemplateExceptionListener.class);
+        environment.register(TemplateErrorResponseFilter.class);
+        environment.register(TemplateExceptionListener.class);
 
         // automatically add engines from classpath lookup
         final Iterable<ViewRenderer> renderers = ServiceLoader.load(ViewRenderer.class);
@@ -322,7 +310,7 @@ public class ServerPagesBundle implements ConfiguredBundle<Configuration> {
                 "No template engines found (dropwizard views renderer)");
 
         // configure views bundle (can't be registered in bootstrap as this point is in run phase)
-        new ConfiguredViewBundle(config).run(configuration, environment);
+        new ConfiguredViewBundle(config).run(environment.configuration(), environment.environment());
         config.initialized();
 
         final StringBuilder res = new StringBuilder("Available dropwizard-views renderers:")
@@ -427,7 +415,7 @@ public class ServerPagesBundle implements ConfiguredBundle<Configuration> {
         }
 
         /**
-         * @return configured dropwizard bundle instance
+         * @return configured bundle instance
          */
         public ServerPagesBundle build() {
             return new ServerPagesBundle(config);

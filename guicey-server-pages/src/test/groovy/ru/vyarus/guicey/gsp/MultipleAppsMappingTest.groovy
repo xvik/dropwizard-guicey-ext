@@ -80,20 +80,16 @@ class MultipleAppsMappingTest extends Specification {
 
         @Override
         void initialize(Bootstrap<Configuration> bootstrap) {
-            bootstrap.addBundle(ServerPagesBundle.builder().build())
-
-            // pure dropwizard bundle
-            bootstrap.addBundle(ServerPagesBundle.app("app", "/app", "/app")
-                    .indexPage("index.html")
-                    .build())
-
-            bootstrap.addBundle(ServerPagesBundle.app("app2", "/app", "/app2")
-                    .indexPage("index.html")
-                    .build())
-
-            // register resource using guicey to check correct initialization
             bootstrap.addBundle(GuiceBundle.builder()
                     .extensions(SampleTemplateResource, App2SampleResource)
+                    .bundles(
+                            ServerPagesBundle.builder().build(),
+                            ServerPagesBundle.app("app", "/app", "/app")
+                                    .indexPage("index.html")
+                                    .build(),
+                            ServerPagesBundle.app("app2", "/app", "/app2")
+                                    .indexPage("index.html")
+                                    .build())
                     .build())
         }
 

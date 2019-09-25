@@ -4,6 +4,7 @@ import io.dropwizard.Application
 import io.dropwizard.Configuration
 import io.dropwizard.setup.Bootstrap
 import io.dropwizard.setup.Environment
+import ru.vyarus.dropwizard.guice.GuiceBundle
 import ru.vyarus.dropwizard.guice.test.spock.ConfigOverride
 import ru.vyarus.dropwizard.guice.test.spock.UseDropwizardApp
 import ru.vyarus.guicey.gsp.ServerPagesBundle
@@ -35,9 +36,11 @@ class ViewsConfigCreationTest extends Specification {
                     .viewsConfigurationModifier('freemarker', { it['foo'] = 'bar' })
                     .printViewsConfiguration()
                     .build()
-            bootstrap.addBundle(bundle)
-            // pure dropwizard bundle
-            bootstrap.addBundle(ServerPagesBundle.app("app", "/app", "/").build())
+            bootstrap.addBundle(GuiceBundle.builder()
+                    .bundles(
+                            bundle,
+                            ServerPagesBundle.app("app", "/app", "/").build())
+                    .build())
         }
 
         @Override

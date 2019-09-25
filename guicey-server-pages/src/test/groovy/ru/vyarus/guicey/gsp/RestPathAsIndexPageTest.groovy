@@ -4,6 +4,7 @@ import io.dropwizard.Application
 import io.dropwizard.Configuration
 import io.dropwizard.setup.Bootstrap
 import io.dropwizard.setup.Environment
+import ru.vyarus.dropwizard.guice.GuiceBundle
 import ru.vyarus.dropwizard.guice.test.spock.ConfigOverride
 import ru.vyarus.dropwizard.guice.test.spock.UseDropwizardApp
 import ru.vyarus.guicey.gsp.views.template.Template
@@ -33,17 +34,18 @@ class RestPathAsIndexPageTest extends Specification {
 
         @Override
         void initialize(Bootstrap<Configuration> bootstrap) {
-            bootstrap.addBundle(ServerPagesBundle.builder().build())
-
-            // pure dropwizard bundle
-            bootstrap.addBundle(ServerPagesBundle.app("app", "/app", "/")
-                    .indexPage("/root/")
+            bootstrap.addBundle(GuiceBundle.builder()
+                    .extensions(RootPage)
+                    .bundles(
+                            ServerPagesBundle.builder().build(),
+                            ServerPagesBundle.app("app", "/app", "/")
+                                    .indexPage("/root/")
+                                    .build())
                     .build())
         }
 
         @Override
         void run(Configuration configuration, Environment environment) throws Exception {
-            environment.jersey().register(RootPage)
         }
     }
 

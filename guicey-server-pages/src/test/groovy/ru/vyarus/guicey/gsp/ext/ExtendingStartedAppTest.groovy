@@ -7,6 +7,7 @@ import io.dropwizard.setup.Bootstrap
 import io.dropwizard.setup.Environment
 import io.dropwizard.testing.junit.DropwizardAppRule
 import org.eclipse.jetty.server.Server
+import ru.vyarus.dropwizard.guice.GuiceBundle
 import ru.vyarus.guicey.gsp.ServerPagesBundle
 import spock.lang.Specification
 
@@ -29,11 +30,12 @@ class ExtendingStartedAppTest extends Specification {
 
         @Override
         void initialize(Bootstrap<Configuration> bootstrap) {
-            bootstrap.addBundle(ServerPagesBundle.builder().build())
-
-            // pure dropwizard bundle
-            bootstrap.addBundle(ServerPagesBundle.app("app", "/app", "/app")
-                    .indexPage("index.html")
+            bootstrap.addBundle(GuiceBundle.builder()
+                    .bundles(
+                            ServerPagesBundle.builder().build(),
+                            ServerPagesBundle.app("app", "/app", "/app")
+                                    .indexPage("index.html")
+                                    .build())
                     .build())
         }
 

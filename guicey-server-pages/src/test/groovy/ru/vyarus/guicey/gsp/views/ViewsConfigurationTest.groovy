@@ -5,6 +5,7 @@ import io.dropwizard.Application
 import io.dropwizard.Configuration
 import io.dropwizard.setup.Bootstrap
 import io.dropwizard.setup.Environment
+import ru.vyarus.dropwizard.guice.GuiceBundle
 import ru.vyarus.dropwizard.guice.test.spock.UseDropwizardApp
 import ru.vyarus.guicey.gsp.ServerPagesBundle
 import spock.lang.Specification
@@ -32,13 +33,15 @@ class ViewsConfigurationTest extends Specification {
         void initialize(Bootstrap<Config> bootstrap) {
             bundle = ServerPagesBundle.builder()
                     .viewsConfiguration({ it.views })
-                    // used to assert global config binding
+            // used to assert global config binding
                     .viewsConfigurationModifier('freemarker', { assert it['cache_storage'] != null })
                     .printViewsConfiguration()
                     .build()
-            bootstrap.addBundle(bundle)
-            // pure dropwizard bundle
-            bootstrap.addBundle(ServerPagesBundle.app("app", "/app", "/").build())
+            bootstrap.addBundle(GuiceBundle.builder()
+                    .bundles(
+                            bundle,
+                            ServerPagesBundle.app("app", "/app", "/").build())
+                    .build())
         }
 
         @Override

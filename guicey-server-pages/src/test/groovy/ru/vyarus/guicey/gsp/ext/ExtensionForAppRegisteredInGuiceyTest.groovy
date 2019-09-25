@@ -5,8 +5,6 @@ import io.dropwizard.Configuration
 import io.dropwizard.setup.Bootstrap
 import io.dropwizard.setup.Environment
 import ru.vyarus.dropwizard.guice.GuiceBundle
-import ru.vyarus.dropwizard.guice.module.installer.bundle.GuiceyBootstrap
-import ru.vyarus.dropwizard.guice.module.installer.bundle.GuiceyBundle
 import ru.vyarus.dropwizard.guice.test.spock.UseDropwizardApp
 import ru.vyarus.guicey.gsp.ServerPagesBundle
 import spock.lang.Specification
@@ -53,20 +51,13 @@ class ExtensionForAppRegisteredInGuiceyTest extends Specification {
             // extension registered before application
             ServerPagesBundle.extendApp("app", "/ext")
 
-            bootstrap.addBundle(ServerPagesBundle.builder().build())
-
-            // app registered inside guicey bundle
             bootstrap.addBundle(GuiceBundle.builder()
-                    .bundles(new GuiceyBundle() {
-                        @Override
-                        void initialize(GuiceyBootstrap gb) {
-                            gb.dropwizardBundles(
-                                    ServerPagesBundle.app("app", "/app", "/")
-                                            .indexPage("index.html")
-                                            .build()
-                            )
-                        }
-                    }).build())
+                    .bundles(
+                            ServerPagesBundle.builder().build(),
+                            ServerPagesBundle.app("app", "/app", "/")
+                                    .indexPage("index.html")
+                                    .build())
+                    .build())
         }
 
         @Override
