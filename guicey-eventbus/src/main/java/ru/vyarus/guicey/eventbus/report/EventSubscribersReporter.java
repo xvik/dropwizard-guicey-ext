@@ -4,7 +4,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.vyarus.guicey.eventbus.service.EventSubscribersInfo;
 
-import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -24,8 +23,11 @@ import static ru.vyarus.dropwizard.guice.module.installer.util.Reporter.TAB;
 public class EventSubscribersReporter {
     private final Logger logger = LoggerFactory.getLogger(EventSubscribersReporter.class);
 
-    @Inject
     private EventSubscribersInfo info;
+
+    public EventSubscribersReporter(final EventSubscribersInfo info) {
+        this.info = info;
+    }
 
     public String renderReport() {
         final Set<Class> events = info.getListenedEvents();

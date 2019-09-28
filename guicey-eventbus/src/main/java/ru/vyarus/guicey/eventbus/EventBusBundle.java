@@ -4,7 +4,6 @@ import com.google.common.eventbus.EventBus;
 import com.google.inject.TypeLiteral;
 import com.google.inject.matcher.Matcher;
 import com.google.inject.matcher.Matchers;
-import ru.vyarus.dropwizard.guice.injector.lookup.InjectorLookup;
 import ru.vyarus.dropwizard.guice.module.context.unique.item.UniqueGuiceyBundle;
 import ru.vyarus.dropwizard.guice.module.installer.bundle.GuiceyEnvironment;
 import ru.vyarus.guicey.eventbus.module.EventBusModule;
@@ -96,11 +95,11 @@ public class EventBusBundle extends UniqueGuiceyBundle {
         environment.modules(new EventBusModule(eventbus, typeMatcher));
 
         if (report) {
-            environment.onStartup(() -> {
-                final EventSubscribersReporter reporter = new EventSubscribersReporter();
-                InjectorLookup.getInjector(environment.application()).get()
-                        .injectMembers(reporter);
-                reporter.report();
+            // report after application startup to count events, resolved from JIT-created services (not declared)
+            environment.onApplicationStartup((injector) -> {
+                new EventSubscribersReporter(
+                        injector.getInstance(EventSubscribersInfo.class))
+                        .report();
             });
         }
     }
