@@ -9,15 +9,13 @@
 * [eventbus]
     - EventBusBundle declared as unique to prevent side effects of duplicate registrations    
 * [spa]
-    - SpaBundle is guicey bundle now
-        * Error not thrown now on duplicate bundle registration with the same application name.
-          Instead only deduplication mechanism is used so only one bundle would be used.
-    - Removed `SpaBundle.register(GuiceyBundle)` as redundant    
+    - (breaking) SpaBundle is guicey bundle now
+    - (breaking) Removed `SpaBundle.register(GuiceyBundle)` as redundant    
 * [server-pages]
-    - ServerPagesBundle and application bundle are guicey bundles now
-    - `ServerPagesBundle.extendApp()` now return bundle and must be registered!
-    - Removed `ServerPagesBundle.register(GuiceyBundle)` as redundant
-    - Removed `ServerPagesBundle.resetGlobalConfig()` because guicey shared configs now used instead 
+    - (breaking) ServerPagesBundle and application bundle are guicey bundles now
+    - (breaking) `ServerPagesBundle.extendApp()` now return bundle and must be registered!
+    - (breaking) Removed `ServerPagesBundle.register(GuiceyBundle)` as redundant
+    - (breaking) Removed `ServerPagesBundle.resetGlobalConfig()` because guicey shared configs now used instead 
     - Add shortcut for multiple paths registration on application:
         `ServerPagesBundle.app(..).attachPaths(..)`     
 * [jdbi3]

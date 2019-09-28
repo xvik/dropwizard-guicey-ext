@@ -6,13 +6,16 @@ import io.dropwizard.servlets.assets.AssetServlet;
 import io.dropwizard.setup.Environment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.vyarus.dropwizard.guice.module.installer.bundle.GuiceyBootstrap;
 import ru.vyarus.dropwizard.guice.module.installer.bundle.GuiceyBundle;
 import ru.vyarus.dropwizard.guice.module.installer.bundle.GuiceyEnvironment;
 import ru.vyarus.guicey.spa.filter.SpaRoutingFilter;
 
 import javax.servlet.DispatcherType;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkArgument;
@@ -28,10 +31,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * errors (by default, all calls pass to assets filter!). Applies no-cache header for index page.
  * <p>
  * You can register multiple SPA applications on main or admin contexts (or both).
- * All applications must have unique names. In case of duplicate names only one application will be registered
- * (not registered bundle would be visible on
- * {@link ru.vyarus.dropwizard.guice.GuiceBundle.Builder#printDiagnosticInfo()} report).
- * Error will be thrown if multiple applications would mapped on the same path.
+ * All applications must have unique names. In case of duplicate names or mapping on the same path, error
+ * will be thrown.
  *
  * @author Vyacheslav Rusakov
  * @since 02.04.2017
@@ -54,6 +55,16 @@ public class SpaBundle implements GuiceyBundle {
     private String noRedirectRegex = DEFAULT_PATTERN;
 
     @Override
+    public void initialize(final GuiceyBootstrap bootstrap) {
+        // list shared between all spa bundles
+        final List<String> used = bootstrap.sharedState(SpaBundle.class, ArrayList::new);
+        // important because name used for filter mapping
+        checkArgument(!used.contains(assetName),
+                "SPA with name '%s' is already registered", assetName);
+        used.add(assetName);
+    }
+
+    @Override
     public void run(final GuiceyEnvironment environment) {
         final Environment env = environment.environment();
         final ServletEnvironment context = mainContext ? env.servlets() : env.admin();
@@ -74,17 +85,6 @@ public class SpaBundle implements GuiceyBundle {
 
         logger.info("SPA '{}' for source '{}' registered on uri '{}' in {} context",
                 assetName, resourcePath, uriPath + '*', mainContext ? "main" : "admin");
-    }
-
-    @Override
-    public int hashCode() {
-        return assetName.hashCode();
-    }
-
-    @Override
-    public boolean equals(final Object obj) {
-        // consider bundles with the same name as equal and register only one of them
-        return obj instanceof SpaBundle && assetName.equals(((SpaBundle) obj).assetName);
     }
 
     /**

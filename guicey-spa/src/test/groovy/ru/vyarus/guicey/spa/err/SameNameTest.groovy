@@ -5,28 +5,22 @@ import io.dropwizard.Configuration
 import io.dropwizard.setup.Bootstrap
 import io.dropwizard.setup.Environment
 import ru.vyarus.dropwizard.guice.GuiceBundle
-import ru.vyarus.dropwizard.guice.module.GuiceyConfigurationInfo
-import ru.vyarus.dropwizard.guice.test.spock.UseGuiceyApp
 import ru.vyarus.guicey.spa.SpaBundle
 import spock.lang.Specification
-
-import javax.inject.Inject
 
 /**
  * @author Vyacheslav Rusakov
  * @since 05.04.2017
  */
-@UseGuiceyApp(App)
 class SameNameTest extends Specification {
-
-    @Inject
-    GuiceyConfigurationInfo info
 
     def "Check duplicate spa names"() {
 
-        expect: "duplicate registration avoided"
-        info.getInfos(SpaBundle).size() == 1
-        info.getInfos(SpaBundle)[0].registrationAttempts == 2
+        when: "starting app"
+        new App().run(['server'] as String[])
+        then: "error"
+        def ex = thrown(IllegalArgumentException)
+        ex.message.contains("SPA with name 'app' is already registered")
     }
 
     static class App extends Application<Configuration> {
