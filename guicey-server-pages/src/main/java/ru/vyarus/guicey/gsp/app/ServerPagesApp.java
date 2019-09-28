@@ -3,11 +3,11 @@ package ru.vyarus.guicey.gsp.app;
 import com.google.common.base.Joiner;
 import io.dropwizard.jetty.setup.ServletEnvironment;
 import io.dropwizard.setup.Environment;
+import io.dropwizard.views.ViewRenderer;
 import org.glassfish.jersey.server.model.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.vyarus.guicey.gsp.ServerPagesBundle;
-import ru.vyarus.guicey.gsp.app.asset.LazyLocationProvider;
 import ru.vyarus.guicey.gsp.app.asset.MultiSourceAssetServlet;
 import ru.vyarus.guicey.gsp.app.filter.ServerPagesFilter;
 import ru.vyarus.guicey.gsp.app.filter.redirect.ErrorRedirect;
@@ -16,11 +16,13 @@ import ru.vyarus.guicey.gsp.app.filter.redirect.TemplateRedirect;
 import ru.vyarus.guicey.gsp.app.rest.DirectTemplateResource;
 import ru.vyarus.guicey.gsp.app.rest.log.ResourcePath;
 import ru.vyarus.guicey.gsp.app.util.PathUtils;
+import ru.vyarus.guicey.gsp.views.ViewRendererConfigurationModifier;
 import ru.vyarus.guicey.spa.SpaBundle;
 
 import javax.servlet.DispatcherType;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static ru.vyarus.guicey.spa.SpaBundle.SLASH;
 
@@ -40,6 +42,11 @@ import static ru.vyarus.guicey.spa.SpaBundle.SLASH;
         "PMD.ExcessiveImports", "PMD.TooManyFields"})
 public class ServerPagesApp {
 
+    // delayed modifiers registration
+    public Map<String, ViewRendererConfigurationModifier> viewsConfigModifiers = new HashMap<>();
+    // delayed resource paths registrations
+    public List<String> extendedResourceLocations = new ArrayList<>();
+
     public final Map<Integer, String> errorPages = new TreeMap<>();
     public boolean mainContext;
     public String name;
@@ -54,21 +61,17 @@ public class ServerPagesApp {
     public boolean spaSupport;
     public String spaNoRedirectRegex = SpaBundle.DEFAULT_PATTERN;
     protected TemplateRedirect templateRedirect;
-    protected LazyLocationProvider locationsProvider;
+    // all locations, including all extensions
+    protected List<String> resourceLocations;
     private boolean started;
     private final Logger logger = LoggerFactory.getLogger(ServerPagesApp.class);
-    private final GlobalConfig globalConfig;
-
-    public ServerPagesApp(final GlobalConfig globalConfig) {
-        this.globalConfig = globalConfig;
-    }
 
     /**
      * Install configured server page app.
      *
      * @param environment dropwizard environment object
      */
-    public void setup(final Environment environment) {
+    public void setup(final Environment environment, final GlobalConfig config) {
         final ServletEnvironment context = mainContext ? environment.servlets() : environment.admin();
 
         // apply possible context (if servlet registered not to root, e.g. most likely in case of flat admin context)
@@ -79,17 +82,17 @@ public class ServerPagesApp {
 
         // application extensions could be registered a bit later so it is impossible to know all classpath
         // paths at that point
-        locationsProvider = new LazyLocationProvider(resourcePath, name, globalConfig);
-        installAssetsServlet(context, locationsProvider);
+        resourceLocations = collectResourceLocations(config);
+        installAssetsServlet(context);
 
         // templates support
         final SpaSupport spa = new SpaSupport(spaSupport, fullUriPath, uriPath, spaNoRedirectRegex);
         templateRedirect = new TemplateRedirect(environment.getJerseyServletContainer(),
                 name,
                 fullUriPath,
-                locationsProvider,
+                resourceLocations,
                 new ErrorRedirect(uriPath, errorPages, spa));
-        installTemplatesSupportFilter(context, templateRedirect, spa);
+        installTemplatesSupportFilter(context, templateRedirect, spa, config.getRenderers());
 
         // Default direct templates rendering rest (dynamically registered to handle "$appName/*")
         environment.jersey().getResourceConfig().registerResources(Resource.builder(DirectTemplateResource.class)
@@ -108,8 +111,6 @@ public class ServerPagesApp {
      */
     public void initialize(final String restContext, final String restMapping, final Set<ResourcePath> paths) {
         templateRedirect.setRootPath(restContext, restMapping);
-        // delayed compose of extended locations
-        locationsProvider.get();
         logger.info(AppReportBuilder.build(this, paths));
         started = true;
     }
@@ -121,18 +122,27 @@ public class ServerPagesApp {
         return started;
     }
 
+    private List<String> collectResourceLocations(final GlobalConfig config) {
+        final List<String> locations = new ArrayList<>(config.getExtensions(name));
+        // put original path last to let other location to override its files
+        locations.add(resourcePath);
+
+        // process paths the same way as assets servlet does
+        return locations.stream()
+                .map(it -> PathUtils.endSlash(PathUtils.trimSlashes(it)))
+                .collect(Collectors.toList());
+    }
+
     /**
      * Special version of dropwizard {@link io.dropwizard.servlets.assets.AssetServlet} is used in order
      * to support resources lookup in multiple packages (required for app extensions mechanism).
      *
-     * @param context           main or admin context
-     * @param locationsProvider lazy resources location provider
+     * @param context main or admin context
      */
-    private void installAssetsServlet(final ServletEnvironment context,
-                                      final LazyLocationProvider locationsProvider) {
+    private void installAssetsServlet(final ServletEnvironment context) {
         final Set<String> clash = context.addServlet(name,
                 // note: if index file is template, it will be handled by filter
-                new MultiSourceAssetServlet(locationsProvider, uriPath, indexFile, StandardCharsets.UTF_8))
+                new MultiSourceAssetServlet(resourceLocations, uriPath, indexFile, StandardCharsets.UTF_8))
                 .addMapping(uriPath + '*');
 
         if (clash != null && !clash.isEmpty()) {
@@ -151,7 +161,8 @@ public class ServerPagesApp {
      */
     private void installTemplatesSupportFilter(final ServletEnvironment context,
                                                final TemplateRedirect templateRedirect,
-                                               final SpaSupport spa) {
+                                               final SpaSupport spa,
+                                               final List<ViewRenderer> renderers) {
         final EnumSet<DispatcherType> types = EnumSet.of(DispatcherType.REQUEST, DispatcherType.FORWARD);
         context.addFilter(name + "Templates",
                 new ServerPagesFilter(
@@ -160,7 +171,7 @@ public class ServerPagesApp {
                         indexFile,
                         templateRedirect,
                         spa,
-                        globalConfig.getRenderers()))
+                        renderers))
                 .addMappingForServletNames(types, false, name);
     }
 }

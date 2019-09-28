@@ -14,10 +14,6 @@ import spock.lang.Specification
  */
 class DuplicateAppNameDetectionTest extends Specification {
 
-    void cleanup() {
-        ServerPagesBundle.resetGlobalConfig()
-    }
-
     def "Check app collision detection"() {
 
         when: "starting app"
@@ -25,12 +21,6 @@ class DuplicateAppNameDetectionTest extends Specification {
         then: "duplicate name error"
         def ex = thrown(IllegalArgumentException)
         ex.message == 'Server pages application with name \'app\' is already registered'
-
-        when: "starting app"
-        new DropwizardAppRule<>(GAppInit).before()
-        then: "duplicate name error"
-        ex = thrown(IllegalStateException)
-        ex.message == 'Duplicate server pages support initialization (ServerPagesBundle.builder())'
     }
 
     static class AppInit extends Application<Configuration> {
@@ -40,26 +30,6 @@ class DuplicateAppNameDetectionTest extends Specification {
             bootstrap.addBundle(GuiceBundle.builder()
                     .bundles(
                             ServerPagesBundle.builder().build(),
-                            ServerPagesBundle.app("app", "/app", "/app")
-                                    .indexPage("index.html")
-                                    .build(),
-                            ServerPagesBundle.app("app", "/app", "/app")
-                                    .indexPage("index.html")
-                                    .build())
-                    .build())
-        }
-
-        @Override
-        void run(Configuration configuration, Environment environment) throws Exception {
-        }
-    }
-
-    static class GAppInit extends Application<Configuration> {
-
-        @Override
-        void initialize(Bootstrap<Configuration> bootstrap) {
-            bootstrap.addBundle(GuiceBundle.builder()
-                    .bundles(ServerPagesBundle.builder().build(),
                             ServerPagesBundle.app("app", "/app", "/app")
                                     .indexPage("index.html")
                                     .build(),

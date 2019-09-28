@@ -11,6 +11,7 @@ import ru.vyarus.guicey.gsp.app.filter.redirect.TemplateRedirect;
 import ru.vyarus.guicey.gsp.views.template.TemplateContext;
 
 import javax.inject.Singleton;
+import javax.ws.rs.ext.Provider;
 
 /**
  * Application listener for template processing exceptions detection. Listener use request listener for template
@@ -22,6 +23,7 @@ import javax.inject.Singleton;
  * @author Vyacheslav Rusakov
  * @since 24.01.2019
  */
+@Provider
 @Singleton
 public class TemplateExceptionListener implements ApplicationEventListener {
     // use single instance

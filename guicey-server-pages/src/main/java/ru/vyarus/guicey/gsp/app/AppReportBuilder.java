@@ -48,7 +48,7 @@ public final class AppReportBuilder {
         res.append(NEWLINE).append(NEWLINE)
                 .append(TAB).append("Static resources locations:").append(NEWLINE);
         // delayed compose of extended locations
-        for (String path : app.locationsProvider.get()) {
+        for (String path : app.resourceLocations) {
             res.append(TAB).append(TAB).append(PathUtils.SLASH).append(path).append(NEWLINE);
         }
         res.append(NEWLINE);

@@ -56,10 +56,10 @@ class ExtendedAppTest extends Specification {
                             ServerPagesBundle.builder().build(),
                             ServerPagesBundle.app("app", "/app", "/")
                                     .indexPage("index.html")
-                                    .build())
+                                    .build(),
+                            ServerPagesBundle.extendApp("app", "/ext"))
                     .build())
 
-            ServerPagesBundle.extendApp("app", "/ext")
         }
 
         @Override

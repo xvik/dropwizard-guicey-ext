@@ -2,7 +2,6 @@ package ru.vyarus.guicey.gsp.app.filter.redirect;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.vyarus.guicey.gsp.app.asset.LazyLocationProvider;
 import ru.vyarus.guicey.gsp.app.rest.DirectTemplateResource;
 import ru.vyarus.guicey.gsp.app.rest.support.TemplateAnnotationFilter;
 import ru.vyarus.guicey.gsp.app.util.PathUtils;
@@ -14,6 +13,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.List;
 
 /**
  * Performs redirection of template quest into rest context. Note that even if no special rest
@@ -40,7 +40,7 @@ public class TemplateRedirect {
     private final Servlet restServlet;
     private final String app;
     private final String mapping;
-    private final LazyLocationProvider locationProvider;
+    private final List<String> resourceLocations;
     private final ErrorRedirect errorRedirect;
 
     // full rest path (applicationContextPath + rootPath)
@@ -53,12 +53,12 @@ public class TemplateRedirect {
     public TemplateRedirect(final Servlet restServlet,
                             final String app,
                             final String mapping,
-                            final LazyLocationProvider locationProvider,
+                            final List<String> resourceLocations,
                             final ErrorRedirect errorRedirect) {
         this.restServlet = restServlet;
         this.app = app;
         this.mapping = mapping;
-        this.locationProvider = locationProvider;
+        this.resourceLocations = resourceLocations;
         this.errorRedirect = errorRedirect;
     }
 
@@ -87,7 +87,7 @@ public class TemplateRedirect {
                          final String page) throws IOException, ServletException {
         CONTEXT_TEMPLATE.set(new TemplateContext(app,
                 mapping,
-                locationProvider.get(),
+                resourceLocations,
                 errorRedirect,
                 request,
                 response));

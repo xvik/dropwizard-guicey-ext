@@ -15,7 +15,11 @@
     - Removed `SpaBundle.register(GuiceyBundle)` as redundant    
 * [server-pages]
     - ServerPagesBundle and application bundle are guicey bundles now
+    - `ServerPagesBundle.extendApp()` now return bundle and must be registered!
     - Removed `ServerPagesBundle.register(GuiceyBundle)` as redundant
+    - Removed `ServerPagesBundle.resetGlobalConfig()` because guicey shared configs now used instead 
+    - Add shortcut for multiple paths registration on application:
+        `ServerPagesBundle.app(..).attachPaths(..)`     
 * [jdbi3]
     - JdbiBundle declared as unique (it will not work with multiple instances)
 * [jdbi]

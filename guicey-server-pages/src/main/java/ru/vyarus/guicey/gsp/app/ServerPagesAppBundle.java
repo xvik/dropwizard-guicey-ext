@@ -2,6 +2,7 @@ package ru.vyarus.guicey.gsp.app;
 
 import com.google.common.base.Preconditions;
 import io.dropwizard.views.ViewRenderer;
+import ru.vyarus.dropwizard.guice.module.installer.bundle.GuiceyBootstrap;
 import ru.vyarus.dropwizard.guice.module.installer.bundle.GuiceyBundle;
 import ru.vyarus.dropwizard.guice.module.installer.bundle.GuiceyEnvironment;
 import ru.vyarus.guicey.gsp.ServerPagesBundle;
@@ -14,8 +15,7 @@ import java.util.List;
  * {@link ServerPagesBundle#app(String, String, String)} or
  * {@link ServerPagesBundle#adminApp(String, String, String)}).
  * <p>
- * Additional bundle is required because in some cases global {@link ServerPagesBundle} will be initialized
- * before application is registered (e.g. when application is registered from guicey bundle).
+ * NOTE: global views support must be registered before this bundle!
  *
  * @author Vyacheslav Rusakov
  * @since 05.06.2019
@@ -24,25 +24,30 @@ public class ServerPagesAppBundle implements GuiceyBundle {
 
     private static final String COMMA = ", ";
 
-    private final GlobalConfig config;
     private final ServerPagesApp app;
+    private GlobalConfig config;
 
-    public ServerPagesAppBundle(final GlobalConfig config, final ServerPagesApp app) {
-        this.config = config;
+    public ServerPagesAppBundle(final ServerPagesApp app) {
         this.app = app;
+    }
+
+    @Override
+    public void initialize(final GuiceyBootstrap bootstrap) {
+        this.config = bootstrap.sharedStateOrFail(ServerPagesBundle.class,
+                "Either server pages support bundle was not installed (use %s.builder() to create bundle) "
+                        + " or it was installed after '%s' application bundle",
+                ServerPagesBundle.class.getSimpleName(), app.name);
+        // register application globally
+        config.register(app);
     }
 
     @Override
     public void run(final GuiceyEnvironment environment) {
         validateRequirements();
-        app.setup(environment.environment());
+        app.setup(environment.environment(), config);
     }
 
     private void validateRequirements() {
-        Preconditions.checkState(config.isViewsSupportRegistered(),
-                "Server pages support bundle was not installed: use %s.builder() to create bundle",
-                ServerPagesBundle.class.getSimpleName());
-
         if (app.requiredRenderers == null) {
             return;
         }

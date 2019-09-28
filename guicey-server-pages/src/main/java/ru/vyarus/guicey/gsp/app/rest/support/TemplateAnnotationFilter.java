@@ -4,10 +4,11 @@ import ru.vyarus.guicey.gsp.views.template.ManualErrorHandling;
 import ru.vyarus.guicey.gsp.views.template.Template;
 import ru.vyarus.guicey.gsp.views.template.TemplateContext;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.ResourceInfo;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.ext.Provider;
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -21,15 +22,17 @@ import java.lang.reflect.Method;
  * @since 03.12.2018
  */
 @Template
+@Singleton
 @Provider
 public class TemplateAnnotationFilter implements ContainerRequestFilter {
 
-    @Context
-    private ResourceInfo info;
+    @Inject
+    private javax.inject.Provider<ResourceInfo> info;
 
     @Override
     public void filter(final ContainerRequestContext requestContext) throws IOException {
-        final Class<?> resourceClass = info.getResourceClass();
+        final ResourceInfo resourceInfo = info.get();
+        final Class<?> resourceClass = resourceInfo.getResourceClass();
         final Template template = resourceClass.getAnnotation(Template.class);
         if (template != null) {
             final TemplateContext context = TemplateContext.getInstance();
@@ -40,7 +43,7 @@ public class TemplateAnnotationFilter implements ContainerRequestFilter {
             if (!tpl.isEmpty()) {
                 context.setAnnotationTemplate(tpl);
             }
-            final Method method = info.getResourceMethod();
+            final Method method = resourceInfo.getResourceMethod();
             context.setManualErrorHandling(resourceClass.isAnnotationPresent(ManualErrorHandling.class)
                     || (method != null && method.isAnnotationPresent(ManualErrorHandling.class)));
         }

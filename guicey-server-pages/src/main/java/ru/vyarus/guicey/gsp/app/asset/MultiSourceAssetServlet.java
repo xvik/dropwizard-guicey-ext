@@ -18,31 +18,30 @@ import java.util.List;
 public class MultiSourceAssetServlet extends AssetServlet {
     private static final long serialVersionUID = 6393345594784987909L;
 
-    private final transient LazyLocationProvider locationsProvider;
+    private final List<String> resourceLocations;
 
-    public MultiSourceAssetServlet(final LazyLocationProvider locationProvider,
+    public MultiSourceAssetServlet(final List<String> resourceLocations,
                                    final String uriPath,
                                    @Nullable final String indexFile,
                                    @Nullable final Charset defaultCharset) {
         // asset servlet will work with single (main) assets location
-        // main assets location placed last for overrides
-        super(locationProvider.getPrimaryLocation(), uriPath, indexFile, defaultCharset);
-        this.locationsProvider = locationProvider;
+        // main assets location placed last for overrides (.extendApp())
+        super(resourceLocations.get(resourceLocations.size() - 1), uriPath, indexFile, defaultCharset);
+        this.resourceLocations = resourceLocations;
     }
 
     @Override
     @SuppressWarnings("PMD.AvoidLiteralsInIfCondition")
     protected URL getResourceUrl(final String absoluteRequestedResourcePath) {
         String realPath = absoluteRequestedResourcePath;
+        // original registration location is always last (for potential overrides)
+        final String primaryLocation = resourceLocations.get(resourceLocations.size() - 1);
         // do nothing on root request (wait while index page will be requested)
-        if (!PathUtils.endSlash(realPath).equals(this.locationsProvider.getPrimaryLocation())) {
-            final List<String> locations = this.locationsProvider.get();
-            // look for resource in all registered locations
-            if (locations.size() > 1) {
-                final String path = absoluteRequestedResourcePath.substring(
-                        locationsProvider.getPrimaryLocation().length());
-                realPath = ResourceLookup.lookup(path, locations);
-            }
+        // otherwise look for resource in all registered locations
+        if (!PathUtils.endSlash(realPath).equals(primaryLocation) && resourceLocations.size() > 1) {
+            final String path = absoluteRequestedResourcePath.substring(
+                    primaryLocation.length());
+            realPath = ResourceLookup.lookup(path, resourceLocations);
         }
         // mimic default behaviour when resource not found
         return super.getResourceUrl(realPath);

@@ -15,10 +15,6 @@ import spock.lang.Specification
  */
 class RendererDetectionTest extends Specification {
 
-    void cleanup() {
-        ServerPagesBundle.resetGlobalConfig()
-    }
-
     def "Check renderer requirement check"() {
 
         when: "starting app"

@@ -48,12 +48,11 @@ class ExtensionForAppRegisteredInGuiceyTest extends Specification {
 
         @Override
         void initialize(Bootstrap<Configuration> bootstrap) {
-            // extension registered before application
-            ServerPagesBundle.extendApp("app", "/ext")
-
             bootstrap.addBundle(GuiceBundle.builder()
                     .bundles(
                             ServerPagesBundle.builder().build(),
+                            // extension registered before application
+                            ServerPagesBundle.extendApp("app", "/ext"),
                             ServerPagesBundle.app("app", "/app", "/")
                                     .indexPage("index.html")
                                     .build())

@@ -15,17 +15,13 @@ import spock.lang.Specification
  */
 class NoViewsSupportTest extends Specification {
 
-    void cleanup() {
-        ServerPagesBundle.resetGlobalConfig()
-    }
-
     def "Check view support absence detection"() {
 
         when: "starting app"
         new DropwizardAppRule<>(App).before()
         then: "no views support detected"
         def ex = thrown(IllegalStateException)
-        ex.message == 'Server pages support bundle was not installed: use ServerPagesBundle.builder() to create bundle'
+        ex.message == 'Either server pages support bundle was not installed (use ServerPagesBundle.builder() to create bundle)  or it was installed after \'app\' application bundle'
 
     }
 

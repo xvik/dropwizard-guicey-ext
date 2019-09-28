@@ -5,7 +5,6 @@ import com.google.common.collect.Multimap;
 import io.dropwizard.Configuration;
 import io.dropwizard.views.ViewConfigurable;
 import io.dropwizard.views.ViewRenderer;
-import ru.vyarus.guicey.gsp.ServerPagesBundle;
 import ru.vyarus.guicey.gsp.views.ViewRendererConfigurationModifier;
 
 import java.util.ArrayList;
@@ -32,45 +31,34 @@ public class GlobalConfig {
     // app name -- packages to search resources in
     private final Multimap<String, String> extensions = LinkedHashMultimap.create();
     private ViewConfigurable<Configuration> configurable;
-    private boolean viewsSupportRegistered;
     private boolean printConfig;
     @SuppressWarnings("PMD.AvoidFieldNameMatchingMethodName")
     private Map<String, Map<String, String>> viewsConfig;
 
     @SuppressWarnings("PMD.AvoidFieldNameMatchingMethodName")
-    private boolean initialized;
-
-    @SuppressWarnings("PMD.AvoidFieldNameMatchingMethodName")
-    private boolean shutdown;
-
-    public void globalBundleCreated() {
-        checkState(!viewsSupportRegistered,
-                "Duplicate server pages support initialization (%s.builder())",
-                ServerPagesBundle.class.getSimpleName());
-        viewsSupportRegistered = true;
-    }
+    private boolean locked;
 
     /**
-     * @return true if global bundle was created (assuming its registered), false otherwise
-     */
-    public boolean isViewsSupportRegistered() {
-        return viewsSupportRegistered;
-    }
-
-    /**
-     * Used to reveal registered application with the same name.
+     * Register application globally.
      *
-     * @param name server pages application name
-     * @return created application instance
+     * @param app server pages application
      */
-    public ServerPagesApp createApp(final String name) {
+    public void register(final ServerPagesApp app) {
         // important because name used for filter mapping
-        checkArgument(!names.contains(name),
-                "Server pages application with name '%s' is already registered", name);
-        names.add(name);
-        final ServerPagesApp app = new ServerPagesApp(this);
+        checkArgument(!names.contains(app.name),
+                "Server pages application with name '%s' is already registered", app.name);
+        names.add(app.name);
         this.apps.add(app);
-        return app;
+
+        // register configuration modifiers
+        for (Map.Entry<String, ViewRendererConfigurationModifier> entry : app.viewsConfigModifiers.entrySet()) {
+            addConfigModifier(entry.getKey(), entry.getValue());
+        }
+
+        // register extended locations
+        for (String location : app.extendedResourceLocations) {
+            extendLocation(app.name, location);
+        }
     }
 
     /**
@@ -110,7 +98,7 @@ public class GlobalConfig {
      * @param renderers additional view renderers
      */
     public void addRenderers(final ViewRenderer... renderers) {
-        checkAlreadyInitialized();
+        checkLocked();
         for (ViewRenderer renderer : renderers) {
             final String key = renderer.getConfigurationKey();
             // prevent duplicates
@@ -154,7 +142,7 @@ public class GlobalConfig {
         // it is possible to throw this check if server pages application is registered inside GuiceyBundle
         // and ServerPagesBundle is installed before GuiceBundle. In this case simply move ServerPagesBundle
         // registration after GuiceBundle
-        checkAlreadyInitialized();
+        checkLocked();
         configModifiers.put(name, modifier);
     }
 
@@ -180,24 +168,10 @@ public class GlobalConfig {
     }
 
     /**
-     * Called after dropwizard views initialization to prevent duplicate initializations.
+     * Called after dropwizard views initialization to prevent configuration after initialization.
      */
-    public void initialized() {
-        this.initialized = true;
-    }
-
-    /**
-     * @return true if application was shutdown
-     */
-    public boolean isShutdown() {
-        return shutdown;
-    }
-
-    /**
-     * Mark global config as belonging to shutdown application (used to re-create config).
-     */
-    public void shutdown() {
-        this.shutdown = true;
+    public void lock() {
+        this.locked = true;
     }
 
     /**
@@ -227,7 +201,7 @@ public class GlobalConfig {
     }
 
 
-    private void checkAlreadyInitialized() {
-        checkState(!initialized, "Global initialization already performed");
+    private void checkLocked() {
+        checkState(!locked, "Global initialization already performed");
     }
 }

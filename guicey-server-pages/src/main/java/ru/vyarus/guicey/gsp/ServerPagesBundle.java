@@ -1,35 +1,36 @@
 package ru.vyarus.guicey.gsp;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import io.dropwizard.Configuration;
+import io.dropwizard.setup.Environment;
 import io.dropwizard.views.ViewBundle;
 import io.dropwizard.views.ViewConfigurable;
 import io.dropwizard.views.ViewRenderer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.vyarus.dropwizard.guice.module.context.unique.item.UniqueGuiceyBundle;
+import ru.vyarus.dropwizard.guice.module.installer.bundle.GuiceyBootstrap;
 import ru.vyarus.dropwizard.guice.module.installer.bundle.GuiceyEnvironment;
 import ru.vyarus.dropwizard.guice.module.installer.util.Reporter;
-import ru.vyarus.guicey.gsp.app.DelayedInitializer;
 import ru.vyarus.guicey.gsp.app.GlobalConfig;
 import ru.vyarus.guicey.gsp.app.ServerPagesApp;
 import ru.vyarus.guicey.gsp.app.ServerPagesAppBundle;
+import ru.vyarus.guicey.gsp.app.ServerPagesAppExtensionBundle;
 import ru.vyarus.guicey.gsp.app.filter.redirect.ErrorRedirect;
+import ru.vyarus.guicey.gsp.app.rest.log.ResourcePath;
+import ru.vyarus.guicey.gsp.app.rest.log.RestPathsAnalyzer;
 import ru.vyarus.guicey.gsp.app.rest.support.TemplateAnnotationFilter;
 import ru.vyarus.guicey.gsp.app.rest.support.TemplateErrorResponseFilter;
 import ru.vyarus.guicey.gsp.app.rest.support.TemplateExceptionListener;
+import ru.vyarus.guicey.gsp.app.util.PathUtils;
 import ru.vyarus.guicey.gsp.views.ConfiguredViewBundle;
 import ru.vyarus.guicey.gsp.views.ViewRendererConfigurationModifier;
 import ru.vyarus.guicey.gsp.views.template.ManualErrorHandling;
 import ru.vyarus.guicey.spa.SpaBundle;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.ServiceLoader;
+import java.util.*;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -43,7 +44,7 @@ import static ru.vyarus.guicey.spa.SpaBundle.SLASH;
  * <p>
  * First of all global server pages support bundle must be installed ({@link #builder()}, preferably directly in the
  * application class). This will activates dropwizard-views support ({@link ViewBundle}). Do not register
- * {@link ViewBundle} it manually!
+ * {@link ViewBundle} manually!
  * <p>
  * Each server pages application is also registered
  * as separate bundle (using {@link #app(String, String, String)} or {@link #adminApp(String, String, String)}).
@@ -64,8 +65,8 @@ import static ru.vyarus.guicey.spa.SpaBundle.SLASH;
  * fail fast if no required templates engine. Without required engines declaration template files will be served like
  * static files when direct template requested and rendering will fail for rest-mapped template.
  * <p>
- * Each application could be "extended" using {@link ServerPagesBundle#extendApp(String, String)}. This way extra
- * classpath location is mapped into application root. Pages from extended context could reference resources from
+ * Each application could be "extended" using {@link ServerPagesBundle#extendApp(String, String)} bundle. This way
+ * extra classpath location is mapped into application root. Pages from extended context could reference resources from
  * the main context (most likely common root template will be used). Also, extended mapping could override
  * resources from the primary location (but note that in case of multiple extensions order is not granted).
  * Obvious case for extensions feature is dashboards, when extensions add extra pages to common dashboard
@@ -79,7 +80,7 @@ import static ru.vyarus.guicey.spa.SpaBundle.SLASH;
  * also be rendered). Redirection scheme use application name, defined during bundle creation:
  * {rest prefix}/{app name}/{path from request}.
  * For example,
- * {@code bootstrap.addBundle(SpaPageBundle.app("ui", "/com/assets/path/", "ui/").build())}
+ * {@code .bundles(SpaPageBundle.app("ui", "/com/assets/path/", "ui/").build())}
  * Register application in main context, mapped to  "ui/" path, with static resources in "/com/assets/path/"
  * classpath path. Internal application name is "ui". When browser request any file directly, e.g.
  * "ui/styles.css" then file "/com/assets/path/styles.css" will be served. Any other path is redirected to rest
@@ -139,15 +140,10 @@ public class ServerPagesBundle extends UniqueGuiceyBundle {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ServerPagesBundle.class);
 
-    // dropwizard initialization is single threaded so using thread local
-    // to control asset uniqueness (important for filters registration) and view bundle configuration
-    private static final ThreadLocal<GlobalConfig> GLOBAL_CONFIG = new ThreadLocal<>();
-
     private final GlobalConfig config;
 
     public ServerPagesBundle(final GlobalConfig config) {
         this.config = config;
-        config.globalBundleCreated();
     }
 
     /**
@@ -167,7 +163,7 @@ public class ServerPagesBundle extends UniqueGuiceyBundle {
      * @return global views bundle builder
      */
     public static ViewsBuilder builder() {
-        return new ServerPagesBundle.ViewsBuilder(getOrCreateConfig());
+        return new ServerPagesBundle.ViewsBuilder();
     }
 
     /**
@@ -188,7 +184,7 @@ public class ServerPagesBundle extends UniqueGuiceyBundle {
     public static AppBuilder app(final String name, final String resourcePath, final String uriPath) {
         LOGGER.debug("Registering server pages application {} on path {} with resources in {}",
                 name, uriPath, resourcePath);
-        return new AppBuilder(true, name, resourcePath, uriPath, getOrCreateConfig());
+        return new AppBuilder(true, name, resourcePath, uriPath);
     }
 
     /**
@@ -214,7 +210,7 @@ public class ServerPagesBundle extends UniqueGuiceyBundle {
                                       final String uriPath) {
         LOGGER.debug("Registering admin server pages application {} on path {} with resources in {}",
                 name, uriPath, resourcePath);
-        return new AppBuilder(false, name, resourcePath, uriPath, getOrCreateConfig());
+        return new AppBuilder(false, name, resourcePath, uriPath);
     }
 
     /**
@@ -239,32 +235,9 @@ public class ServerPagesBundle extends UniqueGuiceyBundle {
      * @param resourcePath classpath location for additional resources
      * @throws IllegalStateException if target application is already initialized
      */
-    public static void extendApp(final String name, final String resourcePath) {
+    public static ServerPagesAppExtensionBundle extendApp(final String name, final String resourcePath) {
         LOGGER.debug("Registering {} server pages application resources extension: {}", name, resourcePath);
-        getOrCreateConfig().extendLocation(name, resourcePath);
-    }
-
-    /**
-     * Remove current global configuration. This is required in tests when bundle initialization errors
-     * are checked because otherwise global config is not marked as shutdown and so being re-used. In real application
-     * bundle fails are not tested and so this method will not be required (after app startup global context will be
-     * properly marked and so will not affect consequent tests).
-     * <p>
-     * WARNING: intended to be used by internal tests only (because global context listens for app shutdowns and so
-     * not cause problems neither in usual run nor in tests).
-     */
-    @VisibleForTesting
-    public static void resetGlobalConfig() {
-        GLOBAL_CONFIG.remove();
-    }
-
-    private static GlobalConfig getOrCreateConfig() {
-        // one config instance must be used for all server pages bundles initialized with single dw app
-        if (GLOBAL_CONFIG.get() == null || GLOBAL_CONFIG.get().isShutdown()) {
-            LOGGER.debug("Initializing global server pages configuration");
-            GLOBAL_CONFIG.set(new GlobalConfig());
-        }
-        return GLOBAL_CONFIG.get();
+        return new ServerPagesAppExtensionBundle(name, resourcePath);
     }
 
     /**
@@ -290,28 +263,47 @@ public class ServerPagesBundle extends UniqueGuiceyBundle {
     }
 
     @Override
-    public void run(final GuiceyEnvironment environment) throws Exception {
-        LOGGER.debug("Perform global server pages initialization (views configuration)");
-        // delayed apps init finalization (common for all registered apps)
-        new DelayedInitializer(config, environment.environment());
+    public void initialize(final GuiceyBootstrap bootstrap) {
+        loadRenderers();
 
-        // @Template annotation support (even with multiple registrations should be created just once)
-        // note: applied only to annotated resources!
-        environment.register(TemplateAnnotationFilter.class);
+        // register global config
+        bootstrap
+                .shareState(ServerPagesBundle.class, config)
+                .dropwizardBundles(new ConfiguredViewBundle(config))
+                .extensions(
+                        // @Template annotation support (even with multiple registrations should be created just once)
+                        // note: applied only to annotated resources!
+                        TemplateAnnotationFilter.class,
+                        // template rest errors interception (global handlers)
+                        TemplateErrorResponseFilter.class,
+                        // intercept rest (template) rendering exceptions in rest
+                        TemplateExceptionListener.class);
+    }
 
-        // template rest errors interception (global handlers)
-        environment.register(TemplateErrorResponseFilter.class);
-        environment.register(TemplateExceptionListener.class);
+    @Override
+    public void run(final GuiceyEnvironment environment) {
+        // delayed initialization until jersey starts (required data not available before it)
+        // (started only if real server starts)
+        environment.listen(it -> {
+            final Environment env = environment.environment();
+            final String contextPath = env.getJerseyServletContainer()
+                    .getServletConfig().getServletContext().getContextPath();
+            // server.rootPath
+            final String restMapping = PathUtils.endSlash(PathUtils.trimStars(env.jersey().getUrlPattern()));
+            final RestPathsAnalyzer analyzer = RestPathsAnalyzer.build(env.jersey().getResourceConfig());
+            for (ServerPagesApp app : config.getApps()) {
+                final Set<ResourcePath> paths = analyzer.select(app.name);
+                app.initialize(contextPath, restMapping, paths);
+            }
+        });
+    }
 
+    private void loadRenderers() {
         // automatically add engines from classpath lookup
         final Iterable<ViewRenderer> renderers = ServiceLoader.load(ViewRenderer.class);
         renderers.forEach(config::addRenderers);
         Preconditions.checkState(!config.getRenderers().isEmpty(),
                 "No template engines found (dropwizard views renderer)");
-
-        // configure views bundle (can't be registered in bootstrap as this point is in run phase)
-        new ConfiguredViewBundle(config).run(environment.configuration(), environment.environment());
-        config.initialized();
 
         final StringBuilder res = new StringBuilder("Available dropwizard-views renderers:")
                 .append(Reporter.NEWLINE).append(Reporter.NEWLINE);
@@ -328,11 +320,7 @@ public class ServerPagesBundle extends UniqueGuiceyBundle {
      */
     public static class ViewsBuilder {
 
-        private final GlobalConfig config;
-
-        protected ViewsBuilder(final GlobalConfig config) {
-            this.config = config;
-        }
+        private final GlobalConfig config = new GlobalConfig();
 
         /**
          * Additional view renderers (template engines support) to use for {@link ViewBundle} configuration.
@@ -426,16 +414,13 @@ public class ServerPagesBundle extends UniqueGuiceyBundle {
      * Server pages application bundle builder.
      */
     public static class AppBuilder {
-        private final GlobalConfig config;
         private final ServerPagesApp app;
 
         protected AppBuilder(final boolean mainContext,
                              final String name,
                              final String path,
-                             final String uri,
-                             final GlobalConfig config) {
-            this.config = config;
-            this.app = config.createApp(name);
+                             final String uri) {
+            this.app = new ServerPagesApp();
 
             app.mainContext = mainContext;
             app.name = checkNotNull(name, "Name is required");
@@ -551,7 +536,25 @@ public class ServerPagesBundle extends UniqueGuiceyBundle {
         }
 
         /**
-         * Shortcut for {@code ServerPagesBundle.extendApp("name", "META-INF/resources/webjars/"}).
+         * Add additional resources location. Useful if you need to serve files from multiple folders.
+         * From usage perspective, files from all registered resource paths are "copied" into one directory
+         * and application could reference everything from "there".
+         * <p>
+         * It is the same as separate extension registration with {@link ServerPagesBundle#extendApp(String, String)}.
+         * <p>
+         * NOTE: extended paths are used in priority so some file exists on the same path, extended path will
+         * "override" primary location.
+         *
+         * @param paths resources path (in classpath)
+         * @return builder instance for chained calls
+         */
+        public AppBuilder attachPaths(final String... paths) {
+            app.extendedResourceLocations.addAll(Arrays.asList(paths));
+            return this;
+        }
+
+        /**
+         * Shortcut for {@code #addResourcesLocation("META-INF/resources/webjars/")}).
          * Useful if you want to use resources from webjars. All webjars package resources under the same path
          * (e.g. META-INF/resources/webjars/jquery/3.4.1/dist/jquery.min.js), so after enabling webjars support
          * you can reference any resource from webjar (in classpath) (e.g. as
@@ -560,8 +563,7 @@ public class ServerPagesBundle extends UniqueGuiceyBundle {
          * @return builder instance for chained calls
          */
         public AppBuilder attachWebjars() {
-            extendApp(app.name, "META-INF/resources/webjars/");
-            return this;
+            return attachPaths("META-INF/resources/webjars/");
         }
 
         /**
@@ -609,7 +611,7 @@ public class ServerPagesBundle extends UniqueGuiceyBundle {
             // in case of multiple applications, it should be obvious from logs who changed config
             LOGGER.info("Server pages application '{}' modifies '{}' section of views configuration",
                     app.name, name);
-            config.addConfigModifier(name, modifier);
+            app.viewsConfigModifiers.put(name, modifier);
             return this;
         }
 
@@ -617,7 +619,7 @@ public class ServerPagesBundle extends UniqueGuiceyBundle {
          * @return configured dropwizard bundle instance
          */
         public ServerPagesAppBundle build() {
-            return new ServerPagesAppBundle(config, app);
+            return new ServerPagesAppBundle(app);
         }
     }
 }

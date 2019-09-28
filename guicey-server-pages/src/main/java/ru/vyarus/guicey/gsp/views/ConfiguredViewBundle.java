@@ -30,6 +30,7 @@ public class ConfiguredViewBundle extends ViewBundle<Configuration> {
     @Override
     @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
     public Map<String, Map<String, String>> getViewConfiguration(final Configuration configuration) {
+        globalConfig.lock();
         Map<String, Map<String, String>> config;
         if (globalConfig.getConfigurable() == null) {
             config = new HashMap<>();
