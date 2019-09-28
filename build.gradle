@@ -57,7 +57,7 @@ subprojects {
         imports {
             // temporal switch to jitpack
 //            mavenBom "ru.vyarus:dropwizard-guicey:$guicey"
-            mavenBom 'com.github.xvik:dropwizard-guicey:b71386cc14'
+            mavenBom 'com.github.xvik:dropwizard-guicey:b7ca690930'
         }
         dependencies {
             // jdbi deprecated by dropwizard and moved to separate module https://github.com/dropwizard/dropwizard-jdbi
@@ -72,7 +72,7 @@ subprojects {
         provided 'com.google.code.findbugs:annotations:3.0.1'
 
 //        compile "ru.vyarus:dropwizard-guicey"
-        compile 'com.github.xvik:dropwizard-guicey:b71386cc14'
+        compile 'com.github.xvik:dropwizard-guicey:b7ca690930'
 
         testCompile "org.spockframework:spock-core"
         testCompile "io.dropwizard:dropwizard-testing"

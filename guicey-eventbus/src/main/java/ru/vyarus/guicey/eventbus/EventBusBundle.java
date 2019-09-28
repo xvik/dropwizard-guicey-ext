@@ -96,7 +96,7 @@ public class EventBusBundle extends UniqueGuiceyBundle {
 
         if (report) {
             // report after application startup to count events, resolved from JIT-created services (not declared)
-            environment.onApplicationStartup((injector) -> {
+            environment.onApplicationStartup(injector -> {
                 new EventSubscribersReporter(
                         injector.getInstance(EventSubscribersInfo.class))
                         .report();

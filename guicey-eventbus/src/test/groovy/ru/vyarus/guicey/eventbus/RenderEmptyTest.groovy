@@ -21,8 +21,11 @@ import javax.inject.Inject
 class RenderEmptyTest extends Specification {
     @Inject
     EventSubscribersInfo info
-    @Inject
     EventSubscribersReporter reporter
+
+    void setup() {
+        reporter = new EventSubscribersReporter(info)
+    }
 
     def "Check print"() {
 

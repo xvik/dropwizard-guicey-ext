@@ -23,7 +23,7 @@ import static ru.vyarus.dropwizard.guice.module.installer.util.Reporter.TAB;
 public class EventSubscribersReporter {
     private final Logger logger = LoggerFactory.getLogger(EventSubscribersReporter.class);
 
-    private EventSubscribersInfo info;
+    private final EventSubscribersInfo info;
 
     public EventSubscribersReporter(final EventSubscribersInfo info) {
         this.info = info;

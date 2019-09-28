@@ -28,8 +28,11 @@ class ReporterTest extends Specification {
     Service service // trigger JIT binding
     @Inject
     EventSubscribersInfo info
-    @Inject
     EventSubscribersReporter reporter
+
+    void setup() {
+        reporter = new EventSubscribersReporter(info)
+    }
 
     def "Check print"() {
 
