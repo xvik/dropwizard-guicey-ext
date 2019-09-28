@@ -233,6 +233,7 @@ public class ServerPagesBundle extends UniqueGuiceyBundle {
      *
      * @param name         extended application name
      * @param resourcePath classpath location for additional resources
+     * @return application extension bundle
      * @throws IllegalStateException if target application is already initialized
      */
     public static ServerPagesAppExtensionBundle extendApp(final String name, final String resourcePath) {

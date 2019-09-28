@@ -70,6 +70,7 @@ public class ServerPagesApp {
      * Install configured server page app.
      *
      * @param environment dropwizard environment object
+     * @param config global configuration object
      */
     public void setup(final Environment environment, final GlobalConfig config) {
         final ServletEnvironment context = mainContext ? environment.servlets() : environment.admin();
