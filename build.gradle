@@ -49,15 +49,13 @@ subprojects {
     sourceCompatibility = 1.8
 
     ext {
-        guicey = '5.0.0-SNAPSHOT'
+        guicey = '5.0.0-rc.2'
         guiceExtAnn = '1.3.0'
     }
 
     dependencyManagement {
         imports {
-            // temporal switch to jitpack
-//            mavenBom "ru.vyarus:dropwizard-guicey:$guicey"
-            mavenBom 'com.github.xvik:dropwizard-guicey:b7ca690930'
+            mavenBom "ru.vyarus:dropwizard-guicey:$guicey"
         }
         dependencies {
             // jdbi deprecated by dropwizard and moved to separate module https://github.com/dropwizard/dropwizard-jdbi
@@ -71,8 +69,7 @@ subprojects {
         provided 'com.google.code.findbugs:jsr305:3.0.2'
         provided 'com.google.code.findbugs:annotations:3.0.1'
 
-//        compile "ru.vyarus:dropwizard-guicey"
-        compile 'com.github.xvik:dropwizard-guicey:b7ca690930'
+        compile "ru.vyarus:dropwizard-guicey"
 
         testCompile "org.spockframework:spock-core"
         testCompile "io.dropwizard:dropwizard-testing"
