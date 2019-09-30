@@ -6,15 +6,18 @@
 
 ### About
 
-[Dropwizard-guicey](https://github.com/xvik/dropwizard-guicey) extensions and integrations. 
+[Dropwizard-guicey 5.x](https://github.com/xvik/dropwizard-guicey) extensions and integrations. 
 Provided modules may be used directly and for educational purposes (as examples for custom integrations).
 
-NOTE: Guicey and extension modules use *different* versions because release cycles are not unified (obviously, extensions would release more often, at least at first).
-But all modules use the same version. Provided [BOM](guicey-bom) simplifies version management.
+NOTE: Extension modules version is derived from guicey version: guiceyVersion-Number 
+(the same convention as for dropwizard modules). For example version 5.0.0-0 means
+first extensions release (0) for guicey 5.0.0. 
 
-Also, note that guicey base package (`ru.vyarus.dropwizard.guice`) is different from extensions base package (`ru.vyarus.guicey`)
+Also, guicey base package `ru.vyarus.dropwizard.guice` is different from extensions base package `ru.vyarus.guicey`.
 
-In versions prior to 1.0.0 semantic visioning is not guaranteed (it does not relate to quality, just some breaking changes are possible).
+Older versions:
+
+* [Guicey 4.x extensions branch](https://github.com/xvik/dropwizard-guicey-ext/tree/guicey-4)
 
 ### Setup
  
@@ -58,7 +61,7 @@ Sql proxies could be used as usual guice beans without extra efforts to use them
 
 #### [JDBI3 integration](guicey-jdbi3)
 
-Jdbi3 integrtation, based on dropwizard module. Introduce thread bound transactions, defined with annotations. 
+Jdbi3 integration, based on dropwizard module. Introduce thread bound transactions, defined with annotations. 
 Sql proxies could be used as usual guice beans without extra efforts to use them in the same transaction.
 
 #### [Single page applications](guicey-spa)

@@ -2,11 +2,12 @@
 
 Extension modules BOM. 
 
-Additionally provides:
+Provides:
 
-* Guicey version
+* Guicey bom
 * Guice bom
-* Dropwizard bom
+* Dropwizard boms
+* Additional dependencies used by modules 
 
 ### Setup
 
@@ -23,7 +24,7 @@ Maven:
         <dependency>
             <groupId>ru.vyarus.guicey</groupId>
             <artifactId>guicey-bom</artifactId>
-            <version>0.7.0</version>
+            <version>5.0.0-0-rc.1</version>
             <type>pom</type>
             <scope>import</scope>
         </dependency>
@@ -53,13 +54,13 @@ Gradle:
 
 ```groovy
 plugins {
-    id "io.spring.dependency-management" version "1.0.6.RELEASE"
+    id "io.spring.dependency-management" version "1.0.8.RELEASE"
 }
 
 dependencyManagement {
     // Implicitly imports Dropwizard and Guice BOMs 
     imports {
-        mavenBom "ru.vyarus.guicey:guicey-bom:0.7.0"
+        mavenBom "ru.vyarus.guicey:guicey-bom:5.0.0-0-rc.1"
     }
 }
 
@@ -75,6 +76,8 @@ dependencies {
 ```
 
 Spring's [dependency management plugin](https://github.com/spring-gradle-plugins/dependency-management-plugin) is required to import BOM.
+It is recommended to use it instead of [built-in gradle bom support](https://docs.gradle.org/current/userguide/migrating_from_maven.html#migmvn:using_boms)
+because of [more correct spring plugin behaviour](https://github.com/spring-gradle-plugins/dependency-management-plugin/issues/211#issuecomment-387362326)
 
 ### Dependencies override
 
@@ -82,5 +85,5 @@ You may override BOM version for any dependency by simply specifying exact versi
 
 If you want to use newer version (then provided by guicey BOM) of dropwizard or guice then import also their BOMs directly:
 
-* `io.dropwizard:dropwizard-bom:$VERSION` for dropwizard
+* `io.dropwizard:dropwizard-bom:$VERSION` and `io.dropwizard:dropwizard-dependencies:$VERSION` for dropwizard
 * `com.google.inject:guice-bom:$VERSION` for guice

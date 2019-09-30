@@ -139,14 +139,14 @@ Maven:
 <dependency>
   <groupId>ru.vyarus.guicey</groupId>
   <artifactId>guicey-server-pages</artifactId>
-  <version>0.7.0</version>
+  <version>5.0.0-0-rc.1</version>
 </dependency>
 ```
 
 Gradle:
 
 ```groovy
-compile 'ru.vyarus.guicey:guicey-server-pages:0.7.0'
+compile 'ru.vyarus.guicey:guicey-server-pages:5.0.0-0-rc.1'
 ```
 
 See the most recent version in the badge above.
@@ -158,7 +158,8 @@ configures and installs dropwizard-views (global). It supports the same configur
 pure dropwizard-views bundle.
 
 ```java
-bootstrap.addBundle(ServerPagesBundle.builder().build());
+GuiceBundle.builder()
+    .bundles(ServerPagesBundle.builder().build());
 ```
 
 IMPORTANT: Remove direct dropwizard-views bundle registrations (`ViewBundle`) if it was already used in application.  
@@ -178,8 +179,8 @@ then simply implement `io.dropwizard.views.ViewRenderer` in order to support it.
 If your renderer is not declared as service then simply add it directly:
 
 ```java
-bootstrap.addBundle(ServerPagesBundle.builder()
-        addViewRenderers(new MyTempateSupport())
+.bundles(ServerPagesBundle.builder()
+        .addViewRenderers(new MyTempateSupport())
         .build());
 ```
 
@@ -215,7 +216,7 @@ public class AppConfig extends Configuration {
 ```
 
 ```java
-bootstrap.addBundle(ServerPagesBundle.builder()
+.bundles(ServerPagesBundle.builder()
         .viewsConfiguration(AppConfig::getViews)
         .build());
 ```
@@ -225,7 +226,7 @@ If `AppConfig#getViews` return `null` then empty map will be used instead as con
 Additionally to direct yaml configuration binding, you can apply exact template engine modifications
 
 ```java
-bootstrap.addBundle(ServerPagesBundle.builder()
+.bundles(ServerPagesBundle.builder()
         .viewsConfiguration(AppConfig::getViews)
         .viewsConfigurationModifier("freemarker", 
                 map -> map.put("cache_storage", "freemarker.cache.NullCacheStorage"))
@@ -245,20 +246,15 @@ Also, configuration is accessible from the bundle instance: `ServerPagesBundle#g
 Each GSP application is registered as separate bundle in main or admin context:
 
 ```java
-bootstrap.addBundle(ServerPagesBundle.app("com.project.ui", "/com/app/ui/", "/")
+.bundles(ServerPagesBundle.app("com.project.ui", "/com/app/ui/", "/")
                     .indexPage("index.ftl")
                     .build())
                     
-bootstrap.addBundle(ServerPagesBundle.adminApp("com.project.admin", "/com/app/admin/", "/admin")
+.bundles(ServerPagesBundle.adminApp("com.project.admin", "/com/app/admin/", "/admin")
                     .build())                    
 ```   
 
-Or inside `GuiceyBundle`:
-
-```java
-ServerPagesBundle.app("com.project.ui", "/com/app/ui/", "/")
-                    .register(guiceyBootstrap)
-```
+(Same inside `GuiceyBundle`)
 
 Unlimited number of applications may be registered on each context.
 
@@ -285,7 +281,18 @@ In this case simply re-map rest in yaml config:
 ```yaml
 server:
   rootPath: '/rest/*'
-```
+```           
+
+If application requires resources from multiple paths, use:
+
+```java
+ServerPagesBundle.app("com.project.ui", "/com/app/path1/", "/")
+    .attachPaths("/com/app/path1/")
+    ...
+```    
+
+For example, this can be useful to attach some shared resources.
+To attach webjars there is a [pre-defined shortcut](#webjars-usage).
 
 #### Template engine constraint
 
@@ -295,7 +302,7 @@ may be even a 3rd party bundle) then it must be able to check required template 
 For example, this application requires freemarker:
 
 ```java
-bootstrap.addBundle(ServerPagesBundle.app("com.project.ui", "/com/app/ui/", "/")
+.bundles(ServerPagesBundle.app("com.project.ui", "/com/app/ui/", "/")
                     .requireRenderers("freemarker")
                     .build())
 ```
@@ -323,7 +330,7 @@ server:
 And GSP application is registered with name `com.project.ui` under main context root path (`/`).
 
 ```java
-bootstrap.addBundle(ServerPagesBundle.app("com.project.ui", "/com/app/ui/", "/")
+.bundles(ServerPagesBundle.app("com.project.ui", "/com/app/ui/", "/")
                     .build())
 ```  
 
@@ -507,7 +514,7 @@ root application mapping prefix and get origial request object (which may be req
 Index page is a page shown for root application url (`/`). It could be declared as:
 
 ```java
-bootstrap.addBundle(ServerPagesBundle.app("com.project.ui", "/com/app/ui/", "/")
+.bundles(ServerPagesBundle.app("com.project.ui", "/com/app/ui/", "/")
                     .indexPage('index.html')
                     .build())
 ```
@@ -527,7 +534,7 @@ Each GSP application could declare it's own error pages (very similar to servlet
 It could be one global error page and different pages per status:
 
 ```java
-bootstrap.addBundle(ServerPagesBundle.app("com.project.ui", "/com/app/ui/", "/")
+.bundles(ServerPagesBundle.app("com.project.ui", "/com/app/ui/", "/")
                     .errorPage('error.html')
                     .errorPage(500, '500.html')
                     .errorPage(401, '401.html')
@@ -641,7 +648,7 @@ As guicey SPA module can't be used directly with GSP, it's abilities is integrat
 be activated with:
 
 ```java
-bootstrap.addBundle(ServerPagesBundle.app("com.project.ui", "/com/app/ui/", "/")
+.bundles(ServerPagesBundle.app("com.project.ui", "/com/app/ui/", "/")
                     .spaRouting()
                     .build())
 ```
@@ -667,7 +674,7 @@ The following regular expression used for extension detection:
 If it does not cover you specific cases, it could be changed using:
 
 ```java
-bootstrap.addBundle(ServerPagesBundle.app("com.project.ui", "/com/app/ui/", "/")
+.bundles(ServerPagesBundle.app("com.project.ui", "/com/app/ui/", "/")
                     .filePattern("(?:^|/)([^/]+\\.(?:[a-zA-Z\\d]+))(?:\\?.+)?$")
                     .build())
 ```
@@ -689,7 +696,7 @@ In order to achieve similar goals there is a application extension mechanism.
 For example we application:
 
 ```java
-bootstrap.addBundle(ServerPagesBundle.app("com.project.ui", "/com/app/ui/", "/")
+.bundles(ServerPagesBundle.app("com.project.ui", "/com/app/ui/", "/")
                     .build())
 ```
 
@@ -705,11 +712,11 @@ With multiple pages inside:
 Each page could include style relatively as `style.css`. Most likely there will even
 be master template (freemarker) which unifies styles and common sscript installation.
 
-This application is destributed as 3rd party bundle (jar). If we need to add one more page 
+This application is distributed as 3rd party bundle (jar). If we need to add one more page 
 to this application in our current dropwizard application, we can:
 
 ```java
-ServerPagesBundle.extendApp("com.project.ui", "/com/otherApp/ui/ext")
+.bundles(ServerPagesBundle.extendApp("com.project.ui", "/com/otherApp/ui/ext"))
 ```
 
 And put another page into classpath:
@@ -744,7 +751,7 @@ appear in classpath.
 If you want to use resources from [webjars](https://www.webjars.org/) in GSP application:
 
 ```java
-bootstrap.addBundle(ServerPagesBundle.app("com.project.ui", "/com/app/ui/", "/")
+.bundles(ServerPagesBundle.app("com.project.ui", "/com/app/ui/", "/")
                     .attachWebjars()
                     .build())
 ```
@@ -766,7 +773,15 @@ Under the hood `.attachWebjars()` use extensions mechanism and adds
 `META-INF/resources/webjars/` as application resources path:
 
 ```java
-ServerPagesBundle.extendApp("app name", "META-INF/resources/webjars/")
+ServerPagesBundle.app("com.project.ui", "/com/app/ui/", "/")
+    ...
+    .attachPaths("META-INF/resources/webjars/")
+```
+
+OR
+
+```java
+.bundles(ServerPagesBundle.extendApp("app name", "META-INF/resources/webjars/"))
 ```
 
 Note: you can always see the content of webjar on [webjars site](https://www.webjars.org/) by clicking
