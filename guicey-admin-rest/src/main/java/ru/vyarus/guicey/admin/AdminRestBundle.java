@@ -30,7 +30,7 @@ import ru.vyarus.guicey.admin.rest.AdminRestServlet;
  */
 public class AdminRestBundle extends UniqueGuiceyBundle {
     private static final String ROOT_PATH = "/*";
-    private final Logger logger = LoggerFactory.getLogger(ru.vyarus.dropwizard.guice.admin.AdminRestBundle.class);
+    private final Logger logger = LoggerFactory.getLogger(AdminRestBundle.class);
 
     private final String path;
 

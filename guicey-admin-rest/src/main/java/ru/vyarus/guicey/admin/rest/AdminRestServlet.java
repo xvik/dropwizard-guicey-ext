@@ -21,7 +21,7 @@ public class AdminRestServlet extends HttpServlet {
     /**
      * Request attribute name set with 'true' value to distinguish admin rest from user context rest call.
      */
-    public static final String ADMIN_PROPERTY = ru.vyarus.dropwizard.guice.admin.rest.AdminRestServlet.class.getName();
+    public static final String ADMIN_PROPERTY = AdminRestServlet.class.getName();
 
     private final Servlet restServlet;
 
