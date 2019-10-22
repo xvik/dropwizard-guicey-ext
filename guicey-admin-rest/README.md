@@ -1,14 +1,40 @@
 # Admin REST
 
-All rest resources could be "published" in the admin context too.  This is just an emulation of rest: the same resources 
-are accessible in both contexts. On admin side special servlet simply redirects all incoming requests into the jersey context.
+Mirror all resources in admin context: on admin side special servlet simply redirects all incoming requests into the jersey context.
+Allow hiding some admin-only from user context: resource is working under admin context and return 404 on user context.
 
 Such approach is better than registering a completely separate jersey context for admin rest because
 of no overhead and the simplicity of jersey extensions management.
 
-## Configuration
+### Setup
 
-To install admin rest servlet, register bundle:
+[![JCenter](https://img.shields.io/bintray/v/vyarus/xvik/dropwizard-guicey-ext.svg?label=jcenter)](https://bintray.com/vyarus/xvik/dropwizard-guicey-ext/_latestVersion)
+[![Maven Central](https://img.shields.io/maven-central/v/ru.vyarus.guicey/guicey-admin-rest.svg?style=flat)](https://maven-badges.herokuapp.com/maven-central/ru.vyarus.guicey/guicey-admin-rest)
+
+Avoid version in dependency declaration below if you use [extensions BOM](../guicey-bom). 
+
+Maven:
+
+```xml
+<dependency>
+  <groupId>ru.vyarus.guicey</groupId>
+  <artifactId>guicey-admin-rest</artifactId>
+  <version>5.0.0-0-rc.1</version>
+</dependency>
+```
+
+Gradle:
+
+```groovy
+compile 'ru.vyarus.guicey:guicey-admin-rest:5.0.0-0-rc.1'
+```
+
+See the most recent version in the badge above.
+
+
+### Usage
+
+Register bundle:
 
 ```java
 GuiceBundle.builder()
@@ -24,7 +50,7 @@ To register on a custom path:
 .bundles(new AdminRestBundle("/custom/*"));
 ```
 
-## Security
+#### Security
 
 In order to hide specific resource methods or entire resources on the main context, annotate resource methods
 or resource classes with the `@AdminResource` annotation.
