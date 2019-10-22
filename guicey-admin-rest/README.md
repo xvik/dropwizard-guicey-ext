@@ -1,10 +1,14 @@
 # Admin REST
 
 Mirror all resources in admin context: on admin side special servlet simply redirects all incoming requests into the jersey context.
-Allow hiding some admin-only from user context: resource is working under admin context and return 404 on user context.
+Hides admin-only resources from user context: resource is working under admin context and return 404 on user context.
 
 Such approach is better than registering a completely separate jersey context for admin rest because
 of no overhead and the simplicity of jersey extensions management.
+
+Features:
+* All user context rest available in admin context
+* Admin-only resources not visible in user context
 
 ### Setup
 
