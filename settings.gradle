@@ -6,5 +6,6 @@ include 'guicey-bom',
         'guicey-jdbi3',
         'guicey-spa',
         'guicey-lifecycle-annotations',
-        'guicey-server-pages'
+        'guicey-server-pages',
+        'guicey-admin-rest'
 

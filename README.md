@@ -46,6 +46,10 @@ You can use snapshot versions through [JitPack](https://jitpack.io):
 
 ### Modules
 
+#### [Admin REST](guicey-admin-rest)
+
+Admin context rest support (mirror main rest).
+
 #### [Lifecycle annotations](guicey-lifecycle-annotations)
 
 Support for @PostConstruct, @PreDestroy, @PostStartup annotations on guice beans. 

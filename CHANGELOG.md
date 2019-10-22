@@ -1,6 +1,7 @@
 * Update to guicey 5.0.0
     - Ext version now aligned with guicey the same way as dropwizard modules: guiceyVersion-number (5.0.0-0)
-* Java 11 compatibility. Automatic module name (in meta-inf): `dropwizard-guicey.$module`    
+* Java 11 compatibility. Automatic module name (in meta-inf): `dropwizard-guicey.$module`
+* Add admin-rest bundle (moved from guicey core)    
 * [bom]
     - Add com.h2database:h2:1.4.199 
     - Add io.dropwizard.modules:dropwizard-flyway:1.3.0-4     
@@ -22,7 +23,7 @@
     - JdbiBundle declared as unique (it will not work with multiple instances)
 * [jdbi]
     - JdbiBundle declared as unique (it will not work with multiple instances)    
-    - module deprecated (because dropwizard-jdbi was deprecated and moved to separate repo https://github.com/dropwizard/dropwizard-jdbi)
+    - module deprecated (because dropwizard-jdbi was deprecated and moved to separate repo https://github.com/dropwizard/dropwizard-jdbi)    
 
 ### 0.7.0 (2019-06-17)
 * Add Guicey Server Pages module (bringing JSP like usage simplicity to dropwizard-views)
