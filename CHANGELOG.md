@@ -21,6 +21,8 @@
         `ServerPagesBundle.app(..).attachPaths(..)`     
 * [jdbi3]
     - JdbiBundle declared as unique (it will not work with multiple instances)
+    - Detect when repository base class is also annotated with @JdbiRepository to prevent confusing errors (#4)
+    - Prevent repositories declaration in bindings
 * [jdbi]
     - JdbiBundle declared as unique (it will not work with multiple instances)    
     - module deprecated (because dropwizard-jdbi was deprecated and moved to separate repo https://github.com/dropwizard/dropwizard-jdbi)    

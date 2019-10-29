@@ -5,6 +5,7 @@ import com.google.inject.Binder;
 import com.google.inject.Binding;
 import com.google.inject.Stage;
 import com.google.inject.matcher.Matchers;
+import ru.vyarus.dropwizard.guice.debug.report.guice.util.GuiceModelUtils;
 import ru.vyarus.dropwizard.guice.module.installer.FeatureInstaller;
 import ru.vyarus.dropwizard.guice.module.installer.install.binding.BindingInstaller;
 import ru.vyarus.dropwizard.guice.module.installer.util.Reporter;
@@ -14,6 +15,7 @@ import ru.vyarus.guicey.jdbi3.module.NoSyntheticMatcher;
 import ru.vyarus.guicey.jdbi3.tx.InTransaction;
 import ru.vyarus.guicey.jdbi3.tx.TransactionTemplate;
 import ru.vyarus.guicey.jdbi3.unit.UnitManager;
+import ru.vyarus.java.generics.resolver.GenericsResolver;
 
 import javax.inject.Provider;
 import javax.inject.Singleton;
@@ -40,7 +42,11 @@ public class RepositoryInstaller implements FeatureInstaller, BindingInstaller {
 
     @Override
     public boolean matches(final Class<?> type) {
-        return type.getAnnotation(JdbiRepository.class) != null;
+        final boolean res = type.getAnnotation(JdbiRepository.class) != null;
+        if (res) {
+            validateCorrectness(type);
+        }
+        return res;
     }
 
     @Override
@@ -73,6 +79,9 @@ public class RepositoryInstaller implements FeatureInstaller, BindingInstaller {
     @Override
     public <T> void checkBinding(final Binder binder, final Class<T> type, final Binding<T> manualBinding) {
         // it's impossible to bind manually abstract type in guice
+        throw new UnsupportedOperationException(String.format(
+                "JDBI repository %s can't be installed from binding: %s",
+                type.getSimpleName(), GuiceModelUtils.getDeclarationSource(manualBinding).toString()));
     }
 
     @Override
@@ -85,5 +94,21 @@ public class RepositoryInstaller implements FeatureInstaller, BindingInstaller {
     @Override
     public void report() {
         reporter.report();
+    }
+
+    @SuppressWarnings("unchecked")
+    private void validateCorrectness(final Class<?> type) {
+        // repository base interfaces must not be annotated because in case of classpath scan they would
+        // also be registered as repositories and will ruin AOP appliance
+        for (Class check : GenericsResolver.resolve(type).getGenericsInfo().getComposingTypes()) {
+            if (!check.equals(type) && check.isAnnotationPresent(JdbiRepository.class)) {
+                throw new IllegalStateException(String.format(
+                        "Incorrect repository %s declaration: base interface %s is also annotated with @%s which may "
+                                + "break AOP mappings. Only root repository class must be annotated.",
+                        type.getSimpleName(),
+                        check.getSimpleName(),
+                        JdbiRepository.class.getSimpleName()));
+            }
+        }
     }
 }
