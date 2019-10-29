@@ -31,7 +31,7 @@ import java.lang.reflect.InvocationTargetException;
  * @see ru.vyarus.guicey.jdbi.unit.UnitManager for low level usage without transaction
  * @since 4.12.2016
  */
-public class RepositoryInstaller implements FeatureInstaller<Object>, BindingInstaller {
+public class RepositoryInstaller implements FeatureInstaller, BindingInstaller {
 
     private final Reporter reporter = new Reporter(RepositoryInstaller.class, "repositories = ");
     private UnitHandleDing ding;

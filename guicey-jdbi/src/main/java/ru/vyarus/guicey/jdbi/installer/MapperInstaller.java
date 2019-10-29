@@ -23,8 +23,7 @@ import javax.inject.Singleton;
  * @see ru.vyarus.guicey.jdbi.module.MapperBinder for actual installation
  * @since 4.12.2016
  */
-public class MapperInstaller implements FeatureInstaller<ResultSetMapper>,
-        BindingInstaller {
+public class MapperInstaller implements FeatureInstaller, BindingInstaller {
 
     private final Reporter reporter = new Reporter(MapperInstaller.class, "jdbi mappers = ");
 

@@ -24,8 +24,7 @@ import javax.inject.Singleton;
  * @see <a href="http://jdbi.org/#_row_mappers">row mappers doc</a>
  * @since 31.08.2018
  */
-public class MapperInstaller implements FeatureInstaller<RowMapper>,
-        BindingInstaller {
+public class MapperInstaller implements FeatureInstaller, BindingInstaller {
 
     private final Reporter reporter = new Reporter(MapperInstaller.class, "jdbi row mappers = ");
 

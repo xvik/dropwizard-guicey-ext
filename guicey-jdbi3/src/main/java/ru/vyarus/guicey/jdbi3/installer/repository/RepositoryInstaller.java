@@ -34,7 +34,7 @@ import java.lang.reflect.InvocationTargetException;
  * @see UnitManager for low level usage without transaction
  * @since 31.08.2018
  */
-public class RepositoryInstaller implements FeatureInstaller<Object>, BindingInstaller {
+public class RepositoryInstaller implements FeatureInstaller, BindingInstaller {
 
     private final Reporter reporter = new Reporter(RepositoryInstaller.class, "repositories = ");
 
