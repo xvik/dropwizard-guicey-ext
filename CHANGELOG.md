@@ -14,7 +14,9 @@
     - (breaking) Removed `SpaBundle.register(GuiceyBundle)` as redundant    
 * [server-pages]
     - (breaking) ServerPagesBundle and application bundle are guicey bundles now
-    - (breaking) `ServerPagesBundle.extendApp()` renamed to `extendAppAssets()` now return bundle and must be registered!
+    - (breaking) `ServerPagesBundle.extendApp()` returns bundle builder used to extend application and resulted 
+        bundle and must be registered!
+         - Extensions may be configured under run phase with special callback
     - (breaking) Removed `ServerPagesBundle.register(GuiceyBundle)` as redundant
     - (breaking) Removed `ServerPagesBundle.resetGlobalConfig()` because guicey shared configs now used instead 
     - Add shortcut for multiple paths registration on application:

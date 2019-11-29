@@ -173,11 +173,10 @@ public class GlobalConfig {
     /**
      * Register application resources extension.
      *
-     * @param app      application name to apply new resources to
-     * @param path     mapping url
-     * @param location classpath location
+     * @param app     application name to apply new resources to
+     * @param sources additional asset sources
      */
-    public void extendLocation(final String app, final String path, final String location) {
+    public void extendAssets(final String app, final AssetSources sources) {
         // if application itself is already registered check its not initialized (extension could be applied)
         for (ServerPagesApp spa : apps) {
             if (spa.name.equals(app)) {
@@ -189,7 +188,7 @@ public class GlobalConfig {
         if (!extensions.containsKey(app)) {
             extensions.put(app, new AssetSources());
         }
-        extensions.get(app).add(path, location);
+        extensions.get(app).merge(sources);
     }
 
     /**

@@ -52,7 +52,9 @@ class ExtensionForAppRegisteredInGuiceyTest extends Specification {
                     .bundles(
                             ServerPagesBundle.builder().build(),
                             // extension registered before application
-                            ServerPagesBundle.extendAppAssets("app", "/ext"),
+                            ServerPagesBundle.extendApp("app")
+                                    .attachAssets("/ext")
+                                    .build(),
                             ServerPagesBundle.app("app", "/app", "/")
                                     .indexPage("index.html")
                                     .build())

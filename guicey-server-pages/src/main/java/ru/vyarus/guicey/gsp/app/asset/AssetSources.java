@@ -20,8 +20,8 @@ public class AssetSources {
      *
      * @param location asset classpath location
      */
-    public void add(final String location) {
-        add("/", location);
+    public void attach(final String location) {
+        attach("/", location);
     }
 
     /**
@@ -30,11 +30,11 @@ public class AssetSources {
      * Internally, path used without first slash to simplify matching. Location could be declared as pure package
      * ('dot' separated path).
      *
-     * @param path     sub url
+     * @param url     sub url
      * @param location asset classpath location
      */
-    public void add(final String path, final String location) {
-        locations.put(PathUtils.normalizeRelativePath(path), PathUtils.normalizeClasspathPath(location));
+    public void attach(final String url, final String location) {
+        locations.put(PathUtils.normalizeRelativePath(url), PathUtils.normalizeClasspathPath(location));
     }
 
     /**

@@ -12,12 +12,12 @@ import spock.lang.Specification
 
 /**
  * @author Vyacheslav Rusakov
- * @since 21.01.2019
+ * @since 29.11.2019
  */
 @UseDropwizardApp(value = App, configOverride = [
         @ConfigOverride(key = "server.rootPath", value = "/rest/*")
 ])
-class ExtendedAppTest extends Specification {
+class DelayedAppExtensionTest extends Specification {
 
     def "Check app mapped"() {
 
@@ -45,11 +45,6 @@ class ExtendedAppTest extends Specification {
         res = new URL("http://localhost:8080/ext.ftl").text
         then: "rendered template"
         res.contains("ext template")
-
-        when: "accessing ext template through mapping"
-        res = new URL("http://localhost:8080/sample/ext.ftl").text
-        then: "rendered template"
-        res.contains("ext template")
     }
 
     static class App extends Application<Configuration> {
@@ -63,8 +58,11 @@ class ExtendedAppTest extends Specification {
                                     .indexPage("index.html")
                                     .build(),
                             ServerPagesBundle.extendApp("app")
-                                    .attachAssets("/ext")
-                                    .attachAssetsForUrl("/sample", "ext")
+                                    .assetsConfigurator({ env, source ->
+                                        assert env
+                                        assert source
+                                        source.attach("/ext")
+                                    })
                                     .build())
                     .build())
 
