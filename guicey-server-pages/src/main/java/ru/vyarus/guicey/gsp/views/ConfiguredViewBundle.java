@@ -43,7 +43,7 @@ public class ConfiguredViewBundle extends ViewBundle<Configuration> {
         }
         // only one bundle could configure global configuration provider, but all bundles
         // could modify resulted configuration
-        for (String key : globalConfig.getConfigModifiers().keys()) {
+        for (String key : globalConfig.getConfigModifiers().keySet()) {
             if (!config.containsKey(key)) {
                 config.put(key, new HashMap<>());
             }

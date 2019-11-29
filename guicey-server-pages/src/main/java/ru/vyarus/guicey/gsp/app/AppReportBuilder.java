@@ -47,11 +47,14 @@ public final class AppReportBuilder {
     private static void reportStaticResources(final StringBuilder res, final ServerPagesApp app) {
         res.append(NEWLINE).append(NEWLINE)
                 .append(TAB).append("Static resources locations:").append(NEWLINE);
-        // delayed compose of extended locations
-        for (String path : app.resourceLocations) {
-            res.append(TAB).append(TAB).append(PathUtils.SLASH).append(path).append(NEWLINE);
+        for (String url : app.assets.getLocations().keySet()) {
+            res.append(TAB).append(TAB).append(PathUtils.prefixSlash(url)).append(NEWLINE);
+            for (String path : app.assets.getLocations().get(url)) {
+                res.append(TAB).append(TAB).append(TAB)
+                        .append(PathUtils.trimSlashes(path).replace('/', '.')).append(NEWLINE);
+            }
+            res.append(NEWLINE);
         }
-        res.append(NEWLINE);
     }
 
     private static void reportRestPaths(final StringBuilder res,

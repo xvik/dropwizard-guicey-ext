@@ -11,35 +11,15 @@ import spock.lang.Specification
 
 /**
  * @author Vyacheslav Rusakov
- * @since 06.02.2019
+ * @since 29.11.2019
  */
 @UseDropwizardApp(value = App, config = 'src/test/resources/conf.yml')
-class ExtensionForAppRegisteredInGuiceyTest extends Specification {
+class MappedAssetsTest extends Specification {
 
-    def "Check app mapped"() {
+    def "Check assets mapped"() {
 
-        when: "accessing app"
-        String res = new URL("http://localhost:8080/").text
-        then: "index page"
-        res.contains("overridden sample page")
-
-        when: "accessing direct file"
-        res = new URL("http://localhost:8080/index.html").text
-        then: "index page"
-        res.contains("overridden sample page")
-
-        when: "accessing resource"
-        res = new URL("http://localhost:8080/css/style.css").text
-        then: "css"
-        res.contains("/* sample page css */")
-
-        when: "accessing direct template"
-        res = new URL("http://localhost:8080/template.ftl").text
-        then: "rendered template"
-        res.contains("page: /template.ftl")
-
-        when: "accessing direct ext template"
-        res = new URL("http://localhost:8080/ext.ftl").text
+        when: "accessing mapped url"
+        String res = new URL("http://localhost:8080/sample/ext.ftl").text
         then: "rendered template"
         res.contains("ext template")
     }
@@ -51,12 +31,12 @@ class ExtensionForAppRegisteredInGuiceyTest extends Specification {
             bootstrap.addBundle(GuiceBundle.builder()
                     .bundles(
                             ServerPagesBundle.builder().build(),
-                            // extension registered before application
-                            ServerPagesBundle.extendAppAssets("app", "/ext"),
                             ServerPagesBundle.app("app", "/app", "/")
                                     .indexPage("index.html")
+                                    .attachAssetsForUrl('/sample', 'ext')
                                     .build())
                     .build())
+
         }
 
         @Override

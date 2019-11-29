@@ -14,11 +14,13 @@
     - (breaking) Removed `SpaBundle.register(GuiceyBundle)` as redundant    
 * [server-pages]
     - (breaking) ServerPagesBundle and application bundle are guicey bundles now
-    - (breaking) `ServerPagesBundle.extendApp()` now return bundle and must be registered!
+    - (breaking) `ServerPagesBundle.extendApp()` renamed to `extendAppAssets()` now return bundle and must be registered!
     - (breaking) Removed `ServerPagesBundle.register(GuiceyBundle)` as redundant
     - (breaking) Removed `ServerPagesBundle.resetGlobalConfig()` because guicey shared configs now used instead 
     - Add shortcut for multiple paths registration on application:
-        `ServerPagesBundle.app(..).attachPaths(..)`     
+        `ServerPagesBundle.app(..).attachAssets(..)`     
+    - Allow package notion for resources registration (com.company.project)
+    - Allow resources registration on specific sub url    
 * [jdbi3]
     - JdbiBundle declared as unique (it will not work with multiple instances)
     - Detect when repository base class is also annotated with @JdbiRepository to prevent confusing errors (#4)

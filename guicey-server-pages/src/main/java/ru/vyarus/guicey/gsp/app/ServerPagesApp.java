@@ -1,14 +1,19 @@
 package ru.vyarus.guicey.gsp.app;
 
 import com.google.common.base.Joiner;
+import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.Multimap;
 import io.dropwizard.jetty.setup.ServletEnvironment;
 import io.dropwizard.setup.Environment;
 import io.dropwizard.views.ViewRenderer;
+import org.apache.commons.lang3.ArrayUtils;
 import org.glassfish.jersey.server.model.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.vyarus.guicey.gsp.ServerPagesBundle;
-import ru.vyarus.guicey.gsp.app.asset.MultiSourceAssetServlet;
+import ru.vyarus.guicey.gsp.app.asset.AssetLookup;
+import ru.vyarus.guicey.gsp.app.asset.AssetSources;
+import ru.vyarus.guicey.gsp.app.asset.servlet.AssetResolutionServlet;
 import ru.vyarus.guicey.gsp.app.filter.ServerPagesFilter;
 import ru.vyarus.guicey.gsp.app.filter.redirect.ErrorRedirect;
 import ru.vyarus.guicey.gsp.app.filter.redirect.SpaSupport;
@@ -22,7 +27,6 @@ import ru.vyarus.guicey.spa.SpaBundle;
 import javax.servlet.DispatcherType;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static ru.vyarus.guicey.spa.SpaBundle.SLASH;
 
@@ -45,13 +49,17 @@ public class ServerPagesApp {
     // delayed modifiers registration
     public Map<String, ViewRendererConfigurationModifier> viewsConfigModifiers = new HashMap<>();
     // delayed resource paths registrations
-    public List<String> extendedResourceLocations = new ArrayList<>();
+    public AssetSources extendedAssetLocations = new AssetSources();
 
     public final Map<Integer, String> errorPages = new TreeMap<>();
     public boolean mainContext;
+    // application name
     public String name;
-    public String resourcePath;
+    // root assets location
+    public String mainAssetsPath;
+    // application mapping url
     public String uriPath;
+    // context mapping + uriPath
     public String fullUriPath;
     public String indexFile = "";
     // regexp for file requests detection (to recognize asset or direct template render)
@@ -62,7 +70,7 @@ public class ServerPagesApp {
     public String spaNoRedirectRegex = SpaBundle.DEFAULT_PATTERN;
     protected TemplateRedirect templateRedirect;
     // all locations, including all extensions
-    protected List<String> resourceLocations;
+    protected AssetLookup assets;
     private boolean started;
     private final Logger logger = LoggerFactory.getLogger(ServerPagesApp.class);
 
@@ -70,7 +78,7 @@ public class ServerPagesApp {
      * Install configured server page app.
      *
      * @param environment dropwizard environment object
-     * @param config global configuration object
+     * @param config      global configuration object
      */
     public void setup(final Environment environment, final GlobalConfig config) {
         final ServletEnvironment context = mainContext ? environment.servlets() : environment.admin();
@@ -81,9 +89,7 @@ public class ServerPagesApp {
                 : environment.getAdminContext().getContextPath();
         fullUriPath = PathUtils.path(contextMapping, uriPath);
 
-        // application extensions could be registered a bit later so it is impossible to know all classpath
-        // paths at that point
-        resourceLocations = collectResourceLocations(config);
+        assets = collectAssets(config);
         installAssetsServlet(context);
 
         // templates support
@@ -91,7 +97,7 @@ public class ServerPagesApp {
         templateRedirect = new TemplateRedirect(environment.getJerseyServletContainer(),
                 name,
                 fullUriPath,
-                resourceLocations,
+                assets,
                 new ErrorRedirect(uriPath, errorPages, spa));
         installTemplatesSupportFilter(context, templateRedirect, spa, config.getRenderers());
 
@@ -123,15 +129,27 @@ public class ServerPagesApp {
         return started;
     }
 
-    private List<String> collectResourceLocations(final GlobalConfig config) {
-        final List<String> locations = new ArrayList<>(config.getExtensions(name));
-        // put original path last to let other location to override its files
-        locations.add(resourcePath);
+    @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
+    private AssetLookup collectAssets(final GlobalConfig config) {
+        final AssetSources ext = config.getExtensions(name);
+        if (ext != null) {
+            extendedAssetLocations.merge(ext);
+        }
+
+        final ImmutableMultimap.Builder<String, String> builder = ImmutableMultimap.<String, String>builder()
+                // order by size to correctly handle overlapped paths (e.g. /foo/bar checked before /foo)
+                .orderKeysBy(Comparator.comparing(String::length).reversed());
+
+        final Multimap<String, String> src = extendedAssetLocations.getLocations();
+        for (String key : src.keySet()) {
+            final String[] values = src.get(key).toArray(new String[0]);
+            // reverse registered locations to preserve registration order priority during lookup
+            ArrayUtils.reverse(values);
+            builder.putAll(key, values);
+        }
 
         // process paths the same way as assets servlet does
-        return locations.stream()
-                .map(it -> PathUtils.endSlash(PathUtils.trimSlashes(it)))
-                .collect(Collectors.toList());
+        return new AssetLookup(mainAssetsPath, builder.build());
     }
 
     /**
@@ -143,7 +161,7 @@ public class ServerPagesApp {
     private void installAssetsServlet(final ServletEnvironment context) {
         final Set<String> clash = context.addServlet(name,
                 // note: if index file is template, it will be handled by filter
-                new MultiSourceAssetServlet(resourceLocations, uriPath, indexFile, StandardCharsets.UTF_8))
+                new AssetResolutionServlet(assets, uriPath, indexFile, StandardCharsets.UTF_8))
                 .addMapping(uriPath + '*');
 
         if (clash != null && !clash.isEmpty()) {

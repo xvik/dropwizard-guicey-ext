@@ -5,10 +5,11 @@ import com.google.common.collect.Multimap;
 import io.dropwizard.Configuration;
 import io.dropwizard.views.ViewConfigurable;
 import io.dropwizard.views.ViewRenderer;
+import ru.vyarus.guicey.gsp.app.asset.AssetSources;
 import ru.vyarus.guicey.gsp.views.ViewRendererConfigurationModifier;
 
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -28,8 +29,8 @@ public class GlobalConfig {
     private final List<ServerPagesApp> apps = new ArrayList<>();
     private final List<ViewRenderer> renderers = new ArrayList<>();
     private final Multimap<String, ViewRendererConfigurationModifier> configModifiers = LinkedHashMultimap.create();
-    // app name -- packages to search resources in
-    private final Multimap<String, String> extensions = LinkedHashMultimap.create();
+    // app name -- asset locations collector
+    private final Map<String, AssetSources> extensions = new HashMap<>();
     private ViewConfigurable<Configuration> configurable;
     private boolean printConfig;
     @SuppressWarnings("PMD.AvoidFieldNameMatchingMethodName")
@@ -53,11 +54,6 @@ public class GlobalConfig {
         // register configuration modifiers
         for (Map.Entry<String, ViewRendererConfigurationModifier> entry : app.viewsConfigModifiers.entrySet()) {
             addConfigModifier(entry.getKey(), entry.getValue());
-        }
-
-        // register extended locations
-        for (String location : app.extendedResourceLocations) {
-            extendLocation(app.name, location);
         }
     }
 
@@ -178,9 +174,10 @@ public class GlobalConfig {
      * Register application resources extension.
      *
      * @param app      application name to apply new resources to
+     * @param path     mapping url
      * @param location classpath location
      */
-    public void extendLocation(final String app, final String location) {
+    public void extendLocation(final String app, final String path, final String location) {
         // if application itself is already registered check its not initialized (extension could be applied)
         for (ServerPagesApp spa : apps) {
             if (spa.name.equals(app)) {
@@ -189,17 +186,19 @@ public class GlobalConfig {
                 break;
             }
         }
-        extensions.put(app, location);
+        if (!extensions.containsKey(app)) {
+            extensions.put(app, new AssetSources());
+        }
+        extensions.get(app).add(path, location);
     }
 
     /**
      * @param app application name
-     * @return all configured extended locations
+     * @return registered asset extensions
      */
-    public Collection<String> getExtensions(final String app) {
+    public AssetSources getExtensions(final String app) {
         return extensions.get(app);
     }
-
 
     private void checkLocked() {
         checkState(!locked, "Global initialization already performed");

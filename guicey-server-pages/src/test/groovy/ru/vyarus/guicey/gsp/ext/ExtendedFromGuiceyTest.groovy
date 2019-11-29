@@ -59,7 +59,7 @@ class ExtendedFromGuiceyTest extends Specification {
                             new GuiceyBundle() {
                                 @Override
                                 void initialize(GuiceyBootstrap gb) {
-                                    gb.bundles(ServerPagesBundle.extendApp("app", "/ext"))
+                                    gb.bundles(ServerPagesBundle.extendAppAssets("app", "/ext"))
                                 }
                             })
                     .build())

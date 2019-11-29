@@ -6,6 +6,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.glassfish.jersey.server.internal.process.MappableException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.vyarus.guicey.gsp.app.asset.AssetLookup;
 import ru.vyarus.guicey.gsp.app.filter.redirect.ErrorRedirect;
 import ru.vyarus.guicey.gsp.app.filter.redirect.TemplateRedirect;
 import ru.vyarus.guicey.gsp.app.util.PathUtils;
@@ -15,7 +16,6 @@ import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.WebApplicationException;
-import java.util.List;
 
 /**
  * Contains context information for rendered template. The most useful information is original request path:
@@ -32,7 +32,7 @@ public class TemplateContext {
 
     private final String appName;
     private final String rootUrl;
-    private final List<String> resourcePaths;
+    private final AssetLookup assets;
     private final ErrorRedirect errorRedirect;
     private final HttpServletRequest request;
     private final HttpServletResponse response;
@@ -42,13 +42,13 @@ public class TemplateContext {
 
     public TemplateContext(final String appName,
                            final String rootUrl,
-                           final List<String> resourcePaths,
+                           final AssetLookup assets,
                            final ErrorRedirect errorRedirect,
                            final HttpServletRequest request,
                            final HttpServletResponse response) {
         this.appName = appName;
         this.rootUrl = rootUrl;
-        this.resourcePaths = resourcePaths;
+        this.assets = assets;
         this.errorRedirect = errorRedirect;
         this.request = request;
         this.response = response;
@@ -177,7 +177,7 @@ public class TemplateContext {
         // search in configured locations
         if (!path.startsWith(PathUtils.SLASH)) {
             // search in configured folders
-            path = PathUtils.prefixSlash(ResourceLookup.lookupOrFail(path, resourcePaths));
+            path = PathUtils.prefixSlash(ResourceLookup.lookupOrFail(path, assets));
             logger.debug("Relative template '{}' resolved to '{}'", template, path);
         }
 

@@ -57,7 +57,7 @@ class ExtendedAppTest extends Specification {
                             ServerPagesBundle.app("app", "/app", "/")
                                     .indexPage("index.html")
                                     .build(),
-                            ServerPagesBundle.extendApp("app", "/ext"))
+                            ServerPagesBundle.extendAppAssets("app", "/ext"))
                     .build())
 
         }

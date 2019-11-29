@@ -65,7 +65,7 @@ import static ru.vyarus.guicey.spa.SpaBundle.SLASH;
  * fail fast if no required templates engine. Without required engines declaration template files will be served like
  * static files when direct template requested and rendering will fail for rest-mapped template.
  * <p>
- * Each application could be "extended" using {@link ServerPagesBundle#extendApp(String, String)} bundle. This way
+ * Each application could be "extended" using {@link ServerPagesBundle#extendAppAssets(String, String)} bundle. This way
  * extra classpath location is mapped into application root. Pages from extended context could reference resources from
  * the main context (most likely common root template will be used). Also, extended mapping could override
  * resources from the primary location (but note that in case of multiple extensions order is not granted).
@@ -108,9 +108,10 @@ import static ru.vyarus.guicey.spa.SpaBundle.SLASH;
  * as example).
  * <p>
  * Note that all resources, started from application name prefix are considered to be used in application.
- * {@link ServerPagesBundle#extendApp(String, String)} mechanism is used only to declare additional static resources
- * (or direct templates). But in order to add new pages, handled by rest resources you dont need to do anything -
- * they just must start with correct prefix (you can see all application resources in console just after startup).
+ * {@link ServerPagesBundle#extendAppAssets(String, String)} mechanism is used only to declare additional static
+ * resources (or direct templates). But in order to add new pages, handled by rest resources you dont need to do
+ * anything - they just must start with correct prefix (you can see all application resources in console just after
+ * startup).
  * <p>
  * In order to be able to render direct templates (without supporting rest endpoint) special rest
  * endpoint is registered which handles everything on application path (e.g. "ui/{file:.*}" for example application
@@ -170,21 +171,21 @@ public class ServerPagesBundle extends UniqueGuiceyBundle {
      * Register application in main context.
      * Application names must be unique (when you register multiple server pages applications).
      * <p>
-     * Application could be extended with {@link AppBuilder#extendApp(String, String)} in another
+     * Application could be extended with {@link AppBuilder#extendAppAssets(String, String)} in another
      * bundle.
      * <p>
      * NOTE global server pages support bundle must be installed with {@link #builder()} in dropwizard application.
      *
-     * @param name         application name (used as servlet name)
-     * @param resourcePath path to application resources (classpath)
-     * @param uriPath      mapping uri
+     * @param name       application name (used as servlet name)
+     * @param assetsPath path to application resources (classpath); may be in form of package (dot-separated)
+     * @param uriPath    mapping uri
      * @return builder instance for server pages application configuration
      * @see #builder()  for server pages applications global support
      */
-    public static AppBuilder app(final String name, final String resourcePath, final String uriPath) {
+    public static AppBuilder app(final String name, final String assetsPath, final String uriPath) {
         LOGGER.debug("Registering server pages application {} on path {} with resources in {}",
-                name, uriPath, resourcePath);
-        return new AppBuilder(true, name, resourcePath, uriPath);
+                name, uriPath, assetsPath);
+        return new AppBuilder(true, name, assetsPath, uriPath);
     }
 
     /**
@@ -194,23 +195,23 @@ public class ServerPagesBundle extends UniqueGuiceyBundle {
      * You can't register admin application on admin context root because there is already dropwizard
      * admin servlet {@link com.codahale.metrics.servlets.AdminServlet}.
      * <p>
-     * Application could be extended with {@link AppBuilder#extendApp(String, String)} in another
+     * Application could be extended with {@link AppBuilder#extendAppAssets(String, String)} in another
      * bundle.
      * <p>
      * NOTE: global server pages support bundle must be installed with {@link #builder()} in dropwizard application.
      *
-     * @param name         application name (used as servlet name)
-     * @param resourcePath path to application resources (classpath)
-     * @param uriPath      mapping uri
+     * @param name       application name (used as servlet name)
+     * @param assetsPath path to application resources (classpath)
+     * @param uriPath    mapping uri
      * @return builder instance for server pages application configuration
      * @see #builder()  for server pages applications global support
      */
     public static AppBuilder adminApp(final String name,
-                                      final String resourcePath,
+                                      final String assetsPath,
                                       final String uriPath) {
         LOGGER.debug("Registering admin server pages application {} on path {} with resources in {}",
-                name, uriPath, resourcePath);
-        return new AppBuilder(false, name, resourcePath, uriPath);
+                name, uriPath, assetsPath);
+        return new AppBuilder(false, name, assetsPath, uriPath);
     }
 
     /**
@@ -231,14 +232,32 @@ public class ServerPagesBundle extends UniqueGuiceyBundle {
      * If extended application is not registered no error will be thrown. This behaviour support optional application
      * extension support (extension will work if extended application registered and will not harm if not).
      *
-     * @param name         extended application name
-     * @param resourcePath classpath location for additional resources
+     * @param name       extended application name
+     * @param assetsPath classpath location for additional resources; may be in form of package (dot-separated)
      * @return application extension bundle
      * @throws IllegalStateException if target application is already initialized
      */
-    public static ServerPagesAppExtensionBundle extendApp(final String name, final String resourcePath) {
-        LOGGER.debug("Registering {} server pages application resources extension: {}", name, resourcePath);
-        return new ServerPagesAppExtensionBundle(name, resourcePath);
+    public static ServerPagesAppExtensionBundle extendAppAssets(final String name, final String assetsPath) {
+        return extendAppAssets(name, "/", assetsPath);
+    }
+
+    /**
+     * Same as {@link #extendAppAssets(String, String)}, but for assets registration for sub url. For example,
+     * if we need to serve fonts from 3rd party jar:
+     * {@code extendAppAssets("appName", "/fonts/", "com.some.package.with.fonts")}.
+     *
+     * @param name       extended application name
+     * @param mapping    relative url to map resources on
+     * @param assetsPath classpath location for additional resources; may be in form of package (dot-separated)
+     * @return application extension bundle
+     * @throws IllegalStateException if target application is already initialized
+     */
+    public static ServerPagesAppExtensionBundle extendAppAssets(final String name,
+                                                                final String mapping,
+                                                                final String assetsPath) {
+        LOGGER.debug("Registering {} server pages application resources extension: {} - {}",
+                name, mapping, assetsPath);
+        return new ServerPagesAppExtensionBundle(name, mapping, assetsPath);
     }
 
     /**
@@ -425,11 +444,13 @@ public class ServerPagesBundle extends UniqueGuiceyBundle {
 
             app.mainContext = mainContext;
             app.name = checkNotNull(name, "Name is required");
-            app.uriPath = uri.endsWith(SLASH) ? uri : (uri + SLASH);
+            app.uriPath = PathUtils.endSlash(uri);
 
             checkArgument(path.startsWith(SLASH), "%s is not an absolute path", path);
             checkArgument(!SLASH.equals(path), "%s is the classpath root", path);
-            app.resourcePath = path.endsWith(SLASH) ? path : (path + SLASH);
+            app.mainAssetsPath = PathUtils.normalizeClasspathPath(path);
+            // register main path for assets lookup
+            app.extendedAssetLocations.add(app.mainAssetsPath);
         }
 
         /**
@@ -537,25 +558,40 @@ public class ServerPagesBundle extends UniqueGuiceyBundle {
         }
 
         /**
-         * Add additional resources location. Useful if you need to serve files from multiple folders.
+         * Add additional assets location. Useful if you need to serve files from multiple folders.
          * From usage perspective, files from all registered resource paths are "copied" into one directory
          * and application could reference everything from "there".
          * <p>
-         * It is the same as separate extension registration with {@link ServerPagesBundle#extendApp(String, String)}.
+         * It is the same as separate extension registration with
+         * {@link ServerPagesBundle#extendAppAssets(String, String)}.
          * <p>
          * NOTE: extended paths are used in priority so some file exists on the same path, extended path will
          * "override" primary location.
          *
-         * @param paths resources path (in classpath)
+         * @param path assets classpath path
          * @return builder instance for chained calls
          */
-        public AppBuilder attachPaths(final String... paths) {
-            app.extendedResourceLocations.addAll(Arrays.asList(paths));
+        public AppBuilder attachAssets(final String path) {
+            app.extendedAssetLocations.add(path);
             return this;
         }
 
         /**
-         * Shortcut for {@code #addResourcesLocation("META-INF/resources/webjars/")}).
+         * Essentially the same as {@link #attachAssets(String)}, but attach classpath assets to application
+         * sub url. As with root assets, multiple packages could be attached to url. Registration order is important:
+         * in case if multiple packages contains the same file, file from the latest registered package will be used.
+         *
+         * @param subUrl sub url to serve assets from
+         * @param path  assets classpath paths
+         * @return builder instance for chained calls
+         */
+        public AppBuilder attachAssetsForUrl(final String subUrl, final String path) {
+            app.extendedAssetLocations.add(subUrl, path);
+            return this;
+        }
+
+        /**
+         * Shortcut for {@code #attachAssets("META-INF/resources/webjars/")}).
          * Useful if you want to use resources from webjars. All webjars package resources under the same path
          * (e.g. META-INF/resources/webjars/jquery/3.4.1/dist/jquery.min.js), so after enabling webjars support
          * you can reference any resource from webjar (in classpath) (e.g. as
@@ -564,7 +600,7 @@ public class ServerPagesBundle extends UniqueGuiceyBundle {
          * @return builder instance for chained calls
          */
         public AppBuilder attachWebjars() {
-            return attachPaths("META-INF/resources/webjars/");
+            return attachAssets("META-INF/resources/webjars/");
         }
 
         /**

@@ -6,7 +6,7 @@ import ru.vyarus.guicey.gsp.ServerPagesBundle;
 
 /**
  * Bundle for extending (or overriding) registered server pages app resources (through
- * {@link ServerPagesBundle#extendApp(String, String)}.
+ * {@link ServerPagesBundle#extendAppAssets(String, String)}.
  * <p>
  * NOTE: global views support must be registered before this bundle!
  *
@@ -16,11 +16,13 @@ import ru.vyarus.guicey.gsp.ServerPagesBundle;
 public class ServerPagesAppExtensionBundle implements GuiceyBundle {
 
     private final String name;
-    private final String resourcePath;
+    private final String mapping;
+    private final String assetsPath;
 
-    public ServerPagesAppExtensionBundle(final String name, final String resourcePath) {
+    public ServerPagesAppExtensionBundle(final String name, final String mapping, final String assetsPath) {
         this.name = name;
-        this.resourcePath = resourcePath;
+        this.mapping = mapping;
+        this.assetsPath = assetsPath;
     }
 
     @Override
@@ -28,7 +30,7 @@ public class ServerPagesAppExtensionBundle implements GuiceyBundle {
         final GlobalConfig config = bootstrap.sharedStateOrFail(ServerPagesBundle.class,
                 "Either server pages support bundle was not installed (use %s.builder() to create bundle) "
                         + " or it was installed after '%s' application extension bundle (%s)",
-                ServerPagesBundle.class.getSimpleName(), name, resourcePath);
-        config.extendLocation(name, resourcePath);
+                ServerPagesBundle.class.getSimpleName(), name, assetsPath);
+        config.extendLocation(name, mapping, assetsPath);
     }
 }
