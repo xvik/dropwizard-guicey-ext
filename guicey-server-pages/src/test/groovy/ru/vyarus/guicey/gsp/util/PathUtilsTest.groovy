@@ -132,4 +132,19 @@ class PathUtilsTest extends Specification {
         'foo . bar'   | 'foo/bar/'
         '  foo.bar  ' | 'foo/bar/'
     }
+
+    def "Check to relative path"() {
+
+        expect:
+        PathUtils.toRelativePath(path) == res
+
+        where:
+        path          | res
+        '/'           | ''
+        ''            | ''
+        '/foo'        | 'foo'
+        '  /foo/  '   | 'foo/'
+        '/foo\\bar'   | 'foo/bar'
+        '/foo/bar'    | 'foo/bar'
+    }
 }

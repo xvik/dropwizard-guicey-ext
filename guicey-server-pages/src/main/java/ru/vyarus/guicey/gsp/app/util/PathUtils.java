@@ -100,6 +100,17 @@ public final class PathUtils {
     }
 
     /**
+     * Method used to cleanup leading slash to convert path into relative if it starts from slash. This is important
+     * for html pages with base tag declared: relative paths correctly resolved relative to application root.
+     *
+     * @param path path to make relative
+     * @return relative path (without leading slash)
+     */
+    public static String toRelativePath(final String path) {
+        return TRIM_SLASH.trimLeadingFrom(cleanUpPath(path));
+    }
+
+    /**
      * Returned location path does not contain leading slash because its not needed for direct classpath resource
      * loading.
      *
