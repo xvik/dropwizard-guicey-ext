@@ -5,6 +5,8 @@ import io.dropwizard.views.ViewRenderer;
 import ru.vyarus.dropwizard.guice.module.installer.bundle.GuiceyBootstrap;
 import ru.vyarus.dropwizard.guice.module.installer.bundle.GuiceyBundle;
 import ru.vyarus.dropwizard.guice.module.installer.bundle.GuiceyEnvironment;
+import ru.vyarus.dropwizard.guice.module.lifecycle.GuiceyLifecycleAdapter;
+import ru.vyarus.dropwizard.guice.module.lifecycle.event.run.BundlesStartedEvent;
 import ru.vyarus.guicey.gsp.ServerPagesBundle;
 
 import java.util.ArrayList;
@@ -44,7 +46,14 @@ public class ServerPagesAppBundle implements GuiceyBundle {
     @Override
     public void run(final GuiceyEnvironment environment) {
         validateRequirements();
-        app.setup(environment.environment(), config);
+        environment.listen(new GuiceyLifecycleAdapter() {
+            @Override
+            protected void bundlesStarted(final BundlesStartedEvent event) {
+                // init app after all bundles to be sure all extensions applied
+                app.setup(environment.environment(), config);
+            }
+        });
+
     }
 
     private void validateRequirements() {
