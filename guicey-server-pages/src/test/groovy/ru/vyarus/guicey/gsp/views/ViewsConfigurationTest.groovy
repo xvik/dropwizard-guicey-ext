@@ -7,20 +7,20 @@ import io.dropwizard.setup.Bootstrap
 import io.dropwizard.setup.Environment
 import ru.vyarus.dropwizard.guice.GuiceBundle
 import ru.vyarus.dropwizard.guice.test.spock.UseDropwizardApp
+import ru.vyarus.guicey.gsp.AbstractTest
 import ru.vyarus.guicey.gsp.ServerPagesBundle
-import spock.lang.Specification
 
 /**
  * @author Vyacheslav Rusakov
  * @since 26.01.2019
  */
 @UseDropwizardApp(value = App, config = 'src/test/resources/views.yml')
-class ViewsConfigurationTest extends Specification {
+class ViewsConfigurationTest extends AbstractTest {
 
     def "Check views configuration binding"() {
 
         when: "accessing direct template"
-        def res = new URL("http://localhost:8080/template.ftl").text
+        def res = getHtml("/template.ftl")
         then: "rendered template"
         res.contains("page: /template.ftl")
     }

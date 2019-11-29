@@ -7,9 +7,9 @@ import io.dropwizard.setup.Environment
 import ru.vyarus.dropwizard.guice.GuiceBundle
 import ru.vyarus.dropwizard.guice.test.spock.ConfigOverride
 import ru.vyarus.dropwizard.guice.test.spock.UseDropwizardApp
+import ru.vyarus.guicey.gsp.AbstractTest
 import ru.vyarus.guicey.gsp.ServerPagesBundle
 import ru.vyarus.guicey.gsp.views.template.Template
-import spock.lang.Specification
 
 import javax.ws.rs.GET
 import javax.ws.rs.Path
@@ -21,12 +21,12 @@ import javax.ws.rs.Path
 @UseDropwizardApp(value = App, configOverride = [
         @ConfigOverride(key = "server.rootPath", value = "/rest/*")
 ])
-class RestPathAsErrorPageTest extends Specification {
+class RestPathAsErrorPageTest extends AbstractTest {
 
     def "Check index page as path"() {
 
         when: "accessing not existing asset"
-        def res = new URL("http://localhost:8080/notexisting.html").text
+        def res = getHtml("/notexisting.html")
         then: "error page"
         res.contains("error page from rest")
     }

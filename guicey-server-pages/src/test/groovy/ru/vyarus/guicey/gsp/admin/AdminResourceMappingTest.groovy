@@ -7,9 +7,9 @@ import io.dropwizard.setup.Environment
 import ru.vyarus.dropwizard.guice.GuiceBundle
 import ru.vyarus.dropwizard.guice.test.spock.ConfigOverride
 import ru.vyarus.dropwizard.guice.test.spock.UseDropwizardApp
+import ru.vyarus.guicey.gsp.AbstractTest
 import ru.vyarus.guicey.gsp.ServerPagesBundle
 import ru.vyarus.guicey.gsp.support.app.SampleTemplateResource
-import spock.lang.Specification
 
 /**
  * @author Vyacheslav Rusakov
@@ -18,12 +18,12 @@ import spock.lang.Specification
 @UseDropwizardApp(value = App, configOverride = [
         @ConfigOverride(key = "server.rootPath", value = "/rest/*")
 ])
-class AdminResourceMappingTest extends Specification {
+class AdminResourceMappingTest extends AbstractTest {
 
     def "Chek custom resource mapping"() {
 
         when: "accessing template through resource"
-        String res = new URL("http://localhost:8081/appp/sample/tt").text
+        String res = adminGetHtml("/appp/sample/tt")
         then: "template mapped"
         res.contains("name: tt")
 

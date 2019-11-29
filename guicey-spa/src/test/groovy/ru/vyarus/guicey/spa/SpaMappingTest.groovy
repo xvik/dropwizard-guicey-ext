@@ -21,29 +21,29 @@ import spock.lang.Specification
 @UseDropwizardApp(value = App, configOverride = [
         @ConfigOverride(key = "server.rootPath", value = "/rest/*")
 ])
-class SpaMappingTest extends Specification {
+class SpaMappingTest extends AbstractTest {
 
     def "Check spa mapped"() {
 
         when: "accessing app"
-        String res = new URL("http://localhost:8080/").text
+        String res = get("/")
         then: "index page"
         res.contains("Sample page")
 
         when: "accessing not existing page"
-        res = new URL("http://localhost:8080/some/").text
+        res = get("/some/")
         then: "ok"
         res.contains("Sample page")
 
         when: "accessing not existing resource"
-        new URL("http://localhost:8080/some.html").text
+        get("/some.html")
         then: "error"
         thrown(FileNotFoundException)
     }
 
     def "Check no cache header"() {
 
-        def http = new HTTPBuilder('http://localhost:8080/')
+        def http = new HTTPBuilder('http://localhost:8080/', ContentType.HTML)
 
         expect: "calling index"
         http.get(path: '/') { resp, reader ->

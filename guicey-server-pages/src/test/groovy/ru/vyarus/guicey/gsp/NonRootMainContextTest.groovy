@@ -7,7 +7,6 @@ import io.dropwizard.setup.Environment
 import ru.vyarus.dropwizard.guice.GuiceBundle
 import ru.vyarus.dropwizard.guice.test.spock.ConfigOverride
 import ru.vyarus.dropwizard.guice.test.spock.UseDropwizardApp
-import spock.lang.Specification
 
 /**
  * @author Vyacheslav Rusakov
@@ -17,27 +16,27 @@ import spock.lang.Specification
         @ConfigOverride(key = "server.rootPath", value = "/rest/*"),
         @ConfigOverride(key = "server.applicationContextPath", value = "/prefix/")
 ])
-class NonRootMainContextTest extends Specification {
+class NonRootMainContextTest extends AbstractTest {
 
     def "Check app mapped"() {
 
         when: "accessing app"
-        String res = new URL("http://localhost:8080/prefix/").text
+        String res = getHtml("/prefix/")
         then: "index page"
         res.contains("Sample page")
 
         when: "accessing direct file"
-        res = new URL("http://localhost:8080/prefix/index.html").text
+        res = getHtml("/prefix/index.html")
         then: "index page"
         res.contains("Sample page")
 
         when: "accessing resource"
-        res = new URL("http://localhost:8080/prefix/css/style.css").text
+        res = get("/prefix/css/style.css")
         then: "css"
         res.contains("/* sample page css */")
 
         when: "accessing direct template"
-        res = new URL("http://localhost:8080/prefix/template.ftl").text
+        res = getHtml("/prefix/template.ftl")
         then: "rendered template"
         res.contains("page: /prefix/template.ftl")
     }

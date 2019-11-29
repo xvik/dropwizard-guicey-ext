@@ -7,9 +7,9 @@ import io.dropwizard.setup.Environment
 import ru.vyarus.dropwizard.guice.GuiceBundle
 import ru.vyarus.dropwizard.guice.test.spock.ConfigOverride
 import ru.vyarus.dropwizard.guice.test.spock.UseDropwizardApp
+import ru.vyarus.guicey.gsp.AbstractTest
 import ru.vyarus.guicey.gsp.ServerPagesBundle
 import ru.vyarus.guicey.gsp.support.relative.RelativeTemplateResource
-import spock.lang.Specification
 
 /**
  * @author Vyacheslav Rusakov
@@ -18,22 +18,22 @@ import spock.lang.Specification
 @UseDropwizardApp(value = App, configOverride = [
         @ConfigOverride(key = "server.rootPath", value = "/rest/*")
 ])
-class RelativeTemplateResolutionTest extends Specification {
+class RelativeTemplateResolutionTest extends AbstractTest {
 
     def "Check relative templates"() {
 
         when: "template from annotation"
-        String res = new URL("http://localhost:8080/relative/direct").text
+        String res = getHtml("/relative/direct")
         then: "found"
         res.contains("name: app")
 
         when: "template relative to class"
-        res = new URL("http://localhost:8080/relative/relative").text
+        res = getHtml("/relative/relative")
         then: "found"
         res.contains("root name: app")
 
         when: "template relative to dir"
-        res = new URL("http://localhost:8080/relative/dir").text
+        res = getHtml("/relative/dir")
         then: "found"
         res.contains("page: /relative/dir")
     }

@@ -6,24 +6,23 @@ import io.dropwizard.setup.Bootstrap
 import io.dropwizard.setup.Environment
 import ru.vyarus.dropwizard.guice.GuiceBundle
 import ru.vyarus.dropwizard.guice.test.spock.UseDropwizardApp
-import spock.lang.Specification
 
 /**
  * @author Vyacheslav Rusakov
  * @since 05.04.2017
  */
 @UseDropwizardApp(value = App, config = 'src/test/resources/flat.yml')
-class FlatAdminMappingTest extends Specification {
+class FlatAdminMappingTest extends AbstractTest {
 
     def "Check spa mapped"() {
 
         when: "accessing app"
-        String res = new URL("http://localhost:8080/admin/app").text
+        String res = get("http://localhost:8080/admin/app")
         then: "index page"
         res.contains("Sample page")
 
         when: "accessing not existing page"
-        res = new URL("http://localhost:8080/admin/app/some").text
+        res = get("http://localhost:8080/admin/app/some")
         then: "error"
         res.contains("Sample page")
 

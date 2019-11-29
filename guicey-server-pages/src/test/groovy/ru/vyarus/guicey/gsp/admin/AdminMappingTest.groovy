@@ -7,8 +7,8 @@ import io.dropwizard.setup.Environment
 import ru.vyarus.dropwizard.guice.GuiceBundle
 import ru.vyarus.dropwizard.guice.test.spock.ConfigOverride
 import ru.vyarus.dropwizard.guice.test.spock.UseDropwizardApp
+import ru.vyarus.guicey.gsp.AbstractTest
 import ru.vyarus.guicey.gsp.ServerPagesBundle
-import spock.lang.Specification
 
 /**
  * @author Vyacheslav Rusakov
@@ -17,27 +17,27 @@ import spock.lang.Specification
 @UseDropwizardApp(value = App, configOverride = [
         @ConfigOverride(key = "server.rootPath", value = "/rest/*")
 ])
-class AdminMappingTest extends Specification {
+class AdminMappingTest extends AbstractTest {
 
     def "Check app mapped"() {
 
         when: "accessing app"
-        String res = new URL("http://localhost:8081/appp/").text
+        String res = adminGetHtml("/appp/")
         then: "index page"
         res.contains("Sample page")
 
         when: "accessing direct file"
-        res = new URL("http://localhost:8081/appp/index.html").text
+        res = adminGetHtml("/appp/index.html")
         then: "index page"
         res.contains("Sample page")
 
         when: "accessing resource"
-        res = new URL("http://localhost:8081/appp/css/style.css").text
+        res = adminGet("/appp/css/style.css")
         then: "css"
         res.contains("/* sample page css */")
 
         when: "accessing direct template"
-        res = new URL("http://localhost:8081/appp/template.ftl").text
+        res = adminGetHtml("/appp/template.ftl")
         then: "rendered template"
         res.contains("page: /appp/template.ftl")
     }

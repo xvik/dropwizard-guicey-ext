@@ -8,7 +8,6 @@ import ru.vyarus.dropwizard.guice.GuiceBundle
 import ru.vyarus.dropwizard.guice.test.spock.ConfigOverride
 import ru.vyarus.dropwizard.guice.test.spock.UseDropwizardApp
 import ru.vyarus.guicey.gsp.views.template.Template
-import spock.lang.Specification
 
 import javax.ws.rs.GET
 import javax.ws.rs.Path
@@ -20,12 +19,12 @@ import javax.ws.rs.Path
 @UseDropwizardApp(value = App, configOverride = [
         @ConfigOverride(key = "server.rootPath", value = "/rest/*")
 ])
-class RestPathAsIndexPageTest extends Specification {
+class RestPathAsIndexPageTest extends AbstractTest {
 
     def "Check index page as path"() {
 
         when: "accessing app"
-        String res = new URL("http://localhost:8080/").text
+        String res = getHtml("/")
         then: "index page"
         res.contains("root page from rest")
     }

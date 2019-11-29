@@ -7,8 +7,6 @@ import io.dropwizard.setup.Environment
 import ru.vyarus.dropwizard.guice.GuiceBundle
 import ru.vyarus.dropwizard.guice.test.spock.ConfigOverride
 import ru.vyarus.dropwizard.guice.test.spock.UseDropwizardApp
-import spock.lang.Specification
-
 
 /**
  * @author Vyacheslav Rusakov
@@ -17,12 +15,12 @@ import spock.lang.Specification
 @UseDropwizardApp(value = App, configOverride = [
         @ConfigOverride(key = "server.rootPath", value = "/rest/*")
 ])
-class CustomIndexTest extends Specification {
+class CustomIndexTest extends AbstractTest {
 
     def "Check custom index"() {
 
         when: "accessing app"
-        String res = new URL("http://localhost:8080/").text
+        String res = get("/")
         then: "index page"
         res.contains("Other index")
     }

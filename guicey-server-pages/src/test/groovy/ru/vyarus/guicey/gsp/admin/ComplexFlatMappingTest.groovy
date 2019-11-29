@@ -7,8 +7,8 @@ import io.dropwizard.setup.Environment
 import ru.vyarus.dropwizard.guice.GuiceBundle
 import ru.vyarus.dropwizard.guice.test.spock.ConfigOverride
 import ru.vyarus.dropwizard.guice.test.spock.UseDropwizardApp
+import ru.vyarus.guicey.gsp.AbstractTest
 import ru.vyarus.guicey.gsp.ServerPagesBundle
-import spock.lang.Specification
 
 /**
  * @author Vyacheslav Rusakov
@@ -19,27 +19,27 @@ import spock.lang.Specification
         @ConfigOverride(key = "server.applicationContextPath", value = "/prefix"),
         @ConfigOverride(key = "server.adminContextPath", value = "/admin")
 ])
-class ComplexFlatMappingTest extends Specification {
+class ComplexFlatMappingTest extends AbstractTest {
 
     def "Check app mapped"() {
 
         when: "accessing app"
-        String res = new URL("http://localhost:8081/admin/ap/").text
+        String res = adminGetHtml("/admin/ap/")
         then: "index page"
         res.contains("Sample page")
 
         when: "accessing direct file"
-        res = new URL("http://localhost:8081/admin/ap/index.html").text
+        res = adminGetHtml("/admin/ap/index.html")
         then: "index page"
         res.contains("Sample page")
 
         when: "accessing resource"
-        res = new URL("http://localhost:8081/admin/ap/css/style.css").text
+        res = adminGet("/admin/ap/css/style.css")
         then: "css"
         res.contains("/* sample page css */")
 
         when: "accessing direct template"
-        res = new URL("http://localhost:8081/admin/ap/template.ftl").text
+        res = adminGetHtml("/admin/ap/template.ftl")
         then: "rendered template"
         res.contains("page: /admin/ap/template.ftl")
     }

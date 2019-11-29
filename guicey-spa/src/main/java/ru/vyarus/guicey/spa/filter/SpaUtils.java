@@ -38,7 +38,9 @@ public final class SpaUtils {
     }
 
     /**
-     * Checks if provided request expects html response (by accept header).
+     * Checks if provided request expects html response (by accept header). Did not consider wildcard type
+     * ({@literal *}/{@literal *})) as html request, because browser request resources (like fonts) with such type.
+     * Only direct text/html type is recognized (assuming human request).
      *
      * @param req request instance
      * @return true if request expect html, false otherwise
@@ -49,7 +51,8 @@ public final class SpaUtils {
             // accept header could contain multiple mime types
             for (String type : accept.split(",")) {
                 try {
-                    if (MediaType.valueOf(type).isCompatible(MediaType.TEXT_HTML_TYPE)) {
+                    // only exact accept, no wildcard
+                    if (MediaType.valueOf(type).equals(MediaType.TEXT_HTML_TYPE)) {
                         return true;
                     }
                 } catch (Exception ex) {

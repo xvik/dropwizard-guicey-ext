@@ -7,7 +7,6 @@ import io.dropwizard.setup.Environment
 import ru.vyarus.dropwizard.guice.GuiceBundle
 import ru.vyarus.dropwizard.guice.test.spock.ConfigOverride
 import ru.vyarus.dropwizard.guice.test.spock.UseDropwizardApp
-import spock.lang.Specification
 
 /**
  * @author Vyacheslav Rusakov
@@ -16,25 +15,25 @@ import spock.lang.Specification
 @UseDropwizardApp(value = App, configOverride = [
         @ConfigOverride(key = "server.rootPath", value = "/rest/*")
 ])
-class FilePatternChangeTest extends Specification {
+class FilePatternChangeTest extends AbstractTest {
 
     def "Check changed file detection regex"() {
 
         when: "accessing css resource"
-        String res = new URL("http://localhost:8080/css/style.css").text
+        String res = get("/css/style.css")
         then: "ok"
         res.contains("sample page css")
 
         when: "accessing template page"
-        res = new URL("http://localhost:8080/template.ftl").text
+        res = getHtml("/template.ftl")
         then: "template rendered"
         res == "page: /template.ftl"
 
         when: "accessing html page"
-        new URL("http://localhost:8080/index.html").text
+        getHtml("/index.html")
         then: "failed to render template"
         def ex = thrown(IOException)
-        ex.message == "Server returned HTTP response code: 500 for URL: http://localhost:8080/index.html"
+        ex.message == "status code: 500, reason phrase: Internal Server Error"
     }
 
     static class App extends Application<Configuration> {

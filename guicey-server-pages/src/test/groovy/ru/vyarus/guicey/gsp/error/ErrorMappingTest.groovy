@@ -7,9 +7,9 @@ import io.dropwizard.setup.Environment
 import ru.vyarus.dropwizard.guice.GuiceBundle
 import ru.vyarus.dropwizard.guice.test.spock.ConfigOverride
 import ru.vyarus.dropwizard.guice.test.spock.UseDropwizardApp
+import ru.vyarus.guicey.gsp.AbstractTest
 import ru.vyarus.guicey.gsp.ServerPagesBundle
 import ru.vyarus.guicey.gsp.support.app.SampleTemplateResource
-import spock.lang.Specification
 
 /**
  * @author Vyacheslav Rusakov
@@ -18,37 +18,37 @@ import spock.lang.Specification
 @UseDropwizardApp(value = App, configOverride = [
         @ConfigOverride(key = "server.rootPath", value = "/rest/*")
 ])
-class ErrorMappingTest extends Specification {
+class ErrorMappingTest extends AbstractTest {
 
     def "Check error mapping"() {
 
         when: "accessing not existing asset"
-        def res = new URL("http://localhost:8080/notexisting.html").text
+        def res = getHtml("/notexisting.html")
         then: "error page"
         res.contains("custom error page")
 
         when: "accessing not existing template"
-        res = new URL("http://localhost:8080/notexisting.ftl").text
+        res = getHtml("/notexisting.ftl")
         then: "error page"
         res.contains("custom error page")
 
         when: "accessing not existing path"
-        res = new URL("http://localhost:8080/notexisting/").text
+        res = getHtml("/notexisting/")
         then: "error page"
         res.contains("custom error page")
 
         when: "error processing template"
-        res = new URL("http://localhost:8080/sample/error").text
+        res = getHtml("/sample/error")
         then: "error page"
         res.contains("custom error page")
 
         when: "error processing template"
-        res = new URL("http://localhost:8080/sample/error2").text
+        res = getHtml("/sample/error2")
         then: "error page"
         res.contains("custom error page")
 
         when: "direct 404 rest response"
-        res = new URL("http://localhost:8080/sample/notfound").text
+        res = getHtml("/sample/notfound")
         then: "error page"
         res.contains("custom error page")
     }

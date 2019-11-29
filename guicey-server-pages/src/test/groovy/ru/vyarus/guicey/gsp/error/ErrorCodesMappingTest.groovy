@@ -7,9 +7,9 @@ import io.dropwizard.setup.Environment
 import ru.vyarus.dropwizard.guice.GuiceBundle
 import ru.vyarus.dropwizard.guice.test.spock.ConfigOverride
 import ru.vyarus.dropwizard.guice.test.spock.UseDropwizardApp
+import ru.vyarus.guicey.gsp.AbstractTest
 import ru.vyarus.guicey.gsp.ServerPagesBundle
 import ru.vyarus.guicey.gsp.views.template.Template
-import spock.lang.Specification
 
 import javax.ws.rs.GET
 import javax.ws.rs.Path
@@ -23,32 +23,32 @@ import javax.ws.rs.core.Response
 @UseDropwizardApp(value = App, configOverride = [
         @ConfigOverride(key = "server.rootPath", value = "/rest/*")
 ])
-class ErrorCodesMappingTest extends Specification {
+class ErrorCodesMappingTest extends AbstractTest {
 
     def "Check error mapping"() {
 
         when: "error processing template"
-        def res = new URL("http://localhost:8080/code/403").text
+        def res = getHtml("/code/403")
         then: "error page"
         res.contains("Error code: 403")
 
         when: "error processing template"
-        res = new URL("http://localhost:8080/code/405").text
+        res = getHtml("/code/405")
         then: "error page"
         res.contains("Error code2: 405")
 
         when: "accessing not existing asset"
-        new URL("http://localhost:8080/notexisting.html").text
+        getHtml("/notexisting.html")
         then: "no error mapped"
         thrown(FileNotFoundException)
 
         when: "accessing not existing template"
-        new URL("http://localhost:8080/notexisting.ftl").text
+        getHtml("/notexisting.ftl")
         then: "no error mapped"
         thrown(FileNotFoundException)
 
         when: "error processing template"
-        new URL("http://localhost:8080/code/407").text
+        getHtml("/code/407")
         then: "no error mapped"
         thrown(IOException)
     }

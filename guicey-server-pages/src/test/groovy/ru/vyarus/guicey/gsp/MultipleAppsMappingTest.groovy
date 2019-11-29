@@ -9,7 +9,6 @@ import ru.vyarus.dropwizard.guice.test.spock.ConfigOverride
 import ru.vyarus.dropwizard.guice.test.spock.UseDropwizardApp
 import ru.vyarus.guicey.gsp.support.app.App2SampleResource
 import ru.vyarus.guicey.gsp.support.app.SampleTemplateResource
-import spock.lang.Specification
 
 /**
  * @author Vyacheslav Rusakov
@@ -18,32 +17,32 @@ import spock.lang.Specification
 @UseDropwizardApp(value = App, configOverride = [
         @ConfigOverride(key = "server.rootPath", value = "/rest/*")
 ])
-class MultipleAppsMappingTest extends Specification {
+class MultipleAppsMappingTest extends AbstractTest {
 
     def "Check app mapped"() {
 
         when: "accessing app"
-        String res = new URL("http://localhost:8080/app").text
+        String res = getHtml("/app")
         then: "index page"
         res.contains("Sample page")
 
         when: "accessing direct file"
-        res = new URL("http://localhost:8080/app/index.html").text
+        res = getHtml("/app/index.html")
         then: "index page"
         res.contains("Sample page")
 
         when: "accessing resource"
-        res = new URL("http://localhost:8080/app/css/style.css").text
+        res = get("/app/css/style.css")
         then: "css"
         res.contains("/* sample page css */")
 
         when: "accessing direct template"
-        res = new URL("http://localhost:8080/app/template.ftl").text
+        res = getHtml("/app/template.ftl")
         then: "rendered template"
         res.contains("page: /app/template.ftl")
 
         when: "accessing template through resource"
-        res = new URL("http://localhost:8080/app/sample/tt").text
+        res = getHtml("/app/sample/tt")
         then: "template mapped"
         res.contains("name: tt")
     }
@@ -51,27 +50,27 @@ class MultipleAppsMappingTest extends Specification {
     def "Check app2 mapped"() {
 
         when: "accessing app"
-        String res = new URL("http://localhost:8080/app2").text
+        String res = getHtml("/app2")
         then: "index page"
         res.contains("Sample page")
 
         when: "accessing direct file"
-        res = new URL("http://localhost:8080/app2/index.html").text
+        res = getHtml("/app2/index.html")
         then: "index page"
         res.contains("Sample page")
 
         when: "accessing resource"
-        res = new URL("http://localhost:8080/app2/css/style.css").text
+        res = get("/app2/css/style.css")
         then: "css"
         res.contains("/* sample page css */")
 
         when: "accessing direct template"
-        res = new URL("http://localhost:8080/app2/template.ftl").text
+        res = getHtml("/app2/template.ftl")
         then: "rendered template"
         res.contains("page: /app2/template.ftl")
 
         when: "accessing template through resource"
-        res = new URL("http://localhost:8080/app2/sample/tt").text
+        res = getHtml("/app2/sample/tt")
         then: "template mapped"
         res.contains("name: tt")
     }

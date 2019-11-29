@@ -7,8 +7,6 @@ import io.dropwizard.setup.Environment
 import ru.vyarus.dropwizard.guice.GuiceBundle
 import ru.vyarus.dropwizard.guice.test.spock.ConfigOverride
 import ru.vyarus.dropwizard.guice.test.spock.UseDropwizardApp
-import spock.lang.Specification
-
 
 /**
  * @author Vyacheslav Rusakov
@@ -17,17 +15,17 @@ import spock.lang.Specification
 @UseDropwizardApp(value = App, configOverride = [
         @ConfigOverride(key = "server.rootPath", value = "/rest/*")
 ])
-class CustomRegexTest extends Specification {
+class CustomRegexTest extends AbstractTest {
 
     def "Check custom regex"() {
 
         when: "accessing html"
-        String res = new URL("http://localhost:8080/some/some.html").text
+        String res = get("/some/some.html")
         then: "index page"
         res.contains("Sample page")
 
         when: "accessing js"
-        new URL("http://localhost:8080/some/some.js").text
+        get("/some/some.js")
         then: "index page"
         thrown(FileNotFoundException)
     }

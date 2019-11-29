@@ -6,20 +6,20 @@ import io.dropwizard.setup.Bootstrap
 import io.dropwizard.setup.Environment
 import ru.vyarus.dropwizard.guice.GuiceBundle
 import ru.vyarus.dropwizard.guice.test.spock.UseDropwizardApp
+import ru.vyarus.guicey.gsp.AbstractTest
 import ru.vyarus.guicey.gsp.ServerPagesBundle
-import spock.lang.Specification
 
 /**
  * @author Vyacheslav Rusakov
  * @since 29.11.2019
  */
 @UseDropwizardApp(value = App, config = 'src/test/resources/conf.yml')
-class MappedAssetsTest extends Specification {
+class MappedAssetsTest extends AbstractTest {
 
     def "Check assets mapped"() {
 
         when: "accessing mapped url"
-        String res = new URL("http://localhost:8080/sample/ext.ftl").text
+        String res = getHtml("/sample/ext.ftl")
         then: "rendered template"
         res.contains("ext template")
     }

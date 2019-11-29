@@ -7,10 +7,10 @@ import io.dropwizard.setup.Environment
 import ru.vyarus.dropwizard.guice.GuiceBundle
 import ru.vyarus.dropwizard.guice.test.spock.ConfigOverride
 import ru.vyarus.dropwizard.guice.test.spock.UseDropwizardApp
+import ru.vyarus.guicey.gsp.AbstractTest
 import ru.vyarus.guicey.gsp.ServerPagesBundle
 import ru.vyarus.guicey.gsp.views.template.ManualErrorHandling
 import ru.vyarus.guicey.gsp.views.template.Template
-import spock.lang.Specification
 
 import javax.ws.rs.GET
 import javax.ws.rs.Path
@@ -25,17 +25,17 @@ import javax.ws.rs.ext.Provider
 @UseDropwizardApp(value = App, configOverride = [
         @ConfigOverride(key = "server.rootPath", value = "/rest/*")
 ])
-class ExceptionMapperInterceptionTest extends Specification {
+class ExceptionMapperInterceptionTest extends AbstractTest {
 
     def "Check error mapping"() {
 
         when: "accessing throwing resource"
-        def res = new URL("http://localhost:8080/err").text
+        def res = getHtml("/err")
         then: "gsp error page"
         res == "Error: WebApplicationException"
 
         when: "accessing throwing resource with disabled error mechanism"
-        res = new URL("http://localhost:8080/err2").text
+        res = getHtml("/err2")
         then: "manual error handling"
         res == "handled!"
     }

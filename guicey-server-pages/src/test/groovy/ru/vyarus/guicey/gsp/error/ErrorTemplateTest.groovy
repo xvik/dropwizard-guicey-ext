@@ -6,46 +6,46 @@ import io.dropwizard.setup.Bootstrap
 import io.dropwizard.setup.Environment
 import ru.vyarus.dropwizard.guice.GuiceBundle
 import ru.vyarus.dropwizard.guice.test.spock.UseDropwizardApp
+import ru.vyarus.guicey.gsp.AbstractTest
 import ru.vyarus.guicey.gsp.ServerPagesBundle
 import ru.vyarus.guicey.gsp.support.app.SampleTemplateResource
-import spock.lang.Specification
 
 /**
  * @author Vyacheslav Rusakov
  * @since 23.01.2019
  */
 @UseDropwizardApp(value = App, config = 'src/test/resources/conf.yml')
-class ErrorTemplateTest extends Specification {
+class ErrorTemplateTest extends AbstractTest {
 
     def "Check error mapping"() {
 
         when: "accessing not existing asset"
-        def res = new URL("http://localhost:8080/notexisting.html").text
+        def res = getHtml("/notexisting.html")
         then: "error page"
         res.contains("Error: AssetError")
 
         when: "accessing not existing template"
-        res = new URL("http://localhost:8080/notexisting.ftl").text
+        res = getHtml("/notexisting.ftl")
         then: "error page"
         res.contains("Error: NotFoundException")
 
         when: "accessing not existing path"
-        res = new URL("http://localhost:8080/notexisting/").text
+        res = getHtml("/notexisting/")
         then: "error page"
         res.contains("Error: NotFoundException")
 
         when: "error processing template"
-        res = new URL("http://localhost:8080/sample/error").text
+        res = getHtml("/sample/error")
         then: "error page"
         res.contains("Error: WebApplicationException")
 
         when: "error processing template"
-        res = new URL("http://localhost:8080/sample/error2").text
+        res = getHtml("/sample/error2")
         then: "error page"
         res.contains("Error: WebApplicationException")
 
         when: "direct 404 rest response"
-        res = new URL("http://localhost:8080/sample/notfound").text
+        res = getHtml("/sample/notfound")
         then: "error page"
         res.contains("Error: TemplateRestCodeError")
     }

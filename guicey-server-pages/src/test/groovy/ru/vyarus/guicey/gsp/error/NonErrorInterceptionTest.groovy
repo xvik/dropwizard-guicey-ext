@@ -1,5 +1,6 @@
 package ru.vyarus.guicey.gsp.error
 
+import groovyx.net.http.ContentType
 import groovyx.net.http.HTTPBuilder
 import io.dropwizard.Application
 import io.dropwizard.Configuration
@@ -26,7 +27,7 @@ class NonErrorInterceptionTest extends Specification {
 
     def "Check non error forwarding"() {
 
-        def http = new HTTPBuilder('http://localhost:8080/')
+        def http = new HTTPBuilder('http://localhost:8080/', ContentType.HTML)
 
         expect: "calling for non 200 response"
         http.get(path: '/res') {

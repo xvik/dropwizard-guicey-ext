@@ -7,7 +7,6 @@ import io.dropwizard.setup.Environment
 import ru.vyarus.dropwizard.guice.GuiceBundle
 import ru.vyarus.dropwizard.guice.test.spock.ConfigOverride
 import ru.vyarus.dropwizard.guice.test.spock.UseDropwizardApp
-import spock.lang.Specification
 
 /**
  * @author Vyacheslav Rusakov
@@ -17,12 +16,12 @@ import spock.lang.Specification
         @ConfigOverride(key = "server.rootPath", value = "/rest/*"),
         @ConfigOverride(key = "server.applicationContextPath", value = "/prefix/")
 ])
-class NonRootIndexTemplate extends Specification {
+class NonRootIndexTemplate extends AbstractTest {
 
     def "Check app mapped"() {
 
         when: "accessing root"
-        String res = new URL("http://localhost:8080/prefix/").text
+        String res = getHtml("/prefix/")
         then: "index page"
         res.contains("page: /")
 

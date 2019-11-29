@@ -11,7 +11,10 @@
     - EventBusBundle declared as unique to prevent side effects of duplicate registrations    
 * [spa]
     - (breaking) SpaBundle is guicey bundle now
-    - (breaking) Removed `SpaBundle.register(GuiceyBundle)` as redundant    
+    - (breaking) Removed `SpaBundle.register(GuiceyBundle)` as redundant
+    - (breaking) Fix spa redirection detection for wildcard (\*/*) Accept requests: 
+        html request reqcognized now only by direct text/html 
+        (ignoring wildcard used by browsers for resources loading)             
 * [server-pages]
     - (breaking) ServerPagesBundle and application bundle are guicey bundles now
     - (breaking) `ServerPagesBundle.extendApp()` returns bundle builder used to extend application and resulted 
@@ -22,7 +25,8 @@
     - Add shortcut for multiple paths registration on application:
         `ServerPagesBundle.app(..).attachAssets(..)`     
     - Allow package notion for resources registration (com.company.project)
-    - Allow resources registration on specific sub url    
+    - Allow resources registration on specific sub url
+    - Fix error page render instead of asset 404 error (during browser resource call)    
 * [jdbi3]
     - JdbiBundle declared as unique (it will not work with multiple instances)
     - Detect when repository base class is also annotated with @JdbiRepository to prevent confusing errors (#4)

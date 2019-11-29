@@ -6,40 +6,40 @@ import io.dropwizard.setup.Bootstrap
 import io.dropwizard.setup.Environment
 import ru.vyarus.dropwizard.guice.GuiceBundle
 import ru.vyarus.dropwizard.guice.test.spock.UseDropwizardApp
+import ru.vyarus.guicey.gsp.AbstractTest
 import ru.vyarus.guicey.gsp.ServerPagesBundle
-import spock.lang.Specification
 
 /**
  * @author Vyacheslav Rusakov
  * @since 06.02.2019
  */
 @UseDropwizardApp(value = App, config = 'src/test/resources/conf.yml')
-class ExtensionForAppRegisteredInGuiceyTest extends Specification {
+class ExtensionForAppRegisteredInGuiceyTest extends AbstractTest {
 
     def "Check app mapped"() {
 
         when: "accessing app"
-        String res = new URL("http://localhost:8080/").text
+        String res = getHtml("/")
         then: "index page"
         res.contains("overridden sample page")
 
         when: "accessing direct file"
-        res = new URL("http://localhost:8080/index.html").text
+        res = getHtml("/index.html")
         then: "index page"
         res.contains("overridden sample page")
 
         when: "accessing resource"
-        res = new URL("http://localhost:8080/css/style.css").text
+        res = get("/css/style.css")
         then: "css"
         res.contains("/* sample page css */")
 
         when: "accessing direct template"
-        res = new URL("http://localhost:8080/template.ftl").text
+        res = getHtml("/template.ftl")
         then: "rendered template"
         res.contains("page: /template.ftl")
 
         when: "accessing direct ext template"
-        res = new URL("http://localhost:8080/ext.ftl").text
+        res = getHtml("/ext.ftl")
         then: "rendered template"
         res.contains("ext template")
     }

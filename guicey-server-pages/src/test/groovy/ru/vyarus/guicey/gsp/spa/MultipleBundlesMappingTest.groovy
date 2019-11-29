@@ -1,6 +1,7 @@
 package ru.vyarus.guicey.gsp.spa
 
 import com.google.common.net.HttpHeaders
+import groovyx.net.http.ContentType
 import groovyx.net.http.HTTPBuilder
 import io.dropwizard.Application
 import io.dropwizard.Configuration
@@ -9,8 +10,8 @@ import io.dropwizard.setup.Environment
 import ru.vyarus.dropwizard.guice.GuiceBundle
 import ru.vyarus.dropwizard.guice.test.spock.ConfigOverride
 import ru.vyarus.dropwizard.guice.test.spock.UseDropwizardApp
+import ru.vyarus.guicey.gsp.AbstractTest
 import ru.vyarus.guicey.gsp.ServerPagesBundle
-import spock.lang.Specification
 
 /**
  * @author Vyacheslav Rusakov
@@ -19,44 +20,44 @@ import spock.lang.Specification
 @UseDropwizardApp(value = App, configOverride = [
         @ConfigOverride(key = "server.rootPath", value = "/rest/*")
 ])
-class MultipleBundlesMappingTest extends Specification {
+class MultipleBundlesMappingTest extends AbstractTest {
 
     def "Check spa mappings"() {
 
         when: "first"
-        String res = new URL("http://localhost:8080/1").text
+        String res = getHtml("/1")
         then: "index page"
         res.contains("Sample page")
 
         when: "second"
-        res = new URL("http://localhost:8080/2").text
+        res = getHtml("/2")
         then: "index page"
         res.contains("Sample page")
 
         when: "admin first"
-        res = new URL("http://localhost:8081/a1").text
+        res = adminGetHtml("/a1")
         then: "index page"
         res.contains("Sample page")
 
         when: "admin second"
-        res = new URL("http://localhost:8081/a2").text
+        res = adminGetHtml("/a2")
         then: "index page"
         res.contains("Sample page")
 
 
         when: "accessing not existing page"
-        res = new URL("http://localhost:8080/2/some/").text
+        res = getHtml("/2/some/")
         then: "error"
         res.contains("Sample page")
 
         when: "accessing not existing admin page"
-        res = new URL("http://localhost:8081/a2/some/").text
+        res = adminGetHtml("/a2/some/")
         then: "error"
         res.contains("Sample page")
     }
 
     def "Check cache header"() {
-        def http = new HTTPBuilder('http://localhost:8080/')
+        def http = new HTTPBuilder('http://localhost:8080/', ContentType.HTML)
 
         expect: "calling index"
         http.get(path: '/1') { resp, reader ->

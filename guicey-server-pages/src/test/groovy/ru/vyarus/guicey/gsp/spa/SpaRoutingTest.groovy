@@ -11,6 +11,7 @@ import io.dropwizard.setup.Environment
 import ru.vyarus.dropwizard.guice.GuiceBundle
 import ru.vyarus.dropwizard.guice.test.spock.ConfigOverride
 import ru.vyarus.dropwizard.guice.test.spock.UseDropwizardApp
+import ru.vyarus.guicey.gsp.AbstractTest
 import ru.vyarus.guicey.gsp.ServerPagesBundle
 import spock.lang.Specification
 
@@ -21,29 +22,29 @@ import spock.lang.Specification
 @UseDropwizardApp(value = App, configOverride = [
         @ConfigOverride(key = "server.rootPath", value = "/rest/*")
 ])
-class SpaRoutingTest extends Specification {
+class SpaRoutingTest extends AbstractTest {
 
     def "Check spa mapped"() {
 
         when: "accessing app"
-        String res = new URL("http://localhost:8080/").text
+        String res = getHtml("/")
         then: "index page"
         res.contains("Sample page")
 
         when: "accessing not existing page"
-        res = new URL("http://localhost:8080/some/").text
+        res = getHtml("/some/")
         then: "ok"
         res.contains("Sample page")
 
         when: "accessing not existing resource"
-        new URL("http://localhost:8080/some.html").text
+        getHtml("/some.html")
         then: "error"
         thrown(FileNotFoundException)
     }
 
     def "Check no cache header"() {
 
-        def http = new HTTPBuilder('http://localhost:8080/')
+        def http = new HTTPBuilder('http://localhost:8080/', ContentType.HTML)
 
         expect: "calling index"
         http.get(path: '/') { resp, reader ->
@@ -106,7 +107,7 @@ class SpaRoutingTest extends Specification {
 
     def "Check non 404 error"() {
 
-        def http = new HTTPBuilder('http://localhost:8080/')
+        def http = new HTTPBuilder('http://localhost:8080/', ContentType.HTML)
 
         expect: "calling for cached content"
         http.get(path: '/index.html', headers: ['If-Modified-Since': 'Wed, 21 Oct 2215 07:28:00 GMT']) {

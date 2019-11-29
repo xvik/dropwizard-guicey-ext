@@ -1,7 +1,6 @@
 package ru.vyarus.guicey.spa
 
 import com.google.common.net.HttpHeaders
-import groovyx.net.http.HTTPBuilder
 import io.dropwizard.Application
 import io.dropwizard.Configuration
 import io.dropwizard.setup.Bootstrap
@@ -9,8 +8,6 @@ import io.dropwizard.setup.Environment
 import ru.vyarus.dropwizard.guice.GuiceBundle
 import ru.vyarus.dropwizard.guice.test.spock.ConfigOverride
 import ru.vyarus.dropwizard.guice.test.spock.UseDropwizardApp
-import spock.lang.Specification
-
 
 /**
  * @author Vyacheslav Rusakov
@@ -19,44 +16,44 @@ import spock.lang.Specification
 @UseDropwizardApp(value = App, configOverride = [
         @ConfigOverride(key = "server.rootPath", value = "/rest/*")
 ])
-class MultipleBundlesMappingTest extends Specification {
+class MultipleBundlesMappingTest extends AbstractTest {
 
     def "Check spa mappings"() {
 
         when: "first"
-        String res = new URL("http://localhost:8080/1").text
+        String res = get("/1")
         then: "index page"
         res.contains("Sample page")
 
         when: "second"
-        res = new URL("http://localhost:8080/2").text
+        res = get("/2")
         then: "index page"
         res.contains("Sample page")
 
         when: "admin first"
-        res = new URL("http://localhost:8081/a1").text
+        res = adminGet("/a1")
         then: "index page"
         res.contains("Sample page")
 
         when: "admin second"
-        res = new URL("http://localhost:8081/a2").text
+        res = adminGet("/a2")
         then: "index page"
         res.contains("Sample page")
 
 
         when: "accessing not existing page"
-        res = new URL("http://localhost:8080/2/some/").text
+        res = get("/2/some/")
         then: "error"
         res.contains("Sample page")
 
         when: "accessing not existing admin page"
-        res = new URL("http://localhost:8081/a2/some/").text
+        res = adminGet("/a2/some/")
         then: "error"
         res.contains("Sample page")
     }
 
     def "Check cache header"() {
-        def http = new HTTPBuilder('http://localhost:8080/')
+        def http = mainHttp
 
         expect: "calling index"
         http.get(path: '/1') { resp, reader ->
