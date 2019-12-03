@@ -7,7 +7,6 @@ import io.dropwizard.setup.Environment
 import ru.vyarus.dropwizard.guice.GuiceBundle
 import ru.vyarus.dropwizard.guice.test.spock.ConfigOverride
 import ru.vyarus.dropwizard.guice.test.spock.UseDropwizardApp
-import ru.vyarus.guicey.gsp.support.app.App2SampleResource
 import ru.vyarus.guicey.gsp.support.app.SampleTemplateResource
 
 /**
@@ -80,13 +79,16 @@ class MultipleAppsMappingTest extends AbstractTest {
         @Override
         void initialize(Bootstrap<Configuration> bootstrap) {
             bootstrap.addBundle(GuiceBundle.builder()
-                    .extensions(SampleTemplateResource, App2SampleResource)
+                    .extensions(SampleTemplateResource)
                     .bundles(
                             ServerPagesBundle.builder().build(),
                             ServerPagesBundle.app("app", "/app", "/app")
+                                    .mapViews("app")
                                     .indexPage("index.html")
                                     .build(),
                             ServerPagesBundle.app("app2", "/app", "/app2")
+                                    // use same rest as app
+                                    .mapViews("app")
                                     .indexPage("index.html")
                                     .build())
                     .build())

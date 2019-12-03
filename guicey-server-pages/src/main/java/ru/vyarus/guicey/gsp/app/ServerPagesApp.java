@@ -2,6 +2,7 @@ package ru.vyarus.guicey.gsp.app;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Multimap;
 import io.dropwizard.jetty.setup.ServletEnvironment;
 import io.dropwizard.setup.Environment;
@@ -19,7 +20,9 @@ import ru.vyarus.guicey.gsp.app.filter.redirect.ErrorRedirect;
 import ru.vyarus.guicey.gsp.app.filter.redirect.SpaSupport;
 import ru.vyarus.guicey.gsp.app.filter.redirect.TemplateRedirect;
 import ru.vyarus.guicey.gsp.app.rest.DirectTemplateResource;
-import ru.vyarus.guicey.gsp.app.rest.log.ResourcePath;
+import ru.vyarus.guicey.gsp.app.rest.log.RestPathsAnalyzer;
+import ru.vyarus.guicey.gsp.app.rest.mapping.ViewRestLookup;
+import ru.vyarus.guicey.gsp.app.rest.mapping.ViewRestSources;
 import ru.vyarus.guicey.gsp.app.util.PathUtils;
 import ru.vyarus.guicey.gsp.views.ViewRendererConfigurationModifier;
 import ru.vyarus.guicey.spa.SpaBundle;
@@ -27,8 +30,6 @@ import ru.vyarus.guicey.spa.SpaBundle;
 import javax.servlet.DispatcherType;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-
-import static ru.vyarus.guicey.spa.SpaBundle.SLASH;
 
 /**
  * Server pages application initialization logic.
@@ -48,8 +49,10 @@ public class ServerPagesApp {
 
     // delayed modifiers registration
     public Map<String, ViewRendererConfigurationModifier> viewsConfigModifiers = new HashMap<>();
-    // delayed resource paths registrations
+    // resources location registrations
     public AssetSources extendedAssetLocations = new AssetSources();
+    // view rest prefixes mappings
+    public ViewRestSources extendedViewPrefixes = new ViewRestSources();
 
     public final Map<Integer, String> errorPages = new TreeMap<>();
     public boolean mainContext;
@@ -71,6 +74,7 @@ public class ServerPagesApp {
     protected TemplateRedirect templateRedirect;
     // all locations, including all extensions
     protected AssetLookup assets;
+    protected ViewRestLookup views;
     private boolean started;
     private final Logger logger = LoggerFactory.getLogger(ServerPagesApp.class);
 
@@ -91,21 +95,20 @@ public class ServerPagesApp {
 
         assets = collectAssets(config);
         installAssetsServlet(context);
+        views = collectViews(config);
 
         // templates support
         final SpaSupport spa = new SpaSupport(spaSupport, fullUriPath, uriPath, spaNoRedirectRegex);
         templateRedirect = new TemplateRedirect(environment.getJerseyServletContainer(),
                 name,
                 fullUriPath,
+                views,
                 assets,
                 new ErrorRedirect(uriPath, errorPages, spa));
         installTemplatesSupportFilter(context, templateRedirect, spa, config.getRenderers());
 
         // Default direct templates rendering rest (dynamically registered to handle "$appName/*")
-        environment.jersey().getResourceConfig().registerResources(Resource.builder(DirectTemplateResource.class)
-                .path(SLASH + name)
-                .extended(false)
-                .build());
+        registerDirectTemplateHandler(environment);
     }
 
     /**
@@ -114,11 +117,11 @@ public class ServerPagesApp {
      *
      * @param restContext rest context mapping ( == main context mapping)
      * @param restMapping servlet mapping (under main context)
-     * @param paths       rest template paths belonging to application
+     * @param analyzer    rest analyzer
      */
-    public void initialize(final String restContext, final String restMapping, final Set<ResourcePath> paths) {
+    public void initialize(final String restContext, final String restMapping, final RestPathsAnalyzer analyzer) {
         templateRedirect.setRootPath(restContext, restMapping);
-        logger.info(AppReportBuilder.build(this, paths));
+        logger.info(AppReportBuilder.build(this, analyzer));
         started = true;
     }
 
@@ -131,7 +134,7 @@ public class ServerPagesApp {
 
     @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
     private AssetLookup collectAssets(final GlobalConfig config) {
-        final AssetSources ext = config.getExtensions(name);
+        final AssetSources ext = config.getAssetExtensions(name);
         if (ext != null) {
             extendedAssetLocations.merge(ext);
         }
@@ -150,6 +153,46 @@ public class ServerPagesApp {
 
         // process paths the same way as assets servlet does
         return new AssetLookup(mainAssetsPath, builder.build());
+    }
+
+    @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
+    private ViewRestLookup collectViews(final GlobalConfig config) {
+        final ViewRestSources ext = config.getViewExtensions(name);
+        if (ext != null) {
+            extendedViewPrefixes.merge(ext);
+        }
+
+        // use application name as default mapping prefix if root mapping not configured
+        // (neither directly nor by extension mechanism)
+        if (!extendedViewPrefixes.getPrefixes().containsKey("")) {
+            extendedViewPrefixes.map(name);
+        }
+
+        final ImmutableSortedMap.Builder<String, String> builder = ImmutableSortedMap
+                // order by size to correctly handle overlapped paths (e.g. /foo/bar checked before /foo)
+                .<String, String>orderedBy(Comparator.comparing(String::length).reversed())
+                .putAll(extendedViewPrefixes.getPrefixes());
+
+        // process paths the same way as assets servlet does
+        return new ViewRestLookup(builder.build());
+    }
+
+    private void registerDirectTemplateHandler(final Environment environment) {
+        final String root = PathUtils.prefixSlash(views.getPrimaryMapping());
+        // default handlers registered as instances, so it's enough to look only already registered instances
+        for (Resource resource : environment.jersey().getResourceConfig().getResources()) {
+            if (resource.getHandlerClasses().contains(DirectTemplateResource.class)
+                    && resource.getPath().startsWith(root)) {
+                // handler already registered (some other app use the same rest mapping as root)
+                return;
+            }
+        }
+
+        // register all missed default handlers
+        environment.jersey().getResourceConfig().registerResources(Resource.builder(DirectTemplateResource.class)
+                .path(root)
+                .extended(false)
+                .build());
     }
 
     /**

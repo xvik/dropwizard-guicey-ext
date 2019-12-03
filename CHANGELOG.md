@@ -26,6 +26,8 @@
         `ServerPagesBundle.app(..).attachAssets(..)`     
     - Allow package notion for resources registration (com.company.project)
     - Allow resources registration on specific sub url
+    - Allow views mapping configuration (by default, application name prefix used)
+    - Allow views mapping to sub urls
     - Fix error page render instead of asset 404 error (during browser resource call)    
 * [jdbi3]
     - JdbiBundle declared as unique (it will not work with multiple instances)

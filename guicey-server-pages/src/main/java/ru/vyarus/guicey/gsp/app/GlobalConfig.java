@@ -6,6 +6,7 @@ import io.dropwizard.Configuration;
 import io.dropwizard.views.ViewConfigurable;
 import io.dropwizard.views.ViewRenderer;
 import ru.vyarus.guicey.gsp.app.asset.AssetSources;
+import ru.vyarus.guicey.gsp.app.rest.mapping.ViewRestSources;
 import ru.vyarus.guicey.gsp.views.ViewRendererConfigurationModifier;
 
 import java.util.ArrayList;
@@ -30,7 +31,9 @@ public class GlobalConfig {
     private final List<ViewRenderer> renderers = new ArrayList<>();
     private final Multimap<String, ViewRendererConfigurationModifier> configModifiers = LinkedHashMultimap.create();
     // app name -- asset locations collector
-    private final Map<String, AssetSources> extensions = new HashMap<>();
+    private final Map<String, AssetSources> assetExtensions = new HashMap<>();
+    // app name -- view rest prefix collector
+    private final Map<String, ViewRestSources> restExtensions = new HashMap<>();
     private ViewConfigurable<Configuration> configurable;
     private boolean printConfig;
     @SuppressWarnings("PMD.AvoidFieldNameMatchingMethodName")
@@ -177,6 +180,42 @@ public class GlobalConfig {
      * @param sources additional asset sources
      */
     public void extendAssets(final String app, final AssetSources sources) {
+        checkAppNotInitialized(app);
+        if (!assetExtensions.containsKey(app)) {
+            assetExtensions.put(app, new AssetSources());
+        }
+        assetExtensions.get(app).merge(sources);
+    }
+
+    public void extendViews(final String app, final ViewRestSources sources) {
+        checkAppNotInitialized(app);
+        if (!restExtensions.containsKey(app)) {
+            restExtensions.put(app, new ViewRestSources());
+        }
+        restExtensions.get(app).merge(sources);
+    }
+
+    /**
+     * @param app application name
+     * @return registered asset extensions
+     */
+    public AssetSources getAssetExtensions(final String app) {
+        return assetExtensions.get(app);
+    }
+
+    /**
+     * @param app application name
+     * @return registered asset extensions
+     */
+    public ViewRestSources getViewExtensions(final String app) {
+        return restExtensions.get(app);
+    }
+
+    private void checkLocked() {
+        checkState(!locked, "Global initialization already performed");
+    }
+
+    private void checkAppNotInitialized(final String app) {
         // if application itself is already registered check its not initialized (extension could be applied)
         for (ServerPagesApp spa : apps) {
             if (spa.name.equals(app)) {
@@ -185,21 +224,5 @@ public class GlobalConfig {
                 break;
             }
         }
-        if (!extensions.containsKey(app)) {
-            extensions.put(app, new AssetSources());
-        }
-        extensions.get(app).merge(sources);
-    }
-
-    /**
-     * @param app application name
-     * @return registered asset extensions
-     */
-    public AssetSources getExtensions(final String app) {
-        return extensions.get(app);
-    }
-
-    private void checkLocked() {
-        checkState(!locked, "Global initialization already performed");
     }
 }

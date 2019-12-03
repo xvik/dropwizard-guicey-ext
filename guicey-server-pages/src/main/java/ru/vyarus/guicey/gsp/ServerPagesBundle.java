@@ -19,7 +19,6 @@ import ru.vyarus.guicey.gsp.app.ServerPagesApp;
 import ru.vyarus.guicey.gsp.app.ServerPagesAppBundle;
 import ru.vyarus.guicey.gsp.app.ext.ServerPagesAppExtensionBundle;
 import ru.vyarus.guicey.gsp.app.filter.redirect.ErrorRedirect;
-import ru.vyarus.guicey.gsp.app.rest.log.ResourcePath;
 import ru.vyarus.guicey.gsp.app.rest.log.RestPathsAnalyzer;
 import ru.vyarus.guicey.gsp.app.rest.support.TemplateAnnotationFilter;
 import ru.vyarus.guicey.gsp.app.rest.support.TemplateErrorResponseFilter;
@@ -30,7 +29,10 @@ import ru.vyarus.guicey.gsp.views.ViewRendererConfigurationModifier;
 import ru.vyarus.guicey.gsp.views.template.ManualErrorHandling;
 import ru.vyarus.guicey.spa.SpaBundle;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.ServiceLoader;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -293,8 +295,7 @@ public class ServerPagesBundle extends UniqueGuiceyBundle {
             final String restMapping = PathUtils.endSlash(PathUtils.trimStars(env.jersey().getUrlPattern()));
             final RestPathsAnalyzer analyzer = RestPathsAnalyzer.build(env.jersey().getResourceConfig());
             for (ServerPagesApp app : config.getApps()) {
-                final Set<ResourcePath> paths = analyzer.select(app.name);
-                app.initialize(contextPath, restMapping, paths);
+                app.initialize(contextPath, restMapping, analyzer);
             }
         });
     }
@@ -432,6 +433,44 @@ public class ServerPagesBundle extends UniqueGuiceyBundle {
             app.mainAssetsPath = PathUtils.normalizeClasspathPath(path);
             // register main path for assets lookup
             app.extendedAssetLocations.attach(app.mainAssetsPath);
+        }
+
+        /**
+         * Specify default mapping prefix for views rest resources. If not declared, application name will be
+         * used as mapping prefix.
+         * <p>
+         * For example, if you specify "com.mycompany/app1" as prefix then all registered rest resources,
+         * starting from this path will be mapped to gsp application (could be called relatively to application root).
+         * <p>
+         * Only one prefix may be declared: error will be thrown on duplicate declaration.
+         *
+         * @param prefix rest prefix to map as root views
+         * @return builder instance for chained calls
+         * @see #mapViews(String, String) for mapping other rest views on sub urls
+         */
+        public AppBuilder mapViews(final String prefix) {
+            app.extendedViewPrefixes.map(prefix);
+            return this;
+        }
+
+        /**
+         * Map view rest to sub url, using different prefix than default. This way it is possible to use view rest,
+         * not started with default prefix. Direct template handler will also be applied to this prefix (to support
+         * direct template rendering).
+         * <p>
+         * Only one prefix may be applied to one url (error will be thrown on duplicate registration)! But other
+         * mappings are possible for larger sub url (partially overlapping).
+         * <p>
+         * Additional views could also be mapped through extension registration:
+         * {@link ServerPagesBundle#extendApp(String)}.
+         *
+         * @param subUrl sub url to map views to
+         * @param prefix rest prefix to map as root views
+         * @return builder instance for chained calls
+         */
+        public AppBuilder mapViews(final String subUrl, final String prefix) {
+            app.extendedViewPrefixes.map(subUrl, prefix);
+            return this;
         }
 
         /**

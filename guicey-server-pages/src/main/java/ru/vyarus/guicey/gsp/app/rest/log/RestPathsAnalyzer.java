@@ -61,7 +61,7 @@ public class RestPathsAnalyzer {
      */
     public Set<ResourcePath> select(final String app) {
         final Set<ResourcePath> res = new TreeSet<>();
-        final String prefix = PathUtils.SLASH + app + PathUtils.SLASH;
+        final String prefix = PathUtils.prefixSlash(PathUtils.endSlash(app));
         for (ResourcePath path : paths) {
             if (path.getUrl().startsWith(prefix)) {
                 res.add(path);

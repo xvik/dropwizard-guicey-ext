@@ -6,6 +6,7 @@ import ru.vyarus.dropwizard.guice.module.installer.bundle.GuiceyEnvironment;
 import ru.vyarus.guicey.gsp.ServerPagesBundle;
 import ru.vyarus.guicey.gsp.app.GlobalConfig;
 import ru.vyarus.guicey.gsp.app.asset.AssetSources;
+import ru.vyarus.guicey.gsp.app.rest.mapping.ViewRestSources;
 
 /**
  * Bundle for extending (or overriding) registered server pages app resources (through
@@ -20,8 +21,9 @@ import ru.vyarus.guicey.gsp.app.asset.AssetSources;
 public class ServerPagesAppExtensionBundle implements GuiceyBundle {
 
     private final String name;
-    private final AssetSources sources = new AssetSources();
-    private AssetsConfigurationCallback assetsConfigurationCallback;
+    private final AssetSources assets = new AssetSources();
+    private DelayedConfigurationCallback delayedConfigCallback;
+    private final ViewRestSources views = new ViewRestSources();
 
     protected ServerPagesAppExtensionBundle(final String name) {
         this.name = name;
@@ -33,10 +35,11 @@ public class ServerPagesAppExtensionBundle implements GuiceyBundle {
                 "Either server pages support bundle was not installed (use %s.builder() to create bundle) "
                         + " or it was installed after '%s' application extension bundle",
                 ServerPagesBundle.class.getSimpleName(), name);
-        if (assetsConfigurationCallback != null) {
-            assetsConfigurationCallback.configure(environment, sources);
+
+        if (delayedConfigCallback != null) {
+            delayedConfigCallback.configure(environment, assets, views);
         }
-        config.extendAssets(name, sources);
+        config.extendAssets(name, assets);
     }
 
     /**
@@ -51,17 +54,39 @@ public class ServerPagesAppExtensionBundle implements GuiceyBundle {
         }
 
         /**
+         * Map view rest to sub url. May be used to map additional rest endpoints with different prefix.
+         * <p>
+         * Only one mapping is allowed per url (otherwise error will be thrown)! But mappings for larger sub urls
+         * are always allowed (partial override).
+         * <p>
+         * Normally, application configures root views mapping, but if not, then extension could register root
+         * mapping using "/" as url. Direct shortcut not provided because such usage case considered as very rare,
+         * <p>
+         * Use delayed configuration if dropwizard configuration object is required
+         * {@link #delayedConfiguration(DelayedConfigurationCallback)}.
+         *
+         * @param subUrl sub url to map views to
+         * @param prefix rest prefix to map as root views
+         * @return builder instance for chained calls
+         * @see ServerPagesBundle.AppBuilder#mapViews(String, String)
+         */
+        public AppExtensionBuilder mapViews(final String subUrl, final String prefix) {
+            bundle.views.map(subUrl, prefix);
+            return this;
+        }
+
+        /**
          * Add additional assets location. Useful for adding new resources or overriding application assets.
          * <p>
-         * Use delayed configuration if dropwizard configuration is required
-         * {@link #assetsConfigurator(AssetsConfigurationCallback)}.
+         * Use delayed configuration if dropwizard configuration object is required
+         * {@link #delayedConfiguration(DelayedConfigurationCallback)}.
          *
          * @param path assets classpath path
          * @return builder instance for chained calls
          * @see ServerPagesBundle.AppBuilder#attachAssets(String)
          */
         public AppExtensionBuilder attachAssets(final String path) {
-            bundle.sources.attach(path);
+            bundle.assets.attach(path);
             return this;
         }
 
@@ -70,8 +95,8 @@ public class ServerPagesAppExtensionBundle implements GuiceyBundle {
          * sub url. As with root assets, multiple packages could be attached to url. Registration order is important:
          * in case if multiple packages contains the same file, file from the latest registered package will be used.
          * <p>
-         * Use delayed configuration if dropwizard configuration is required
-         * {@link #assetsConfigurator(AssetsConfigurationCallback)}.
+         * Use delayed configuration if dropwizard configuration object is required
+         * {@link #delayedConfiguration(DelayedConfigurationCallback)}.
          *
          * @param subUrl sub url to serve assets from
          * @param path   assets classpath paths
@@ -79,7 +104,7 @@ public class ServerPagesAppExtensionBundle implements GuiceyBundle {
          * @see ServerPagesBundle.AppBuilder#attachAssetsForUrl(String, String)
          */
         public AppExtensionBuilder attachAssetsForUrl(final String subUrl, final String path) {
-            bundle.sources.attach(subUrl, path);
+            bundle.assets.attach(subUrl, path);
             return this;
         }
 
@@ -92,10 +117,10 @@ public class ServerPagesAppExtensionBundle implements GuiceyBundle {
          * @param callback callback for extensions configuration under run phase
          * @return builder instance for chained calls
          */
-        public AppExtensionBuilder assetsConfigurator(final AssetsConfigurationCallback callback) {
-            Preconditions.checkArgument(bundle.assetsConfigurationCallback == null,
-                    "Only one delayed assets configuration could be registered");
-            bundle.assetsConfigurationCallback = callback;
+        public AppExtensionBuilder delayedConfiguration(final DelayedConfigurationCallback callback) {
+            Preconditions.checkArgument(bundle.delayedConfigCallback == null,
+                    "Only one delayed configuration could be registered");
+            bundle.delayedConfigCallback = callback;
             return this;
         }
 

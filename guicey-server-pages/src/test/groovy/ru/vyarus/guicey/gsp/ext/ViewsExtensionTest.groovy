@@ -14,42 +14,17 @@ import ru.vyarus.guicey.gsp.support.app.SubTemplateResource
 
 /**
  * @author Vyacheslav Rusakov
- * @since 29.11.2019
+ * @since 03.12.2019
  */
 @UseDropwizardApp(value = App, configOverride = [
         @ConfigOverride(key = "server.rootPath", value = "/rest/*")
 ])
-class DelayedAppExtensionTest extends AbstractTest {
+class ViewsExtensionTest extends AbstractTest {
 
     def "Check app mapped"() {
 
-        when: "accessing app"
-        String res = getHtml("/")
-        then: "index page"
-        res.contains("overridden sample page")
-
-        when: "accessing direct file"
-        res = getHtml("/index.html")
-        then: "index page"
-        res.contains("overridden sample page")
-
-        when: "accessing resource"
-        res = get("/css/style.css")
-        then: "css"
-        res.contains("/* sample page css */")
-
-        when: "accessing direct template"
-        res = getHtml("/template.ftl")
-        then: "rendered template"
-        res.contains("page: /template.ftl")
-
-        when: "accessing direct ext template"
-        res = getHtml("/ext.ftl")
-        then: "rendered template"
-        res.contains("ext template")
-
         when: "accessing path"
-        res = getHtml("/sample")
+        String res = getHtml("/sample")
         then: "index page"
         res.contains("page: /sample")
 
@@ -71,13 +46,7 @@ class DelayedAppExtensionTest extends AbstractTest {
                                     .indexPage("index.html")
                                     .build(),
                             ServerPagesBundle.extendApp("app")
-                                    .delayedConfiguration({ env, assets, views ->
-                                        assert env
-                                        assert assets
-                                        assert views
-                                        assets.attach("/ext")
-                                        views.map("/sub", "/sub")
-                                    })
+                                    .mapViews("/sub", "/sub")
                                     .build())
                     .build())
 

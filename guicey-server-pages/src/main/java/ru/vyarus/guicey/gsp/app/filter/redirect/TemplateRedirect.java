@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.vyarus.guicey.gsp.app.asset.AssetLookup;
 import ru.vyarus.guicey.gsp.app.rest.DirectTemplateResource;
+import ru.vyarus.guicey.gsp.app.rest.mapping.ViewRestLookup;
 import ru.vyarus.guicey.gsp.app.rest.support.TemplateAnnotationFilter;
 import ru.vyarus.guicey.gsp.app.util.PathUtils;
 import ru.vyarus.guicey.gsp.app.util.TemplateRequest;
@@ -16,11 +17,13 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 /**
- * Performs redirection of template quest into rest context. Note that even if no special rest
+ * Performs redirection of template request into rest context. Note that even if no special rest
  * mapped for template, it would be rendered with the default {@link DirectTemplateResource}.
  * <p>
- * Rest resource convention: /{rest prefix}/{app name}/{path from request}, where
- * {app name} is an application registration name.
+ * Rest resource convention: /[rest context]/[prefix]/[path from request], where
+ * [prefix] is application registration name by default (but may be configured). Additional
+ * mappings may be configured to sub url, so redirection to different rest "branches" may be performed,
+ * depending on called url.
  * <p>
  * If resource is annotated with {@link ru.vyarus.guicey.gsp.views.template.Template} annotation (it should!) then
  * {@link TemplateAnnotationFilter} will detect it and set specified template into context {@link TemplateContext}.
@@ -40,6 +43,7 @@ public class TemplateRedirect {
     private final Servlet restServlet;
     private final String app;
     private final String mapping;
+    private final ViewRestLookup views;
     private final AssetLookup assets;
     private final ErrorRedirect errorRedirect;
 
@@ -53,12 +57,14 @@ public class TemplateRedirect {
     public TemplateRedirect(final Servlet restServlet,
                             final String app,
                             final String mapping,
+                            final ViewRestLookup views,
                             final AssetLookup assets,
                             final ErrorRedirect errorRedirect) {
         this.restServlet = restServlet;
         this.app = app;
         this.mapping = mapping;
         this.assets = assets;
+        this.views = views;
         this.errorRedirect = errorRedirect;
     }
 
@@ -92,7 +98,7 @@ public class TemplateRedirect {
                 request,
                 response));
         try {
-            final String path = PathUtils.path(rootPath, app, page);
+            final String path = PathUtils.path(rootPath, views.lookup(page));
             logger.debug("Rendering template path: {}", path);
             // this moment is especially important for admin apps where context could be radically different
             restServlet.service(
@@ -108,6 +114,13 @@ public class TemplateRedirect {
      */
     public ErrorRedirect getErrorRedirect() {
         return errorRedirect;
+    }
+
+    /**
+     * @return root rest mapping path
+     */
+    public String getRootPath() {
+        return rootPath;
     }
 
     /**
