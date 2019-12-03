@@ -148,11 +148,11 @@ public final class AppReportBuilder {
             final int defKey = ErrorRedirect.DEFAULT_ERROR_PAGE;
             for (Map.Entry<Integer, String> entry : errorPages.entrySet()) {
                 if (entry.getKey() != defKey) {
-                    printErrorPage(res, entry.getKey().toString(), entry.getValue());
+                    printErrorPage(res, entry.getKey().toString(), PathUtils.path(app.fullUriPath, entry.getValue()));
                 }
             }
             if (errorPages.containsKey(defKey)) {
-                printErrorPage(res, STAR, errorPages.get(defKey));
+                printErrorPage(res, STAR, PathUtils.path(app.fullUriPath, errorPages.get(defKey)));
             }
         }
     }
