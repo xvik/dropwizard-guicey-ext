@@ -463,6 +463,10 @@ public class ServerPagesBundle extends UniqueGuiceyBundle {
          * <p>
          * Additional views could also be mapped through extension registration:
          * {@link ServerPagesBundle#extendApp(String)}.
+         * <p>
+         * Pay attention that additional asset locations may be required ({@link #attachAssets(String, String)},
+         * because only templates relative to view class will be correctly resolved, but direct templates may fail
+         * to resolve.
          *
          * @param subUrl sub url to map views to
          * @param prefix rest prefix to map as root views
@@ -589,7 +593,7 @@ public class ServerPagesBundle extends UniqueGuiceyBundle {
          *
          * @param path assets classpath path (may be in form of package (dot-separated))
          * @return builder instance for chained calls
-         * @see #attachAssetsForUrl(String, String) to register assets on specific sub url
+         * @see #attachAssets(String, String) to register assets on specific sub url
          */
         public AppBuilder attachAssets(final String path) {
             app.extendedAssetLocations.attach(path);
@@ -609,7 +613,7 @@ public class ServerPagesBundle extends UniqueGuiceyBundle {
          * @param path   assets classpath paths (may be in form of package (dot-separated))
          * @return builder instance for chained calls
          */
-        public AppBuilder attachAssetsForUrl(final String subUrl, final String path) {
+        public AppBuilder attachAssets(final String subUrl, final String path) {
             app.extendedAssetLocations.attach(subUrl, path);
             return this;
         }

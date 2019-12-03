@@ -91,14 +91,17 @@ public class TemplateRedirect {
     public void redirect(final HttpServletRequest request,
                          final HttpServletResponse response,
                          final String page) throws IOException, ServletException {
+        // for root context will be empty
+        final String contextUrl = views.lookupSubContext(page);
         CONTEXT_TEMPLATE.set(new TemplateContext(app,
                 mapping,
+                contextUrl,
                 assets,
                 errorRedirect,
                 request,
                 response));
         try {
-            final String path = PathUtils.path(rootPath, views.lookup(page));
+            final String path = PathUtils.path(rootPath, views.lookupRestPrefix(contextUrl, page));
             logger.debug("Rendering template path: {}", path);
             // this moment is especially important for admin apps where context could be radically different
             restServlet.service(

@@ -1,6 +1,5 @@
 package ru.vyarus.guicey.gsp.app.rest.support;
 
-import com.google.common.base.Throwables;
 import org.glassfish.jersey.server.monitoring.ApplicationEvent;
 import org.glassfish.jersey.server.monitoring.ApplicationEventListener;
 import org.glassfish.jersey.server.monitoring.RequestEvent;
@@ -11,6 +10,7 @@ import ru.vyarus.guicey.gsp.app.filter.redirect.TemplateRedirect;
 import ru.vyarus.guicey.gsp.views.template.TemplateContext;
 
 import javax.inject.Singleton;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.ext.Provider;
 
 /**
@@ -50,13 +50,17 @@ public class TemplateExceptionListener implements ApplicationEventListener {
         public void onEvent(final RequestEvent event) {
             // event may be called multiple times, but redirect will detect it and do nothing
             if (event.getType() == RequestEvent.Type.ON_EXCEPTION) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Rest processing exception detected for path {}:\n{}",
-                            event.getUriInfo().getPath(),
-                            Throwables.getRootCause(event.getException()).toString());
+                final Throwable exception = event.getException();
+                if (!(exception instanceof WebApplicationException)) {
+                    // most likely unexpected exception
+                    logger.info("Exception processing view rest path " + event.getUriInfo().getPath(), exception);
+                } else if (logger.isDebugEnabled()) {
+                    logger.debug("View rest processing exception detected for path " + event.getUriInfo().getPath(),
+                            exception);
                 }
+
                 // immediately perform redirect to error page (or do nothing)
-                TemplateContext.getInstance().redirectError(event.getException());
+                TemplateContext.getInstance().redirectError(exception);
             }
         }
     }

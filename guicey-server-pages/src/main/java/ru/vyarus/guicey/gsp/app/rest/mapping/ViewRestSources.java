@@ -34,6 +34,10 @@ public class ViewRestSources {
      * Internally, path used without first slash to simplify matching.
      * <p>
      * Only one prefix may be registered per url. In case of overriding registration error will be thrown.
+     * <p>
+     * Pay attention that additional asset locations registration may be required,
+     * because only templates relative to view class will be correctly resolved, but direct templates may fail
+     * to resolve.
      *
      * @param url    sub url
      * @param prefix asset classpath location

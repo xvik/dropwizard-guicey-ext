@@ -64,6 +64,10 @@ public class ServerPagesAppExtensionBundle implements GuiceyBundle {
          * <p>
          * Use delayed configuration if dropwizard configuration object is required
          * {@link #delayedConfiguration(DelayedConfigurationCallback)}.
+         * <p>
+         * Pay attention that additional asset locations may be required ({@link #attachAssets(String, String)},
+         * because only templates relative to view class will be correctly resolved, but direct templates may fail
+         * to resolve.
          *
          * @param subUrl sub url to map views to
          * @param prefix rest prefix to map as root views
@@ -101,9 +105,9 @@ public class ServerPagesAppExtensionBundle implements GuiceyBundle {
          * @param subUrl sub url to serve assets from
          * @param path   assets classpath paths
          * @return builder instance for chained calls
-         * @see ServerPagesBundle.AppBuilder#attachAssetsForUrl(String, String)
+         * @see ServerPagesBundle.AppBuilder#attachAssets(String, String)
          */
-        public AppExtensionBuilder attachAssetsForUrl(final String subUrl, final String path) {
+        public AppExtensionBuilder attachAssets(final String subUrl, final String path) {
             bundle.assets.attach(subUrl, path);
             return this;
         }

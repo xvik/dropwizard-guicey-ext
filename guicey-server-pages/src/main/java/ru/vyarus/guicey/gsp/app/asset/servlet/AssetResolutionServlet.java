@@ -1,6 +1,8 @@
 package ru.vyarus.guicey.gsp.app.asset.servlet;
 
 import io.dropwizard.servlets.assets.AssetServlet;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.vyarus.guicey.gsp.app.asset.AssetLookup;
 import ru.vyarus.guicey.gsp.app.util.PathUtils;
 
@@ -16,6 +18,8 @@ import java.nio.charset.Charset;
  */
 public class AssetResolutionServlet extends AssetServlet {
     private static final long serialVersionUID = 6393345594784987909L;
+
+    private final transient Logger logger = LoggerFactory.getLogger(AssetResolutionServlet.class);
 
     private final AssetLookup assets;
 
@@ -38,6 +42,12 @@ public class AssetResolutionServlet extends AssetServlet {
         // otherwise look for resource in all registered locations
         if (!PathUtils.endSlash(realPath).equals(assets.getPrimaryLocation())) {
             realPath = assets.lookup(realPath);
+        }
+        if (realPath == null && logger.isInfoEnabled()) {
+            final String err = String.format("Asset %s not found in locations: %s",
+                    assets.getRelativePath(absolutePath), assets.getMatchingLocations(absolutePath));
+            // logged here to provide additional diagnostic info
+            logger.info(err);
         }
         // mimic default behaviour when resource not found
         return super.getResourceUrl(realPath);

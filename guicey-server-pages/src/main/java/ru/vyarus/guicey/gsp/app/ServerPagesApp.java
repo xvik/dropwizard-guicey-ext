@@ -30,6 +30,7 @@ import ru.vyarus.guicey.spa.SpaBundle;
 import javax.servlet.DispatcherType;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Server pages application initialization logic.
@@ -177,22 +178,33 @@ public class ServerPagesApp {
         return new ViewRestLookup(builder.build());
     }
 
+    /**
+     * Default rest is required for direct template rendering (default view handler). This default handler must be
+     * installed for all registered view prefixes (otherwise simply wouldn't work).
+     * <p>
+     * But, multiple gsp applications may use same rest mappings (e.g. register the same application on different
+     * urls) and so default handler could be already registered. In such case, new registration will not occur.
+     *
+     * @param environment dropwizard environment instance
+     */
     private void registerDirectTemplateHandler(final Environment environment) {
-        final String root = PathUtils.prefixSlash(views.getPrimaryMapping());
+        final List<String> targets = new ArrayList<>(views.getPrefixes().values()).stream()
+                .map(PathUtils::prefixSlash)
+                .collect(Collectors.toList());
         // default handlers registered as instances, so it's enough to look only already registered instances
         for (Resource resource : environment.jersey().getResourceConfig().getResources()) {
-            if (resource.getHandlerClasses().contains(DirectTemplateResource.class)
-                    && resource.getPath().startsWith(root)) {
-                // handler already registered (some other app use the same rest mapping as root)
-                return;
+            if (resource.getHandlerClasses().contains(DirectTemplateResource.class)) {
+                targets.remove(resource.getPath());
             }
         }
 
         // register all missed default handlers
-        environment.jersey().getResourceConfig().registerResources(Resource.builder(DirectTemplateResource.class)
-                .path(root)
-                .extended(false)
-                .build());
+        for (String target : targets) {
+            environment.jersey().getResourceConfig().registerResources(Resource.builder(DirectTemplateResource.class)
+                    .path(PathUtils.prefixSlash(target))
+                    .extended(false)
+                    .build());
+        }
     }
 
     /**

@@ -64,7 +64,7 @@ class ExtendedAppTest extends AbstractTest {
                                     .build(),
                             ServerPagesBundle.extendApp("app")
                                     .attachAssets("/ext")
-                                    .attachAssetsForUrl("/sample", "ext")
+                                    .attachAssets("/sample", "ext")
                                     .build())
                     .build())
 

@@ -38,13 +38,16 @@ public class ViewRestLookup {
     }
 
     /**
-     * Lookup target rest path. Will select rest prefix either by sub-url mapping (if url starts with registered
-     * sub url) or using root (main) prefix.
+     * Lookup target rest context (rest prefix may be registered to sub url). Will select rest prefix context either by
+     * sub-url mapping (if url starts with registered sub url) or using root (main) prefix.
+     * <p>
+     * Knowing sub context is important for templates lookup because in case of detected sub context, rest would be
+     * "redirected" under this context, but assets must be resolved with a full path (including this context).
      *
      * @param path gsp application called url (relative to application mapping root)
-     * @return target path, relative to rest root, to call
+     * @return target sub context or empty for root context
      */
-    public String lookup(final String path) {
+    public String lookupSubContext(final String path) {
         final String relativePath = CharMatcher.is('/').trimLeadingFrom(path);
         // value will always match to default root mapping if special url mapping not found
         String res = null;
@@ -52,10 +55,22 @@ public class ViewRestLookup {
             final String url = entry.getKey();
             if (relativePath.startsWith(url)) {
                 // cut off custom app mapping and add correct rest mapping part
-                res = PathUtils.path(entry.getValue(), path.substring(url.length()));
+                res = url;
                 break;
             }
         }
         return res;
+    }
+
+    /**
+     * @param subContext context resolved with {@link #lookupSubContext(String)}
+     * @param path       path to resolve
+     * @return target rest prefix for provided context
+     */
+    public String lookupRestPrefix(final String subContext, final String path) {
+        final String prefix = prefixes.get(subContext);
+        // cut off custom app mapping and add correct rest mapping part
+        final String relativeUrl = path.startsWith(subContext) ? path.substring(subContext.length()) : path;
+        return PathUtils.path(prefix, relativeUrl);
     }
 }

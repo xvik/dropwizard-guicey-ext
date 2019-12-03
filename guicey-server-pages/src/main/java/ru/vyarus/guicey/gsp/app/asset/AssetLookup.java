@@ -46,6 +46,20 @@ public class AssetLookup implements Serializable {
     }
 
     /**
+     * Checks if provided path is absolute path into primary location and returns relative url instead.
+     *
+     * @param path possibly absolute path
+     * @return relative path (without primary loctation part if detected)
+     */
+    public String getRelativePath(final String path) {
+        String relativePath = CharMatcher.is('/').trimLeadingFrom(path);
+        if (path.startsWith(primaryLocation)) {
+            relativePath = path.substring(primaryLocation.length());
+        }
+        return relativePath;
+    }
+
+    /**
      * Lookup asset in classpath by url (relative to application root).
      * Assets, registered to exact url are processed in priority. For example, if assets registered for '/foo/bar/'
      * path then url '/foo/bar/sample.css' will be checked first in url-specific assets. Multiple asset packages
@@ -56,10 +70,7 @@ public class AssetLookup implements Serializable {
      * @return classpath path to resource or null if resource not found
      */
     public String lookup(final String path) {
-        String relativePath = CharMatcher.is('/').trimLeadingFrom(path);
-        if (path.startsWith(primaryLocation)) {
-            relativePath = path.substring(primaryLocation.length());
-        }
+        final String relativePath = getRelativePath(path);
         String res = null;
         final String assetPath = CharMatcher.is('/').trimLeadingFrom(relativePath);
         for (String url : locations.keySet()) {
@@ -83,10 +94,7 @@ public class AssetLookup implements Serializable {
      */
     public List<String> getMatchingLocations(final String path) {
         final List<String> matches = new ArrayList<>();
-        String relativePath = CharMatcher.is('/').trimLeadingFrom(path);
-        if (path.startsWith(primaryLocation)) {
-            relativePath = path.substring(primaryLocation.length());
-        }
+        final String relativePath = getRelativePath(path);
         final String assetPath = CharMatcher.is('/').trimLeadingFrom(relativePath);
         for (String url : locations.keySet()) {
             if (assetPath.startsWith(url)) {

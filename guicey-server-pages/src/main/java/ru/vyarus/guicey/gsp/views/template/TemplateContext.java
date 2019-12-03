@@ -32,6 +32,10 @@ public class TemplateContext {
 
     private final String appName;
     private final String rootUrl;
+    // as rest may be mapped to sub url it is very important to know current sub url because without it it would
+    // be impossible to properly resolve template (because we have only part of path and cant match extended asset
+    // locations). For root matching, context will be empty
+    private final String restSubContext;
     private final AssetLookup assets;
     private final ErrorRedirect errorRedirect;
     private final HttpServletRequest request;
@@ -42,12 +46,14 @@ public class TemplateContext {
 
     public TemplateContext(final String appName,
                            final String rootUrl,
+                           final String restSubContext,
                            final AssetLookup assets,
                            final ErrorRedirect errorRedirect,
                            final HttpServletRequest request,
                            final HttpServletResponse response) {
         this.appName = appName;
         this.rootUrl = rootUrl;
+        this.restSubContext = restSubContext;
         this.assets = assets;
         this.errorRedirect = errorRedirect;
         this.request = request;
@@ -74,6 +80,19 @@ public class TemplateContext {
      */
     public String getRootUrl() {
         return rootUrl;
+    }
+
+    /**
+     * Different rest prefix may be mapped to sub context (e.g. /sub/ -> com.foo.app/). If such sub context
+     * detected (during rest redirection) then original url miss such sub context. In order to properly resolve
+     * templates (assets may also be mapped to sub context) original path is required.
+     *
+     * @return current sub context mapping (after rest view, mapped to sub context, redirection) or empty string
+     * if no sub context
+     */
+    public String getRestSubContext() {
+        // just to avoid confusion, because normally context is relative
+        return PathUtils.prefixSlash(restSubContext);
     }
 
     /**
@@ -176,6 +195,8 @@ public class TemplateContext {
 
         // search in configured locations
         if (!path.startsWith(PathUtils.SLASH)) {
+            // recover original calling path to properly resolve asset (inside sub context mapped view)
+            path = PathUtils.path(restSubContext, path);
             // search in configured folders
             path = PathUtils.prefixSlash(ResourceLookup.lookupOrFail(path, assets));
             logger.debug("Relative template '{}' resolved to '{}'", template, path);

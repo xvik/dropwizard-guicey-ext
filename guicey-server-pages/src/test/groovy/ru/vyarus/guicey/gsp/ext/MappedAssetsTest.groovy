@@ -33,7 +33,7 @@ class MappedAssetsTest extends AbstractTest {
                             ServerPagesBundle.builder().build(),
                             ServerPagesBundle.app("app", "/app", "/")
                                     .indexPage("index.html")
-                                    .attachAssetsForUrl('/sample', 'ext')
+                                    .attachAssets('/sample', 'ext')
                                     .build())
                     .build())
 
