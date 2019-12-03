@@ -7,7 +7,7 @@ import java.util.Map;
 
 /**
  * View rest endpoints are mapped with a prefix: so gsp application call /something could be remapped to
- * [rest]/[prefix]/something. Special prefixes could be mapped to some urls: e.g. /sub/url -> prefix2 and so
+ * [rest]/[prefix]/something. Special prefixes could be mapped to some urls: e.g. /sub/url -&gt; prefix2 and so
  * when /sub/url/something will be called in gsp application it would redirect to [rest]/[prefix2]/something.
  *
  * @author Vyacheslav Rusakov

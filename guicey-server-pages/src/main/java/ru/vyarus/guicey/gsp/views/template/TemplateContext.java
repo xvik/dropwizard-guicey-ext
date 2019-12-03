@@ -83,7 +83,7 @@ public class TemplateContext {
     }
 
     /**
-     * Different rest prefix may be mapped to sub context (e.g. /sub/ -> com.foo.app/). If such sub context
+     * Different rest prefix may be mapped to sub context (e.g. /sub/ -&gt; com.foo.app/). If such sub context
      * detected (during rest redirection) then original url miss such sub context. In order to properly resolve
      * templates (assets may also be mapped to sub context) original path is required.
      *
