@@ -24,6 +24,7 @@ import ru.vyarus.guicey.gsp.app.rest.support.TemplateAnnotationFilter;
 import ru.vyarus.guicey.gsp.app.rest.support.TemplateErrorResponseFilter;
 import ru.vyarus.guicey.gsp.app.rest.support.TemplateExceptionListener;
 import ru.vyarus.guicey.gsp.app.util.PathUtils;
+import ru.vyarus.guicey.gsp.info.GspInfoModule;
 import ru.vyarus.guicey.gsp.views.ConfiguredViewBundle;
 import ru.vyarus.guicey.gsp.views.ViewRendererConfigurationModifier;
 import ru.vyarus.guicey.gsp.views.template.ManualErrorHandling;
@@ -126,6 +127,9 @@ import static ru.vyarus.guicey.spa.SpaBundle.SLASH;
  * Bundle could also enable filter from {@link ru.vyarus.guicey.spa.SpaBundle} in order to support single
  * page applications routing (for cases when root page must be template and not just html, which makes direct usage of
  * {@link ru.vyarus.guicey.spa.SpaBundle} useless).
+ * <p>
+ * Information about configured application may be acquired through {@link ru.vyarus.guicey.gsp.info.GspInfoService}
+ * guice bean. But it could be used only after complete gsp initialization (between dropwizard run and jersey start).
  *
  * @author Vyacheslav Rusakov
  * @see <a href="https://www.dropwizard.io/1.3.5/docs/manual/views.html">dropwizard views</a>
@@ -272,6 +276,7 @@ public class ServerPagesBundle extends UniqueGuiceyBundle {
         // register global config
         bootstrap
                 .shareState(ServerPagesBundle.class, config)
+                .modules(new GspInfoModule())
                 .dropwizardBundles(new ConfiguredViewBundle(config))
                 .extensions(
                         // @Template annotation support (even with multiple registrations should be created just once)
@@ -428,9 +433,8 @@ public class ServerPagesBundle extends UniqueGuiceyBundle {
             app.name = checkNotNull(name, "Name is required");
             app.uriPath = PathUtils.endSlash(uri);
 
-            checkArgument(path.startsWith(SLASH), "%s is not an absolute path", path);
-            checkArgument(!SLASH.equals(path), "%s is the classpath root", path);
             app.mainAssetsPath = PathUtils.normalizeClasspathPath(path);
+            checkArgument(!SLASH.equals(app.mainAssetsPath), "%s is the classpath root", app.mainAssetsPath);
             // register main path for assets lookup
             app.extendedAssetLocations.attach(app.mainAssetsPath);
         }

@@ -28,7 +28,8 @@
     - Allow resources registration on specific sub url
     - Allow views mapping configuration (by default, application name prefix used)
     - Allow views mapping to sub urls
-    - Fix error page render instead of asset 404 error (during browser resource call)    
+    - Fix error page render instead of asset 404 error (during browser resource call)
+    - Add GspInfoService to be able to access gsp apps configuration info (for reporting or validation)    
 * [jdbi3]
     - JdbiBundle declared as unique (it will not work with multiple instances)
     - Detect when repository base class is also annotated with @JdbiRepository to prevent confusing errors (#4)

@@ -174,6 +174,13 @@ public class GlobalConfig {
     }
 
     /**
+     * @return true if global configuration locked, false otherwise
+     */
+    public boolean isLocked() {
+        return locked;
+    }
+
+    /**
      * Register application resources extension.
      *
      * @param app     application name to apply new resources to

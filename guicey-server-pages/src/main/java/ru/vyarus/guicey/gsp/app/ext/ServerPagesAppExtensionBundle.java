@@ -40,6 +40,7 @@ public class ServerPagesAppExtensionBundle implements GuiceyBundle {
             delayedConfigCallback.configure(environment, assets, views);
         }
         config.extendAssets(name, assets);
+        config.extendViews(name, views);
     }
 
     /**

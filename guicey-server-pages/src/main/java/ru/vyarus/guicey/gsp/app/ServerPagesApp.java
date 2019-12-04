@@ -72,10 +72,10 @@ public class ServerPagesApp {
     public List<String> requiredRenderers;
     public boolean spaSupport;
     public String spaNoRedirectRegex = SpaBundle.DEFAULT_PATTERN;
-    protected TemplateRedirect templateRedirect;
+    public TemplateRedirect templateRedirect;
     // all locations, including all extensions
-    protected AssetLookup assets;
-    protected ViewRestLookup views;
+    public AssetLookup assets;
+    public ViewRestLookup views;
     private boolean started;
     private final Logger logger = LoggerFactory.getLogger(ServerPagesApp.class);
 

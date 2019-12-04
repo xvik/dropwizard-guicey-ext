@@ -7,7 +7,10 @@ import io.dropwizard.setup.Environment
 import ru.vyarus.dropwizard.guice.GuiceBundle
 import ru.vyarus.dropwizard.guice.test.spock.UseDropwizardApp
 import ru.vyarus.guicey.gsp.ServerPagesBundle
+import ru.vyarus.guicey.gsp.info.GspInfoService
 import spock.lang.Specification
+
+import javax.inject.Inject
 
 /**
  * @author Vyacheslav Rusakov
@@ -16,10 +19,15 @@ import spock.lang.Specification
 @UseDropwizardApp(value = App)
 class ViewConfigurationModificationTest extends Specification {
 
+    @Inject
+    GspInfoService info
+
     def "Check views configuration modification in app"() {
 
         expect: "application started without errors"
-        true
+        def config = info.getViewsConfig()
+        config['freemarker']['cache_storage'] == 'yes'
+        config['test'].isEmpty()
     }
 
     static class App extends Application<Configuration> {
