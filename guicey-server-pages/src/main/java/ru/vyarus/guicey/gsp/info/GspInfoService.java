@@ -1,21 +1,15 @@
 package ru.vyarus.guicey.gsp.info;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import io.dropwizard.views.ViewRenderer;
-import ru.vyarus.guicey.gsp.ServerPagesBundle;
 import ru.vyarus.guicey.gsp.app.GlobalConfig;
 import ru.vyarus.guicey.gsp.app.ServerPagesApp;
-import ru.vyarus.guicey.gsp.app.asset.AssetSources;
-import ru.vyarus.guicey.gsp.app.rest.mapping.ViewRestSources;
 import ru.vyarus.guicey.gsp.info.model.GspApp;
-import ru.vyarus.guicey.spa.SpaBundle;
 
 import javax.inject.Singleton;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -66,7 +60,7 @@ public class GspInfoService {
         checkLock();
         final List<GspApp> res = new ArrayList<>();
         for (ServerPagesApp app : config.getApps()) {
-            res.add(map(app));
+            res.add(app.getInfo(config));
         }
         return res;
     }
@@ -78,8 +72,8 @@ public class GspInfoService {
     public GspApp getApplication(final String name) {
         checkLock();
         for (ServerPagesApp app : config.getApps()) {
-            if (name.equals(app.name)) {
-                return map(app);
+            if (name.equals(app.getName())) {
+                return app.getInfo(config);
             }
         }
         return null;
@@ -89,34 +83,5 @@ public class GspInfoService {
         // configuration is locked in view bundle (dw), which is called after guice bundle,
         // so info will become available after guice context start
         Preconditions.checkArgument(config.isLocked(), "GSP bundle is not yet initialized");
-    }
-
-    private GspApp map(final ServerPagesApp app) {
-        final GspApp res = new GspApp();
-        res.setName(app.name);
-        res.setMainContext(app.mainContext);
-        res.setMappingUrl(app.uriPath);
-        res.setRootUrl(app.fullUriPath);
-        res.setRequiredRenderers(app.requiredRenderers == null ? Collections.emptyList() : app.requiredRenderers);
-
-        res.setMainAssetsLocation(app.mainAssetsPath);
-        res.setAssets(app.assets.getLocations());
-        final AssetSources assetExtensions = config.getAssetExtensions(app.name);
-        res.setAssetExtensions(assetExtensions == null ? HashMultimap.create() : assetExtensions.getLocations());
-        res.setViews(app.views.getPrefixes());
-        final ViewRestSources viewExtensions = config.getViewExtensions(app.name);
-        res.setViewExtensions(viewExtensions == null ? Collections.emptyMap() : viewExtensions.getPrefixes());
-        res.setRestRootUrl(app.templateRedirect.getRootPath());
-
-        res.setIndexFile(app.indexFile);
-        res.setFilesRegex(app.fileRequestPattern);
-        res.setHasDefaultFilesRegex(app.fileRequestPattern.equals(ServerPagesBundle.FILE_REQUEST_PATTERN));
-
-        res.setSpa(app.spaSupport);
-        res.setSpaRegex(app.spaNoRedirectRegex);
-        res.setHasDefaultSpaRegex(app.spaNoRedirectRegex.equals(SpaBundle.DEFAULT_PATTERN));
-
-        res.setErrorPages(app.errorPages);
-        return res;
     }
 }

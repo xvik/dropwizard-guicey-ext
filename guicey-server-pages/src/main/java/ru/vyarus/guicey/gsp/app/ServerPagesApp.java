@@ -1,6 +1,7 @@
 package ru.vyarus.guicey.gsp.app;
 
 import com.google.common.base.Joiner;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Multimap;
@@ -24,6 +25,7 @@ import ru.vyarus.guicey.gsp.app.rest.log.RestPathsAnalyzer;
 import ru.vyarus.guicey.gsp.app.rest.mapping.ViewRestLookup;
 import ru.vyarus.guicey.gsp.app.rest.mapping.ViewRestSources;
 import ru.vyarus.guicey.gsp.app.util.PathUtils;
+import ru.vyarus.guicey.gsp.info.model.GspApp;
 import ru.vyarus.guicey.gsp.views.ViewRendererConfigurationModifier;
 import ru.vyarus.guicey.spa.SpaBundle;
 
@@ -48,36 +50,49 @@ import java.util.stream.Collectors;
         "PMD.ExcessiveImports", "PMD.TooManyFields"})
 public class ServerPagesApp {
 
-    // delayed modifiers registration
-    public Map<String, ViewRendererConfigurationModifier> viewsConfigModifiers = new HashMap<>();
-    // resources location registrations
-    public AssetSources extendedAssetLocations = new AssetSources();
-    // view rest prefixes mappings
-    public ViewRestSources extendedViewPrefixes = new ViewRestSources();
 
-    public final Map<Integer, String> errorPages = new TreeMap<>();
-    public boolean mainContext;
+    // USER CONFIGURATION
+
     // application name
-    public String name;
+    protected String name;
+    protected boolean mainContext;
     // root assets location
-    public String mainAssetsPath;
+    protected String mainAssetsPath;
     // application mapping url
-    public String uriPath;
-    // context mapping + uriPath
-    public String fullUriPath;
-    public String indexFile = "";
+    protected String uriPath;
+    protected String indexFile = "";
     // regexp for file requests detection (to recognize asset or direct template render)
-    public String fileRequestPattern = ServerPagesBundle.FILE_REQUEST_PATTERN;
+    protected String fileRequestPattern = ServerPagesBundle.FILE_REQUEST_PATTERN;
     // required template renderer names
-    public List<String> requiredRenderers;
-    public boolean spaSupport;
-    public String spaNoRedirectRegex = SpaBundle.DEFAULT_PATTERN;
-    public TemplateRedirect templateRedirect;
+    protected List<String> requiredRenderers;
+    protected boolean spaSupport;
+    protected String spaNoRedirectRegex = SpaBundle.DEFAULT_PATTERN;
+    // delayed modifiers registration
+    protected final Map<String, ViewRendererConfigurationModifier> viewsConfigModifiers = new HashMap<>();
+    // resources location registrations
+    protected final AssetSources assetLocations = new AssetSources();
+    // view rest prefixes mappings
+    protected final ViewRestSources viewPrefixes = new ViewRestSources();
+    protected final Map<Integer, String> errorPages = new TreeMap<>();
+
+
+    // STARTUP CONFIGURATION
+
+    // context mapping + uriPath
+    protected String fullUriPath;
+    protected TemplateRedirect templateRedirect;
     // all locations, including all extensions
-    public AssetLookup assets;
-    public ViewRestLookup views;
+    protected AssetLookup assets;
+    protected ViewRestLookup views;
     private boolean started;
     private final Logger logger = LoggerFactory.getLogger(ServerPagesApp.class);
+
+    /**
+     * @return application name
+     */
+    public String getName() {
+        return name;
+    }
 
     /**
      * Install configured server page app.
@@ -126,10 +141,39 @@ public class ServerPagesApp {
         started = true;
     }
 
+    public GspApp getInfo(final GlobalConfig config) {
+        final GspApp res = new GspApp();
+        res.setName(name);
+        res.setMainContext(mainContext);
+        res.setMappingUrl(uriPath);
+        res.setRootUrl(fullUriPath);
+        res.setRequiredRenderers(requiredRenderers == null ? Collections.emptyList() : requiredRenderers);
+
+        res.setMainAssetsLocation(mainAssetsPath);
+        res.setAssets(assets.getLocations());
+        final AssetSources assetExtensions = config.getAssetExtensions(name);
+        res.setAssetExtensions(assetExtensions == null ? HashMultimap.create() : assetExtensions.getLocations());
+        res.setViews(views.getPrefixes());
+        final ViewRestSources viewExtensions = config.getViewExtensions(name);
+        res.setViewExtensions(viewExtensions == null ? Collections.emptyMap() : viewExtensions.getPrefixes());
+        res.setRestRootUrl(templateRedirect.getRootPath());
+
+        res.setIndexFile(indexFile);
+        res.setFilesRegex(fileRequestPattern);
+        res.setHasDefaultFilesRegex(fileRequestPattern.equals(ServerPagesBundle.FILE_REQUEST_PATTERN));
+
+        res.setSpa(spaSupport);
+        res.setSpaRegex(spaNoRedirectRegex);
+        res.setHasDefaultSpaRegex(spaNoRedirectRegex.equals(SpaBundle.DEFAULT_PATTERN));
+
+        res.setErrorPages(errorPages);
+        return res;
+    }
+
     /**
      * @return true if application already started, false otherwise
      */
-    public boolean isStarted() {
+    protected boolean isStarted() {
         return started;
     }
 
@@ -137,14 +181,14 @@ public class ServerPagesApp {
     private AssetLookup collectAssets(final GlobalConfig config) {
         final AssetSources ext = config.getAssetExtensions(name);
         if (ext != null) {
-            extendedAssetLocations.merge(ext);
+            assetLocations.merge(ext);
         }
 
         final ImmutableMultimap.Builder<String, String> builder = ImmutableMultimap.<String, String>builder()
                 // order by size to correctly handle overlapped paths (e.g. /foo/bar checked before /foo)
                 .orderKeysBy(Comparator.comparing(String::length).reversed());
 
-        final Multimap<String, String> src = extendedAssetLocations.getLocations();
+        final Multimap<String, String> src = assetLocations.getLocations();
         for (String key : src.keySet()) {
             final String[] values = src.get(key).toArray(new String[0]);
             // reverse registered locations to preserve registration order priority during lookup
@@ -160,19 +204,19 @@ public class ServerPagesApp {
     private ViewRestLookup collectViews(final GlobalConfig config) {
         final ViewRestSources ext = config.getViewExtensions(name);
         if (ext != null) {
-            extendedViewPrefixes.merge(ext);
+            viewPrefixes.merge(ext);
         }
 
         // use application name as default mapping prefix if root mapping not configured
         // (neither directly nor by extension mechanism)
-        if (!extendedViewPrefixes.getPrefixes().containsKey("")) {
-            extendedViewPrefixes.map(name);
+        if (!viewPrefixes.getPrefixes().containsKey("")) {
+            viewPrefixes.map(name);
         }
 
         final ImmutableSortedMap.Builder<String, String> builder = ImmutableSortedMap
                 // order by size to correctly handle overlapped paths (e.g. /foo/bar checked before /foo)
                 .<String, String>orderedBy(Comparator.comparing(String::length).reversed())
-                .putAll(extendedViewPrefixes.getPrefixes());
+                .putAll(viewPrefixes.getPrefixes());
 
         // process paths the same way as assets servlet does
         return new ViewRestLookup(builder.build());
