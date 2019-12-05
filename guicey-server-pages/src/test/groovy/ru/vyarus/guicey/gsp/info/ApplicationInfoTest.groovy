@@ -36,8 +36,8 @@ class ApplicationInfoTest extends Specification {
             requiredRenderers == ["freemarker"]
 
             mainAssetsLocation == "app/"
-            hasAssetExtensions
-            hasViewsExtensions
+            !assetExtensions.isEmpty()
+            !viewExtensions.isEmpty()
             with(assets) {
                 keySet().size() == 1
                 it.get("") as List == ["foo/", "app/"] as List
@@ -72,8 +72,8 @@ class ApplicationInfoTest extends Specification {
             requiredRenderers.isEmpty()
 
             mainAssetsLocation == "app/"
-            !hasAssetExtensions
-            !hasViewsExtensions
+            assetExtensions.isEmpty()
+            viewExtensions.isEmpty()
             with(assets) {
                 keySet().size() == 2
                 it.get("") as List == ["foo/bar/", "app/"] as List

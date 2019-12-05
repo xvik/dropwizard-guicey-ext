@@ -30,8 +30,8 @@ public class GspApp {
     // relative path (sub/) --> rest mapping prefix (some/prefix/)
     // "" --> main application rest prefix
     private Map<String, String> views;
-    private boolean hasAssetExtensions;
-    private boolean hasViewsExtensions;
+    private Multimap<String, String> assetExtensions;
+    private Map<String, String> viewExtensions;
     private String restRootUrl;
 
     private String indexFile;
@@ -154,25 +154,25 @@ public class GspApp {
     }
 
     /**
-     * @return true if application assets were extended (with {@code extendApp()}, false if not
+     * @return only extension asset declarations or empty map
      */
-    public boolean isHasAssetExtensions() {
-        return hasAssetExtensions;
+    public Multimap<String, String> getAssetExtensions() {
+        return assetExtensions;
     }
 
-    public void setHasAssetExtensions(final boolean hasAssetExtensions) {
-        this.hasAssetExtensions = hasAssetExtensions;
+    public void setAssetExtensions(final Multimap<String, String> assetExtensions) {
+        this.assetExtensions = assetExtensions;
     }
 
     /**
-     * @return true if application view rest prefixes were extended (with {@code extendApp()}, false if not
+     * @return only extension view rest mappings or empty map
      */
-    public boolean isHasViewsExtensions() {
-        return hasViewsExtensions;
+    public Map<String, String> getViewExtensions() {
+        return viewExtensions;
     }
 
-    public void setHasViewsExtensions(final boolean hasViewsExtensions) {
-        this.hasViewsExtensions = hasViewsExtensions;
+    public void setViewExtensions(final Map<String, String> viewExtensions) {
+        this.viewExtensions = viewExtensions;
     }
 
     /**

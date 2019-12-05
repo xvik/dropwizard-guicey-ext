@@ -1,12 +1,15 @@
 package ru.vyarus.guicey.gsp.info;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import io.dropwizard.views.ViewRenderer;
 import ru.vyarus.guicey.gsp.ServerPagesBundle;
 import ru.vyarus.guicey.gsp.app.GlobalConfig;
 import ru.vyarus.guicey.gsp.app.ServerPagesApp;
+import ru.vyarus.guicey.gsp.app.asset.AssetSources;
+import ru.vyarus.guicey.gsp.app.rest.mapping.ViewRestSources;
 import ru.vyarus.guicey.gsp.info.model.GspApp;
 import ru.vyarus.guicey.spa.SpaBundle;
 
@@ -98,9 +101,11 @@ public class GspInfoService {
 
         res.setMainAssetsLocation(app.mainAssetsPath);
         res.setAssets(app.assets.getLocations());
-        res.setHasAssetExtensions(config.getAssetExtensions(app.name) != null);
+        final AssetSources assetExtensions = config.getAssetExtensions(app.name);
+        res.setAssetExtensions(assetExtensions == null ? HashMultimap.create() : assetExtensions.getLocations());
         res.setViews(app.views.getPrefixes());
-        res.setHasViewsExtensions(config.getViewExtensions(app.name) != null);
+        final ViewRestSources viewExtensions = config.getViewExtensions(app.name);
+        res.setViewExtensions(viewExtensions == null ? Collections.emptyMap() : viewExtensions.getPrefixes());
         res.setRestRootUrl(app.templateRedirect.getRootPath());
 
         res.setIndexFile(app.indexFile);
