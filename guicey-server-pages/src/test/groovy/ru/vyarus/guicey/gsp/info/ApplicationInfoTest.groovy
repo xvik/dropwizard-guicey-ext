@@ -36,8 +36,10 @@ class ApplicationInfoTest extends Specification {
             requiredRenderers == ["freemarker"]
 
             mainAssetsLocation == "app/"
-            !assetExtensions.isEmpty()
-            !viewExtensions.isEmpty()
+            assetExtensions.size() == 1
+            assetExtensions.get("") as List == ["foo/"] as List
+            viewExtensions.size() == 1
+            viewExtensions.get("foo/") == "foo/"
             with(assets) {
                 keySet().size() == 1
                 it.get("") as List == ["foo/", "app/"] as List
@@ -61,6 +63,9 @@ class ApplicationInfoTest extends Specification {
             errorPages.size() == 1
             errorPages[404] == "err.tpl"
             defaultErrorPage == null
+
+            hiddenViewPaths.isEmpty()
+            viewPaths.size() == 7
         }
 
         and: "app2 - customized mappings"
@@ -98,6 +103,9 @@ class ApplicationInfoTest extends Specification {
             errorPages.size() == 1
             errorPages[-1] == "err.tpl"
             defaultErrorPage == "err.tpl"
+
+            hiddenViewPaths.isEmpty()
+            viewPaths.size() == 7
         }
 
     }

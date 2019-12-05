@@ -13,20 +13,20 @@ import java.util.Comparator;
  * @author Vyacheslav Rusakov
  * @since 03.12.2018
  */
-public class ResourcePath implements Comparable<ResourcePath> {
+public class ViewPath implements Comparable<ViewPath> {
 
     private final ResourceMethod method;
     private final Resource resource;
-    private final Class<?> klass;
+    private final Class<?> resourceType;
     private final String url;
 
-    public ResourcePath(final ResourceMethod method,
-                        final Resource resource,
-                        final Class<?> klass,
-                        final String url) {
+    public ViewPath(final ResourceMethod method,
+                    final Resource resource,
+                    final Class<?> resourceType,
+                    final String url) {
         this.method = method;
         this.resource = resource;
-        this.klass = klass;
+        this.resourceType = resourceType;
         this.url = url;
     }
 
@@ -45,10 +45,10 @@ public class ResourcePath implements Comparable<ResourcePath> {
     }
 
     /**
-     * @return resource type
+     * @return resource class
      */
-    public Class<?> getKlass() {
-        return klass;
+    public Class<?> getResourceType() {
+        return resourceType;
     }
 
     /**
@@ -60,11 +60,11 @@ public class ResourcePath implements Comparable<ResourcePath> {
 
     @Override
     public String toString() {
-        return "template (" + url + ")";
+        return method.getHttpMethod() + " " + url;
     }
 
     @Override
-    public int compareTo(final ResourcePath o) {
+    public int compareTo(final ViewPath o) {
         return ComparisonChain.start()
                 .compare(url, o.url)
                 .compare(method.getHttpMethod(), o.method.getHttpMethod(), Comparator.nullsLast(Ordering.natural()))
@@ -76,10 +76,10 @@ public class ResourcePath implements Comparable<ResourcePath> {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof ResourcePath)) {
+        if (!(o instanceof ViewPath)) {
             return false;
         }
-        final ResourcePath that = (ResourcePath) o;
+        final ViewPath that = (ViewPath) o;
         return method.equals(that.method);
     }
 

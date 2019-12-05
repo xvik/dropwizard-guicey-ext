@@ -1,10 +1,7 @@
 package ru.vyarus.guicey.gsp.app;
 
 import com.google.common.base.Joiner;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.ImmutableMultimap;
-import com.google.common.collect.ImmutableSortedMap;
-import com.google.common.collect.Multimap;
+import com.google.common.collect.*;
 import io.dropwizard.jetty.setup.ServletEnvironment;
 import io.dropwizard.setup.Environment;
 import io.dropwizard.views.ViewRenderer;
@@ -21,7 +18,10 @@ import ru.vyarus.guicey.gsp.app.filter.redirect.ErrorRedirect;
 import ru.vyarus.guicey.gsp.app.filter.redirect.SpaSupport;
 import ru.vyarus.guicey.gsp.app.filter.redirect.TemplateRedirect;
 import ru.vyarus.guicey.gsp.app.rest.DirectTemplateResource;
+import ru.vyarus.guicey.gsp.app.rest.log.HiddenViewPath;
+import ru.vyarus.guicey.gsp.app.rest.log.MappedViewPath;
 import ru.vyarus.guicey.gsp.app.rest.log.RestPathsAnalyzer;
+import ru.vyarus.guicey.gsp.app.rest.log.ViewPath;
 import ru.vyarus.guicey.gsp.app.rest.mapping.ViewRestLookup;
 import ru.vyarus.guicey.gsp.app.rest.mapping.ViewRestSources;
 import ru.vyarus.guicey.gsp.app.util.PathUtils;
@@ -46,7 +46,7 @@ import java.util.stream.Collectors;
  * @author Vyacheslav Rusakov
  * @since 11.01.2019
  */
-@SuppressWarnings({"checkstyle:VisibilityModifier", "checkstyle:ClassDataAbstractionCoupling",
+@SuppressWarnings({"checkstyle:ClassDataAbstractionCoupling", "checkstyle:ClassFanOutComplexity",
         "PMD.ExcessiveImports", "PMD.TooManyFields"})
 public class ServerPagesApp {
 
@@ -84,6 +84,8 @@ public class ServerPagesApp {
     // all locations, including all extensions
     protected AssetLookup assets;
     protected ViewRestLookup views;
+    protected List<MappedViewPath> viewPaths;
+    protected List<HiddenViewPath> hiddenViewPaths;
     private boolean started;
     private final Logger logger = LoggerFactory.getLogger(ServerPagesApp.class);
 
@@ -137,7 +139,8 @@ public class ServerPagesApp {
      */
     public void initialize(final String restContext, final String restMapping, final RestPathsAnalyzer analyzer) {
         templateRedirect.setRootPath(restContext, restMapping);
-        logger.info(AppReportBuilder.build(this, analyzer));
+        analyzePaths(analyzer);
+        logger.info(AppReportBuilder.build(this));
         started = true;
     }
 
@@ -167,6 +170,9 @@ public class ServerPagesApp {
         res.setHasDefaultSpaRegex(spaNoRedirectRegex.equals(SpaBundle.DEFAULT_PATTERN));
 
         res.setErrorPages(errorPages);
+        res.setViewPaths(ImmutableList.copyOf(viewPaths));
+        res.setHiddenViewPaths(hiddenViewPaths.isEmpty() ? Collections.emptyList()
+                : ImmutableList.copyOf(hiddenViewPaths));
         return res;
     }
 
@@ -291,5 +297,38 @@ public class ServerPagesApp {
                         spa,
                         renderers))
                 .addMappingForServletNames(types, false, name);
+    }
+
+    @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
+    private void analyzePaths(final RestPathsAnalyzer analyzer) {
+        viewPaths = new ArrayList<>();
+        hiddenViewPaths = new ArrayList<>();
+
+        final List<String> overrides = new ArrayList<>();
+        for (Map.Entry<String, String> entry : views.getPrefixes().entrySet()) {
+            // sub url (related to application root)
+            final String sub = entry.getKey();
+            // mapping rest prefix for this sub url
+            final String prefix = PathUtils.prefixSlash(entry.getValue());
+            for (ViewPath handle : analyzer.select(prefix)) {
+                final String relativeUrl = handle.getUrl().substring(prefix.length());
+                boolean hidden = false;
+
+                // check if rest, registered on suburl overrides this resources, making it unreachable
+                for (String overrideSub : overrides) {
+                    if (relativeUrl.startsWith(overrideSub)) {
+                        hiddenViewPaths.add(new HiddenViewPath(handle, sub, prefix, overrideSub));
+                        hidden = true;
+                        break;
+                    }
+                }
+
+                if (!hidden) {
+                    // visible path
+                    viewPaths.add(new MappedViewPath(handle, sub, prefix));
+                }
+            }
+            overrides.add(sub);
+        }
     }
 }

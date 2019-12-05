@@ -22,7 +22,7 @@ import java.util.TreeSet;
 public class RestPathsAnalyzer {
 
     private static final TypeResolver TYPE_RESOLVER = new TypeResolver();
-    private final Set<ResourcePath> paths = new HashSet<>();
+    private final Set<ViewPath> paths = new HashSet<>();
 
     /**
      * Collects all registered template resource paths for console logging.
@@ -59,10 +59,10 @@ public class RestPathsAnalyzer {
      * @param app application name
      * @return rest paths of required app
      */
-    public Set<ResourcePath> select(final String app) {
-        final Set<ResourcePath> res = new TreeSet<>();
+    public Set<ViewPath> select(final String app) {
+        final Set<ViewPath> res = new TreeSet<>();
         final String prefix = PathUtils.prefixSlash(PathUtils.endSlash(app));
-        for (ResourcePath path : paths) {
+        for (ViewPath path : paths) {
             if (path.getUrl().startsWith(prefix)) {
                 res.add(path);
             }
@@ -75,7 +75,7 @@ public class RestPathsAnalyzer {
                                  final Class<?> klass,
                                  final boolean isLocator,
                                  final Resource resource,
-                                 final Set<ResourcePath> handles) {
+                                 final Set<ViewPath> handles) {
         String basePath = rootPath;
         if (!isLocator) {
             basePath = PathUtils.normalizePath(rootPath, resource.getPath());
@@ -83,14 +83,14 @@ public class RestPathsAnalyzer {
 
         for (ResourceMethod method : resource.getResourceMethods()) {
             // map direct resource methods
-            handles.add(new ResourcePath(method, resource, klass, basePath));
+            handles.add(new ViewPath(method, resource, klass, basePath));
         }
 
         for (Resource childResource : resource.getChildResources()) {
             for (ResourceMethod method : childResource.getAllMethods()) {
                 if (method.getType() == ResourceMethod.JaxrsType.RESOURCE_METHOD) {
                     final String path = PathUtils.normalizePath(basePath, childResource.getPath());
-                    handles.add(new ResourcePath(method, childResource, klass, path));
+                    handles.add(new ViewPath(method, childResource, klass, path));
                 } else if (method.getType() == ResourceMethod.JaxrsType.SUB_RESOURCE_LOCATOR) {
                     final String path = PathUtils.normalizePath(basePath, childResource.getPath());
                     final ResolvedType responseType = TYPE_RESOLVER
@@ -100,7 +100,7 @@ public class RestPathsAnalyzer {
                             : responseType.getErasedType();
                     final Resource erasedTypeResource = Resource.from(erasedType);
                     if (erasedTypeResource == null) {
-                        handles.add(new ResourcePath(method, childResource, erasedType, path));
+                        handles.add(new ViewPath(method, childResource, erasedType, path));
                     } else {
                         populate(path, erasedType, true, erasedTypeResource, handles);
                     }

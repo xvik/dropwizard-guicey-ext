@@ -2,6 +2,8 @@ package ru.vyarus.guicey.gsp.info.model;
 
 import com.google.common.collect.Multimap;
 import ru.vyarus.guicey.gsp.app.filter.redirect.ErrorRedirect;
+import ru.vyarus.guicey.gsp.app.rest.log.HiddenViewPath;
+import ru.vyarus.guicey.gsp.app.rest.log.MappedViewPath;
 
 import java.util.List;
 import java.util.Map;
@@ -43,6 +45,9 @@ public class GspApp {
     private boolean hasDefaultSpaRegex;
 
     private Map<Integer, String> errorPages;
+
+    private List<MappedViewPath> viewPaths;
+    private List<HiddenViewPath> hiddenViewPaths;
 
     /**
      * @return application name
@@ -273,5 +278,30 @@ public class GspApp {
      */
     public String getDefaultErrorPage() {
         return errorPages.get(ErrorRedirect.DEFAULT_ERROR_PAGE);
+    }
+
+    /**
+     * @return mapped view rest methods
+     */
+    public List<MappedViewPath> getViewPaths() {
+        return viewPaths;
+    }
+
+    public void setViewPaths(final List<MappedViewPath> viewPaths) {
+        this.viewPaths = viewPaths;
+    }
+
+    /**
+     * Hidden methods appear when sub url mapped to different rest prefix, making all root rest paths under the
+     * same prefix unreachable.
+     *
+     * @return hidden view rest method
+     */
+    public List<HiddenViewPath> getHiddenViewPaths() {
+        return hiddenViewPaths;
+    }
+
+    public void setHiddenViewPaths(final List<HiddenViewPath> hiddenViewPaths) {
+        this.hiddenViewPaths = hiddenViewPaths;
     }
 }
