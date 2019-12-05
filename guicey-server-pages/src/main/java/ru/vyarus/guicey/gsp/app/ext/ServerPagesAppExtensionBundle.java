@@ -73,7 +73,7 @@ public class ServerPagesAppExtensionBundle implements GuiceyBundle {
          * @param subUrl sub url to map views to
          * @param prefix rest prefix to map as root views
          * @return builder instance for chained calls
-         * @see ServerPagesBundle.AppBuilder#mapViews(String, String)
+         * @see ru.vyarus.guicey.gsp.app.ServerPagesAppBundle.AppBuilder#mapViews(String, String)
          */
         public AppExtensionBuilder mapViews(final String subUrl, final String prefix) {
             bundle.views.map(subUrl, prefix);
@@ -88,7 +88,7 @@ public class ServerPagesAppExtensionBundle implements GuiceyBundle {
          *
          * @param path assets classpath path
          * @return builder instance for chained calls
-         * @see ServerPagesBundle.AppBuilder#attachAssets(String)
+         * @see ru.vyarus.guicey.gsp.app.ServerPagesAppBundle.AppBuilder#attachAssets(String)
          */
         public AppExtensionBuilder attachAssets(final String path) {
             bundle.assets.attach(path);
@@ -106,7 +106,7 @@ public class ServerPagesAppExtensionBundle implements GuiceyBundle {
          * @param subUrl sub url to serve assets from
          * @param path   assets classpath paths
          * @return builder instance for chained calls
-         * @see ServerPagesBundle.AppBuilder#attachAssets(String, String)
+         * @see ru.vyarus.guicey.gsp.app.ServerPagesAppBundle.AppBuilder#attachAssets(String, String)
          */
         public AppExtensionBuilder attachAssets(final String subUrl, final String path) {
             bundle.assets.attach(subUrl, path);

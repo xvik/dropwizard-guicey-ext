@@ -13,7 +13,7 @@ import java.util.Map;
  * Each modifier is registered for exact renderer and so don't have to deal with map of maps (global configuration).
  *
  * @author Vyacheslav Rusakov
- * @see ru.vyarus.guicey.gsp.ServerPagesBundle.AppBuilder#viewsConfigurationModifier(
+ * @see ru.vyarus.guicey.gsp.app.ServerPagesAppBundle.AppBuilder#viewsConfigurationModifier(
  *String, ViewRendererConfigurationModifier)
  * @see ru.vyarus.guicey.gsp.ServerPagesBundle.ViewsBuilder#viewsConfigurationModifier(
  *  String, ViewRendererConfigurationModifier)
