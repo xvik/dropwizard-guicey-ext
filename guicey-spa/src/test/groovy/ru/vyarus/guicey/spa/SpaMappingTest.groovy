@@ -122,7 +122,7 @@ class SpaMappingTest extends AbstractTest {
         @Override
         void initialize(Bootstrap<Configuration> bootstrap) {
             bootstrap.addBundle(GuiceBundle.builder()
-                    .bundles(SpaBundle.app("app", "/app", "/").build())
+                    .bundles(SpaBundle.app("app", "app", "/").build())
                     .build())
         }
 

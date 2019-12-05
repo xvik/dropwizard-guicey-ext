@@ -92,7 +92,7 @@ public class SpaBundle implements GuiceyBundle {
      * Note: application names must be unique (when you register multiple SPA applications.
      *
      * @param name         application name (used as servlet name)
-     * @param resourcePath path to application resources (classpath)
+     * @param resourcePath application resources classpath location (may use slash or dots as separator)
      * @param uriPath      mapping uri
      * @return builder instance for SPA configuration
      */
@@ -119,6 +119,7 @@ public class SpaBundle implements GuiceyBundle {
     public static class Builder {
         private final SpaBundle bundle = new SpaBundle();
 
+        @SuppressWarnings("PMD.UseStringBufferForStringAppends")
         public Builder(final boolean mainContext,
                        final String name,
                        final String path,
@@ -127,9 +128,10 @@ public class SpaBundle implements GuiceyBundle {
             bundle.assetName = checkNotNull(name, "Name is required");
             bundle.uriPath = uri.endsWith(SLASH) ? uri : (uri + SLASH);
 
-            checkArgument(path.startsWith(SLASH), "%s is not an absolute path", path);
-            checkArgument(!SLASH.equals(path), "%s is the classpath root", path);
-            bundle.resourcePath = path.endsWith(SLASH) ? path : (path + SLASH);
+            String clearPath = path.replace("\\", SLASH).replace(".", SLASH).replaceAll("/+", SLASH);
+            clearPath = clearPath.endsWith(SLASH) ? clearPath : (clearPath + SLASH);
+            checkArgument(!SLASH.equals(clearPath), "%s is the classpath root", path);
+            bundle.resourcePath = clearPath;
         }
 
         /**

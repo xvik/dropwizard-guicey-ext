@@ -14,7 +14,8 @@
     - (breaking) Removed `SpaBundle.register(GuiceyBundle)` as redundant
     - (breaking) Fix spa redirection detection for wildcard (\*/*) Accept requests: 
         html request reqcognized now only by direct text/html 
-        (ignoring wildcard used by browsers for resources loading)             
+        (ignoring wildcard used by browsers for resources loading)
+    - Allow package notion for resources registration (com.company.project)                 
 * [server-pages]
     - (breaking) ServerPagesBundle and application bundle are guicey bundles now
     - (breaking) `ServerPagesBundle.extendApp()` returns bundle builder used to extend application and resulted 
