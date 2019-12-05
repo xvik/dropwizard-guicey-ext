@@ -101,7 +101,7 @@ public final class AppReportBuilder {
                 res.append(TAB).append(TAB)
                         .append(String.format("%-7s %s (%s #%s) of %s mapping hidden by %s mapping",
                                 handle.getMethod().getHttpMethod(),
-                                path.getMappedUrl(),
+                                PathUtils.path(app.fullUriPath, path.getMappedUrl()),
                                 RenderUtils.getClassName(handle.getResourceType()),
                                 handle.getMethod().getInvocable().getDefinitionMethod().getName(),
                                 PathUtils.path(app.fullUriPath, path.getMapping()) + STAR,

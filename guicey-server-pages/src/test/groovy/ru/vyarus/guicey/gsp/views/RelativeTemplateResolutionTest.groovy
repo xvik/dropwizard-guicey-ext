@@ -9,7 +9,10 @@ import ru.vyarus.dropwizard.guice.test.spock.ConfigOverride
 import ru.vyarus.dropwizard.guice.test.spock.UseDropwizardApp
 import ru.vyarus.guicey.gsp.AbstractTest
 import ru.vyarus.guicey.gsp.ServerPagesBundle
+import ru.vyarus.guicey.gsp.info.GspInfoService
 import ru.vyarus.guicey.gsp.support.relative.RelativeTemplateResource
+
+import javax.inject.Inject
 
 /**
  * @author Vyacheslav Rusakov
@@ -19,6 +22,9 @@ import ru.vyarus.guicey.gsp.support.relative.RelativeTemplateResource
         @ConfigOverride(key = "server.rootPath", value = "/rest/*")
 ])
 class RelativeTemplateResolutionTest extends AbstractTest {
+
+    @Inject
+    GspInfoService info
 
     def "Check relative templates"() {
 
@@ -36,6 +42,15 @@ class RelativeTemplateResolutionTest extends AbstractTest {
         res = getHtml("/relative/dir")
         then: "found"
         res.contains("page: /relative/dir")
+
+        and: "mapping correct"
+        info.getApplication("app").getViewPaths().collect { it.mappedUrl } as Set == [
+                "/relative/dir",
+                "/relative/direct",
+                "/relative/relative",
+                "/{file:.*}"] as Set
+
+        info.getApplication("app").getHiddenViewPaths().isEmpty()
     }
 
     static class App extends Application<Configuration> {

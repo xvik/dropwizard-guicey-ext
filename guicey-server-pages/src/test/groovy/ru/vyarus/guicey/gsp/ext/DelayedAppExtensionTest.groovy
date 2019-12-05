@@ -9,8 +9,11 @@ import ru.vyarus.dropwizard.guice.test.spock.ConfigOverride
 import ru.vyarus.dropwizard.guice.test.spock.UseDropwizardApp
 import ru.vyarus.guicey.gsp.AbstractTest
 import ru.vyarus.guicey.gsp.ServerPagesBundle
+import ru.vyarus.guicey.gsp.info.GspInfoService
 import ru.vyarus.guicey.gsp.support.app.OverridableTemplateResource
 import ru.vyarus.guicey.gsp.support.app.SubTemplateResource
+
+import javax.inject.Inject
 
 /**
  * @author Vyacheslav Rusakov
@@ -20,6 +23,9 @@ import ru.vyarus.guicey.gsp.support.app.SubTemplateResource
         @ConfigOverride(key = "server.rootPath", value = "/rest/*")
 ])
 class DelayedAppExtensionTest extends AbstractTest {
+
+    @Inject
+    GspInfoService info
 
     def "Check app mapped"() {
 
@@ -57,6 +63,16 @@ class DelayedAppExtensionTest extends AbstractTest {
         res = getHtml("/sub/sample")
         then: "index page"
         res.contains("page: /sub/sample")
+
+        and: "mapping correct"
+        info.getApplication("app").getViewPaths().collect { it.mappedUrl } as Set == [
+                "/sub/sample",
+                "/sub/{file:.*}",
+                "/sample",
+                "/{file:.*}"] as Set
+
+        info.getApplication("app").getHiddenViewPaths().collect { it.mappedUrl } as Set == [
+                "/sub/{name}"] as Set
     }
 
     static class App extends Application<Configuration> {

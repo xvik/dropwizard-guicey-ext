@@ -54,6 +54,14 @@ class ViewsSubMappingTest extends AbstractTest {
         }
         app.indexFile == "index.html"
 
+        info.getApplication("app").getViewPaths().collect { it.mappedUrl } as Set == [
+                "/sub/sample",
+                "/sub/{file:.*}",
+                "/sample",
+                "/{file:.*}"] as Set
+
+        info.getApplication("app").getHiddenViewPaths().collect { it.mappedUrl } as Set == [
+                "/sub/{name}"] as Set
     }
 
     static class App extends Application<Configuration> {

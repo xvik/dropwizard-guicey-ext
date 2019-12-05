@@ -7,7 +7,10 @@ import io.dropwizard.setup.Environment
 import ru.vyarus.dropwizard.guice.GuiceBundle
 import ru.vyarus.dropwizard.guice.test.spock.ConfigOverride
 import ru.vyarus.dropwizard.guice.test.spock.UseDropwizardApp
+import ru.vyarus.guicey.gsp.info.GspInfoService
 import ru.vyarus.guicey.gsp.support.app.SampleTemplateResource
+
+import javax.inject.Inject
 
 /**
  * @author Vyacheslav Rusakov
@@ -18,12 +21,23 @@ import ru.vyarus.guicey.gsp.support.app.SampleTemplateResource
 ])
 class ResourceMappingTest extends AbstractTest {
 
+    @Inject
+    GspInfoService info
+
     def "Chek custom resource mapping"() {
 
         when: "accessing template through resource"
         String res = getHtml("/sample/tt")
         then: "template mapped"
         res.contains("name: tt")
+
+        and: "recognized mappings"
+        info.getApplication("app").getViewPaths().collect { it.mappedUrl } as Set == [
+                "/sample/error",
+                "/sample/error2",
+                "/sample/notfound",
+                "/sample/{name}",
+                "/{file:.*}"] as Set
 
     }
 
