@@ -36,6 +36,11 @@ public class TemplateContext {
     // be impossible to properly resolve template (because we have only part of path and cant match extended asset
     // locations). For root matching, context will be empty
     private final String restSubContext;
+    // its important to know current assumed rest prefix to properly compute path in direct template resource
+    // because resource itself may be registered on any level (due to sub mappings or different application)
+    private final String restPrefix;
+    // called path looks like direct template call
+    private final boolean directTemplate;
     private final AssetLookup assets;
     private final ErrorRedirect errorRedirect;
     private final HttpServletRequest request;
@@ -44,9 +49,12 @@ public class TemplateContext {
     private String annotationTemplate;
     private boolean manualErrorHandling;
 
+    @SuppressWarnings("checkstyle:ParameterNumber")
     public TemplateContext(final String appName,
                            final String rootUrl,
                            final String restSubContext,
+                           final String restPrefix,
+                           final boolean directTemplate,
                            final AssetLookup assets,
                            final ErrorRedirect errorRedirect,
                            final HttpServletRequest request,
@@ -54,6 +62,8 @@ public class TemplateContext {
         this.appName = appName;
         this.rootUrl = rootUrl;
         this.restSubContext = restSubContext;
+        this.restPrefix = restPrefix;
+        this.directTemplate = directTemplate;
         this.assets = assets;
         this.errorRedirect = errorRedirect;
         this.request = request;
@@ -93,6 +103,29 @@ public class TemplateContext {
     public String getRestSubContext() {
         // just to avoid confusion, because normally context is relative
         return PathUtils.prefixSlash(restSubContext);
+    }
+
+    /**
+     * Context rest mapping path. Important for direct template resource to properly identify target path
+     * because direct template resource may appear on any level (due to sub mappings or mapping in other applications).
+     *
+     * @return rest prefix used under current template call
+     */
+    public String getRestPrefix() {
+        // just to avoid confusion, because normally prefix is relative
+        return PathUtils.prefixSlash(restPrefix);
+    }
+
+    /**
+     * True means that one of registered view renderers recognize path as template file. In real life, such
+     * path may be handled with special rest mapping instead, so this flag is useful only for cases when
+     * no matching rest found for path (because without it it would be impossible to differentiate template not found
+     * and rest path not matched cases).
+     *
+     * @return true if current path could be direct template call
+     */
+    public boolean isDirectTemplate() {
+        return directTemplate;
     }
 
     /**
@@ -196,7 +229,7 @@ public class TemplateContext {
         // search in configured locations
         if (!path.startsWith(PathUtils.SLASH)) {
             // recover original calling path to properly resolve asset (inside sub context mapped view)
-            path = PathUtils.path(restSubContext, path);
+            path = PathUtils.normalizePath(restSubContext, path);
             // search in configured folders
             path = PathUtils.prefixSlash(ResourceLookup.lookupOrFail(path, assets));
             logger.debug("Relative template '{}' resolved to '{}'", template, path);
@@ -221,6 +254,9 @@ public class TemplateContext {
      * @return true if redirect performed, false if no redirect performed
      */
     public boolean redirectError(final Throwable ex) {
+        if (manualErrorHandling) {
+            logger.debug("Automatic error handling disabled on path: exception assumed to be handled manually");
+        }
         // use request with original uri instead of rest mapped and raw response (not hk proxy)
         // may be disabled by @ManualErrorHandling annotation
         return !manualErrorHandling && errorRedirect.redirect(getRequest(), getResponse(), wrap(ex));

@@ -20,9 +20,7 @@ import javax.ws.rs.core.Response
  * @author Vyacheslav Rusakov
  * @since 24.01.2019
  */
-@UseDropwizardApp(value = App, configOverride = [
-        @ConfigOverride(key = "server.rootPath", value = "/rest/*")
-])
+@UseDropwizardApp(value = App, config = 'src/test/resources/conf.yml')
 class ErrorCodesMappingTest extends AbstractTest {
 
     def "Check error mapping"() {
@@ -73,7 +71,7 @@ class ErrorCodesMappingTest extends AbstractTest {
         }
     }
 
-    @Path('/err')
+    @Path('/err/')
     @Template
     public static class ErrorResource {
 

@@ -30,7 +30,11 @@
     - Allow views mapping configuration (by default, application name prefix used)
     - Allow views mapping to sub urls
     - Fix error page render instead of asset 404 error (during browser resource call)
-    - Add GspInfoService to be able to access gsp apps configuration info (for reporting or validation)    
+    - Set UTF-8 encoding by default for views rendering
+    - Fix return 404 instead of 500 for not found view rest path 
+        (try to render template only if it looks like a template, otherwise consider wrong url)
+    - Direct templates support now use ExceptionMapper instead of dynamically mapped wildcard resource
+        This will fix not served direct templates issue (appeared due to jersey paths matching algorithms)         
 * [jdbi3]
     - JdbiBundle declared as unique (it will not work with multiple instances)
     - Detect when repository base class is also annotated with @JdbiRepository to prevent confusing errors (#4)

@@ -3,7 +3,6 @@ package ru.vyarus.guicey.gsp.app.filter.redirect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.vyarus.guicey.gsp.app.asset.AssetLookup;
-import ru.vyarus.guicey.gsp.app.rest.DirectTemplateResource;
 import ru.vyarus.guicey.gsp.app.rest.mapping.ViewRestLookup;
 import ru.vyarus.guicey.gsp.app.rest.support.TemplateAnnotationFilter;
 import ru.vyarus.guicey.gsp.app.util.PathUtils;
@@ -18,7 +17,8 @@ import java.io.IOException;
 
 /**
  * Performs redirection of template request into rest context. Note that even if no special rest
- * mapped for template, it would be rendered with the default {@link DirectTemplateResource}.
+ * mapped for template, but request looks like direct file template, it would be rendered with the
+ * {@link ru.vyarus.guicey.gsp.app.rest.support.DirectTemplateExceptionMapper}.
  * <p>
  * Rest resource convention: /[rest context]/[prefix]/[path from request], where
  * [prefix] is application registration name by default (but may be configured). Additional
@@ -80,29 +80,36 @@ public class TemplateRedirect {
 
     /**
      * Redirect template request into rest resource. Jersey will select appropriate resource by path, or
-     * default {@link DirectTemplateResource} will be used.
+     * thrown not found exception, received by
+     * {@link ru.vyarus.guicey.gsp.app.rest.support.DirectTemplateExceptionMapper} (to render direct template instead).
      *
-     * @param request  template request
-     * @param response template response
-     * @param page     requested template path (cleared for matching)
+     * @param request        template request
+     * @param response       template response
+     * @param page           requested template path (cleared for matching)
+     * @param directTemplate true if target path looks like template call
      * @throws IOException      on dispatching errors
      * @throws ServletException on dispatching errors
      */
     public void redirect(final HttpServletRequest request,
                          final HttpServletResponse response,
-                         final String page) throws IOException, ServletException {
+                         final String page,
+                         final boolean directTemplate) throws IOException, ServletException {
         // for root context will be empty
         final String contextUrl = views.lookupSubContext(page);
+        final String restPrefix = views.lookupRestPrefix(contextUrl);
         CONTEXT_TEMPLATE.set(new TemplateContext(app,
                 mapping,
                 contextUrl,
+                restPrefix,
+                directTemplate,
                 assets,
                 errorRedirect,
                 request,
                 response));
         try {
-            final String path = PathUtils.path(rootPath, views.lookupRestPrefix(contextUrl, page));
-            logger.debug("Rendering template path: {}", path);
+            final String path = PathUtils.path(rootPath, views.buildRestPath(contextUrl, page));
+            logger.debug("Redirecting '{}' to view path '{}' (app context: {}, rest mapping prefix: {})",
+                    page, path, contextUrl.isEmpty() ? PathUtils.SLASH : contextUrl, PathUtils.SLASH + restPrefix);
             // this moment is especially important for admin apps where context could be radically different
             restServlet.service(
                     new TemplateRequest(request, path, restContextPath, restServletMapping), response);

@@ -2,6 +2,7 @@ package ru.vyarus.guicey.gsp.app.asset;
 
 import com.google.common.base.CharMatcher;
 import com.google.common.collect.Multimap;
+import ru.vyarus.guicey.gsp.app.util.PathUtils;
 import ru.vyarus.guicey.gsp.app.util.ResourceLookup;
 
 import java.io.Serializable;
@@ -87,7 +88,7 @@ public class AssetLookup implements Serializable {
     }
 
     /**
-     * Supposed to be used for error reporting.
+     * Supposed to be used for error reporting. Return locations in package notion.
      *
      * @param path url relative to application root
      * @return matching classpath locations (not where resource is found, but where it is searched)
@@ -100,7 +101,7 @@ public class AssetLookup implements Serializable {
             if (assetPath.startsWith(url)) {
                 for (String loc : locations.get(url)) {
                     // prefix with folder for better understanding context
-                    matches.add(url + loc);
+                    matches.add(PathUtils.trimSlashes(url + loc).replace("/", "."));
                 }
             }
         }

@@ -121,7 +121,7 @@ public class ErrorRedirect {
         final ErrorContext context = CONTEXT_ERROR.get();
         if (context != null && !context.processed) {
             // logged as debug, because most likely dropwizard will log it (hiding duplicate with debug level)
-            logger.debug("Error page processing error", exception);
+            logger.debug("Error page '" + request.getRequestURI() + "' processing error", exception);
             onUnexpectedError(request.getRequestURI(), context.originalUrl,
                     context.exception.getResponse().getStatus(), context.exception, response);
             context.processed = true;
@@ -136,7 +136,7 @@ public class ErrorRedirect {
                                         final HttpServletResponse response) {
         final String path = selectErrorPage(exception);
         if (path != null && !response.isCommitted()) {
-            logger.debug("Redirecting failed {} request to error page: {}", request.getRequestURI(), path);
+            logger.debug("Redirecting failed '{}' request to '{}' error page", request.getRequestURI(), path);
             // to be able to access exception in error view
             final ErrorContext context = new ErrorContext(exception, request);
             CONTEXT_ERROR.set(context);
@@ -145,7 +145,7 @@ public class ErrorRedirect {
                 // if error page rendering will fail, forward will not throw an exception, so this message
                 // will be incorrect
                 if (!context.processed) {
-                    logger.info("Serving error page {} instead of {} response error {}",
+                    logger.info("Serving error page '{}' instead of '{}' response error {}",
                             path, request.getRequestURL(), exception.getResponse().getStatus());
                 }
             } catch (Exception ex) {
@@ -173,7 +173,7 @@ public class ErrorRedirect {
             ex = "rest exception";
         }
         // note exception is not logged here because most likely dropwizard will log rest exception itself
-        logger.error(String.format("Failed to serve error page %s for request %s instead of %s. "
+        logger.error(String.format("Failed to serve error page '%s' for request '%s' instead of %s. "
                         + "Error code %s will be returned instead of error page.",
                 errorPage, originalPage, ex, code));
         try {

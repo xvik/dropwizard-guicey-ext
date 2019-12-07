@@ -1,5 +1,7 @@
 package ru.vyarus.guicey.gsp.app.rest.support;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.vyarus.guicey.gsp.views.template.ManualErrorHandling;
 import ru.vyarus.guicey.gsp.views.template.Template;
 import ru.vyarus.guicey.gsp.views.template.TemplateContext;
@@ -25,6 +27,7 @@ import java.lang.reflect.Method;
 @Singleton
 @Provider
 public class TemplateAnnotationFilter implements ContainerRequestFilter {
+    private final Logger logger = LoggerFactory.getLogger(TemplateAnnotationFilter.class);
 
     @Inject
     private javax.inject.Provider<ResourceInfo> info;
@@ -42,6 +45,7 @@ public class TemplateAnnotationFilter implements ContainerRequestFilter {
             // could be empty when annotation used for marking resource only
             if (!tpl.isEmpty()) {
                 context.setAnnotationTemplate(tpl);
+                logger.debug("View template declared in annotation: {} ({})", tpl, resourceClass.getSimpleName());
             }
             final Method method = resourceInfo.getResourceMethod();
             context.setManualErrorHandling(resourceClass.isAnnotationPresent(ManualErrorHandling.class)

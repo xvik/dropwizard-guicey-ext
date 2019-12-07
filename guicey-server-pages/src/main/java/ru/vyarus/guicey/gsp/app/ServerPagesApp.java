@@ -6,7 +6,6 @@ import io.dropwizard.jetty.setup.ServletEnvironment;
 import io.dropwizard.setup.Environment;
 import io.dropwizard.views.ViewRenderer;
 import org.apache.commons.lang3.ArrayUtils;
-import org.glassfish.jersey.server.model.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.vyarus.guicey.gsp.ServerPagesBundle;
@@ -17,7 +16,6 @@ import ru.vyarus.guicey.gsp.app.filter.ServerPagesFilter;
 import ru.vyarus.guicey.gsp.app.filter.redirect.ErrorRedirect;
 import ru.vyarus.guicey.gsp.app.filter.redirect.SpaSupport;
 import ru.vyarus.guicey.gsp.app.filter.redirect.TemplateRedirect;
-import ru.vyarus.guicey.gsp.app.rest.DirectTemplateResource;
 import ru.vyarus.guicey.gsp.app.rest.log.HiddenViewPath;
 import ru.vyarus.guicey.gsp.app.rest.log.MappedViewPath;
 import ru.vyarus.guicey.gsp.app.rest.log.RestPathsAnalyzer;
@@ -32,7 +30,6 @@ import ru.vyarus.guicey.spa.SpaBundle;
 import javax.servlet.DispatcherType;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Server pages application initialization logic.
@@ -97,12 +94,12 @@ public class ServerPagesApp {
     }
 
     /**
-     * Install configured server page app.
+     * Install configured server page app. Called after all guicey bundles processing (when all extensions registered).
      *
      * @param environment dropwizard environment object
      * @param config      global configuration object
      */
-    public void setup(final Environment environment, final GlobalConfig config) {
+    public void install(final Environment environment, final GlobalConfig config) {
         final ServletEnvironment context = mainContext ? environment.servlets() : environment.admin();
 
         // apply possible context (if servlet registered not to root, e.g. most likely in case of flat admin context)
@@ -124,9 +121,6 @@ public class ServerPagesApp {
                 assets,
                 new ErrorRedirect(uriPath, errorPages, spa));
         installTemplatesSupportFilter(context, templateRedirect, spa, config.getRenderers());
-
-        // Default direct templates rendering rest (dynamically registered to handle "$appName/*")
-        registerDirectTemplateHandler(environment);
     }
 
     /**
@@ -137,7 +131,7 @@ public class ServerPagesApp {
      * @param restMapping servlet mapping (under main context)
      * @param analyzer    rest analyzer
      */
-    public void initialize(final String restContext, final String restMapping, final RestPathsAnalyzer analyzer) {
+    public void jerseyStarted(final String restContext, final String restMapping, final RestPathsAnalyzer analyzer) {
         templateRedirect.setRootPath(restContext, restMapping);
         analyzePaths(analyzer);
         logger.info(AppReportBuilder.build(this));
@@ -229,35 +223,6 @@ public class ServerPagesApp {
     }
 
     /**
-     * Default rest is required for direct template rendering (default view handler). This default handler must be
-     * installed for all registered view prefixes (otherwise simply wouldn't work).
-     * <p>
-     * But, multiple gsp applications may use same rest mappings (e.g. register the same application on different
-     * urls) and so default handler could be already registered. In such case, new registration will not occur.
-     *
-     * @param environment dropwizard environment instance
-     */
-    private void registerDirectTemplateHandler(final Environment environment) {
-        final List<String> targets = new ArrayList<>(views.getPrefixes().values()).stream()
-                .map(PathUtils::prefixSlash)
-                .collect(Collectors.toList());
-        // default handlers registered as instances, so it's enough to look only already registered instances
-        for (Resource resource : environment.jersey().getResourceConfig().getResources()) {
-            if (resource.getHandlerClasses().contains(DirectTemplateResource.class)) {
-                targets.remove(resource.getPath());
-            }
-        }
-
-        // register all missed default handlers
-        for (String target : targets) {
-            environment.jersey().getResourceConfig().registerResources(Resource.builder(DirectTemplateResource.class)
-                    .path(PathUtils.prefixSlash(target))
-                    .extended(false)
-                    .build());
-        }
-    }
-
-    /**
      * Special version of dropwizard {@link io.dropwizard.servlets.assets.AssetServlet} is used in order
      * to support resources lookup in multiple packages (required for app extensions mechanism).
      *
@@ -330,5 +295,10 @@ public class ServerPagesApp {
             }
             overrides.add(sub);
         }
+
+        // it is possible that different mappings still lead to same endpoint and remapped to the same path
+        // (bad mapping actually, but possible)
+        // works due to specialized equals and hashcode
+        hiddenViewPaths.removeAll(viewPaths);
     }
 }

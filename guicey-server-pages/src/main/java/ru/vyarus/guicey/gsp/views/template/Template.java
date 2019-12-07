@@ -1,6 +1,5 @@
 package ru.vyarus.guicey.gsp.views.template;
 
-import ru.vyarus.guicey.gsp.app.rest.DirectTemplateResource;
 import ru.vyarus.guicey.gsp.app.rest.support.TemplateAnnotationFilter;
 
 import javax.ws.rs.NameBinding;
@@ -13,8 +12,8 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 /**
  * Declare template file in classpath, relative to current class or any registered root templates dir (in classpath).
  * <p>
- * It is required to use this annotation on template resources. Even if each method in resource use it's own template,
- * resource class must be annotated with empty annotation (see {@link DirectTemplateResource} as example).
+ * It is required to use this annotation on template resources. Even if each method in resource use its own template,
+ * resource class must be annotated with empty annotation.
  * <p>
  * Template path could also be absolute (in this case it must start with "/" - classpath root).
  * <p>

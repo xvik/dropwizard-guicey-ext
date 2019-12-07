@@ -1,4 +1,4 @@
-package ru.vyarus.guicey.gsp
+package ru.vyarus.guicey.gsp.views
 
 import io.dropwizard.Application
 import io.dropwizard.Configuration
@@ -7,37 +7,36 @@ import io.dropwizard.setup.Environment
 import ru.vyarus.dropwizard.guice.GuiceBundle
 import ru.vyarus.dropwizard.guice.test.spock.ConfigOverride
 import ru.vyarus.dropwizard.guice.test.spock.UseDropwizardApp
+import ru.vyarus.guicey.gsp.AbstractTest
+import ru.vyarus.guicey.gsp.ServerPagesBundle
 import ru.vyarus.guicey.gsp.info.GspInfoService
-import ru.vyarus.guicey.gsp.support.app.SampleTemplateResource
+import ru.vyarus.guicey.gsp.support.app.clash.BaseViewResource
 
 import javax.inject.Inject
 
 /**
  * @author Vyacheslav Rusakov
- * @since 14.01.2019
+ * @since 05.12.2019
  */
 @UseDropwizardApp(value = App, configOverride = [
         @ConfigOverride(key = "server.rootPath", value = "/rest/*")
 ])
-class ResourceMappingTest extends AbstractTest {
+class ClashingDefaultHandlersMappingTest extends AbstractTest {
 
     @Inject
     GspInfoService info
 
-    def "Chek custom resource mapping"() {
+    def "Check direct template in sub mapping"() {
 
-        when: "accessing template through resource"
-        String res = getHtml("/sample/tt")
-        then: "template mapped"
-        res.contains("name: tt")
+        when: "accessing base mapping"
+        String res = getHtml("/app/one")
+        then: "index page"
+        res.contains("page: /app/one")
 
-        and: "recognized mappings"
-        info.getApplication("app").getViewPaths().collect { it.mappedUrl } as Set == [
-                "/sample/error",
-                "/sample/error2",
-                "/sample/notfound",
-                "/sample/{name}"] as Set
-
+        when: "accessing base mapping, clashing with direct template from other sub mapping"
+        res = getHtml("/app/bar/two")
+        then: "index page"
+        res.contains("page: /app/bar/two")
     }
 
     static class App extends Application<Configuration> {
@@ -45,11 +44,12 @@ class ResourceMappingTest extends AbstractTest {
         @Override
         void initialize(Bootstrap<Configuration> bootstrap) {
             bootstrap.addBundle(GuiceBundle.builder()
-                    .extensions(SampleTemplateResource)
+                    .extensions(BaseViewResource)
                     .bundles(
                             ServerPagesBundle.builder().build(),
-                            ServerPagesBundle.app("app", "/app", "/")
-                                    .indexPage("index.html")
+                            ServerPagesBundle.app("app", "app", "/app")
+                                    .mapViews("/foo/")
+                                    .mapViews("/bar", "/foo/bar/")
                                     .build())
                     .build())
         }

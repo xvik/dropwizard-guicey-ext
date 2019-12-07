@@ -37,7 +37,7 @@ public class TemplateErrorResponseFilter implements ContainerResponseFilter {
             // response could be committed if it was already handled, for example exception handler detect exception
             // and error page was served instead, still this listener will be called and should do nothing
             if (context != null && !context.getResponse().isCommitted()) {
-                logger.debug("Rest response code {} detected for template path {}",
+                logger.debug("Rest response code {} detected for template path '{}'",
                         status, requestContext.getUriInfo().getPath());
                 context.redirectError(new TemplateRestCodeError(requestContext, status));
             }

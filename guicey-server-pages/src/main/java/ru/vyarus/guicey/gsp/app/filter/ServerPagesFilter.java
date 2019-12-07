@@ -82,7 +82,7 @@ public class ServerPagesFilter implements Filter {
                          final FilterChain chain) throws IOException, ServletException {
         final HttpServletRequest req = (HttpServletRequest) servletRequest;
         final HttpServletResponse resp = (HttpServletResponse) servletResponse;
-        logger.debug("Processing request {}", req.getRequestURI());
+        logger.debug("[GSP IN] Processing request '{}'", req.getRequestURI());
 
         spa.markPossibleSpaRoute(req, resp);
 
@@ -90,7 +90,8 @@ public class ServerPagesFilter implements Filter {
         // e.g. /some/url/file.txt?start=1 -> file.txt
         // file request could be either asset or direct template call
         final String pathFile = findFileInPath(req);
-        if (pathFile != null && !isTemplate(pathFile)) {
+        final boolean directTemplateCall = pathFile != null && isTemplate(pathFile);
+        if (pathFile != null && !directTemplateCall) {
             logger.debug("Serving asset: {}", req.getRequestURI());
             // delegate to asset servlet
             serveAsset(req, resp, chain);
@@ -105,7 +106,7 @@ public class ServerPagesFilter implements Filter {
         }
         // redirect to rest handling (dropwizard-view template)
         // (errors are handled with exception mapper and response filter)
-        redirect.redirect(req, resp, page);
+        redirect.redirect(req, resp, page, directTemplateCall);
     }
 
     @Override
@@ -138,7 +139,7 @@ public class ServerPagesFilter implements Filter {
         final View view = new DummyView(file);
         for (ViewRenderer renderer : renderers) {
             if (renderer.isRenderable(view)) {
-                logger.debug("Direct {} template {} request detected", renderer.getConfigurationKey(), file);
+                logger.debug("Possible direct {} template {} request", renderer.getConfigurationKey(), file);
                 return true;
             }
         }
@@ -159,12 +160,12 @@ public class ServerPagesFilter implements Filter {
                              final HttpServletResponse resp,
                              final int error) throws IOException {
         if (error != 0) {
-            logger.debug("Possible asset {} error detected: {}", req.getRequestURI(), error);
+            logger.debug("Possible asset '{}' error detected: {}", req.getRequestURI(), error);
             // handle only error codes, preserving redirects (3xx)
             if (error <= ErrorRedirect.CODE_400
                     || !redirect.getErrorRedirect().redirect(req, resp, new AssetError(req, error))) {
                 // if no mapped error page or non error status returned - return error as is
-                logger.debug("Sending direct response code {} for asset {}", error, req.getRequestURI());
+                logger.debug("Sending direct response code {} for asset '{}'", error, req.getRequestURI());
                 resp.sendError(error);
             }
         }

@@ -65,7 +65,7 @@ class ApplicationInfoTest extends Specification {
             defaultErrorPage == null
 
             hiddenViewPaths.isEmpty()
-            viewPaths.size() == 7
+            viewPaths.size() == 3
         }
 
         and: "app2 - customized mappings"
@@ -105,7 +105,7 @@ class ApplicationInfoTest extends Specification {
             defaultErrorPage == "err.tpl"
 
             hiddenViewPaths.isEmpty()
-            viewPaths.size() == 7
+            viewPaths.size() == 3
         }
 
     }

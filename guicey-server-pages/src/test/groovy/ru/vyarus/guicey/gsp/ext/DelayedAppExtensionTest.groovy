@@ -67,9 +67,7 @@ class DelayedAppExtensionTest extends AbstractTest {
         and: "mapping correct"
         info.getApplication("app").getViewPaths().collect { it.mappedUrl } as Set == [
                 "/sub/sample",
-                "/sub/{file:.*}",
-                "/sample",
-                "/{file:.*}"] as Set
+                "/sample"] as Set
 
         info.getApplication("app").getHiddenViewPaths().collect { it.mappedUrl } as Set == [
                 "/sub/{name}"] as Set

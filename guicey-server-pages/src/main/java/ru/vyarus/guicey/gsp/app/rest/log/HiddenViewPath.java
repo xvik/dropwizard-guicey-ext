@@ -33,4 +33,24 @@ public class HiddenViewPath extends MappedViewPath {
     public String toString() {
         return super.toString() + " hidden by " + PathUtils.prefixSlash(overridingMapping);
     }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof MappedViewPath)) {
+            return false;
+        }
+
+        // same REWRITTEN(!) urls with the same target endpoint are THE SAME!
+        final MappedViewPath that = (MappedViewPath) o;
+
+        return getMappedUrl().equals(that.getMappedUrl()) && getPath().getMethod().equals(that.getPath().getMethod());
+    }
+
+    @Override
+    public int hashCode() {
+        return getMappedUrl().hashCode() + 31 * getPath().hashCode();
+    }
 }

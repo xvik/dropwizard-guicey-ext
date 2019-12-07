@@ -14,11 +14,14 @@ import ru.vyarus.dropwizard.guice.module.context.unique.item.UniqueGuiceyBundle;
 import ru.vyarus.dropwizard.guice.module.installer.bundle.GuiceyBootstrap;
 import ru.vyarus.dropwizard.guice.module.installer.bundle.GuiceyEnvironment;
 import ru.vyarus.dropwizard.guice.module.installer.util.Reporter;
+import ru.vyarus.dropwizard.guice.module.lifecycle.GuiceyLifecycleAdapter;
+import ru.vyarus.dropwizard.guice.module.lifecycle.event.run.BundlesStartedEvent;
 import ru.vyarus.guicey.gsp.app.GlobalConfig;
 import ru.vyarus.guicey.gsp.app.ServerPagesApp;
 import ru.vyarus.guicey.gsp.app.ServerPagesAppBundle.AppBuilder;
 import ru.vyarus.guicey.gsp.app.ext.ServerPagesAppExtensionBundle;
 import ru.vyarus.guicey.gsp.app.rest.log.RestPathsAnalyzer;
+import ru.vyarus.guicey.gsp.app.rest.support.DirectTemplateExceptionMapper;
 import ru.vyarus.guicey.gsp.app.rest.support.TemplateAnnotationFilter;
 import ru.vyarus.guicey.gsp.app.rest.support.TemplateErrorResponseFilter;
 import ru.vyarus.guicey.gsp.app.rest.support.TemplateExceptionListener;
@@ -281,11 +284,26 @@ public class ServerPagesBundle extends UniqueGuiceyBundle {
                         // template rest errors interception (global handlers)
                         TemplateErrorResponseFilter.class,
                         // intercept rest (template) rendering exceptions in rest
-                        TemplateExceptionListener.class);
+                        TemplateExceptionListener.class,
+                        // Direct templates support
+                        DirectTemplateExceptionMapper.class);
     }
 
     @Override
     public void run(final GuiceyEnvironment environment) {
+        // init applications after all guicey bundles started (so all extensions applied)
+        environment.listen(new GuiceyLifecycleAdapter() {
+            @Override
+            protected void bundlesStarted(final BundlesStartedEvent event) {
+                for (ServerPagesApp app : config.getApps()) {
+                    // finalize app configuration
+                    // assume noone will ever map gsp applications on intercepting paths!
+                    // (e.g. /app/ and /app/app2)
+                    app.install(environment.environment(), config);
+
+                }
+            }
+        });
         // delayed initialization until jersey starts (required data not available before it)
         // (started only if real server starts)
         environment.listen(it -> {
@@ -296,7 +314,7 @@ public class ServerPagesBundle extends UniqueGuiceyBundle {
             final String restMapping = PathUtils.endSlash(PathUtils.trimStars(env.jersey().getUrlPattern()));
             final RestPathsAnalyzer analyzer = RestPathsAnalyzer.build(env.jersey().getResourceConfig());
             for (ServerPagesApp app : config.getApps()) {
-                app.initialize(contextPath, restMapping, analyzer);
+                app.jerseyStarted(contextPath, restMapping, analyzer);
             }
         });
     }

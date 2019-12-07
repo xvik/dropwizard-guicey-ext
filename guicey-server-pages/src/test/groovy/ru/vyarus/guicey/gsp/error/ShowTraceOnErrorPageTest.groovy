@@ -30,12 +30,12 @@ class ShowTraceOnErrorPageTest extends AbstractTest {
         when: "accessing not existing template"
         res = getHtml("/notexisting.ftl")
         then: "error page"
-        res.startsWith("javax.ws.rs.NotFoundException: Template notexisting.ftl not found")
+        res.startsWith("javax.ws.rs.NotFoundException: Template 'notexisting.ftl' not found")
 
         when: "accessing not existing path"
         res = getHtml("/notexisting/")
         then: "error page"
-        res.startsWith("javax.ws.rs.NotFoundException: Template notexisting/ not found")
+        res.startsWith("javax.ws.rs.NotFoundException: HTTP 404 Not Found")
 
         when: "error processing template"
         res = getHtml("/sample/error")

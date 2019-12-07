@@ -44,7 +44,7 @@ public class AssetResolutionServlet extends AssetServlet {
             realPath = assets.lookup(realPath);
         }
         if (realPath == null && logger.isInfoEnabled()) {
-            final String err = String.format("Asset %s not found in locations: %s",
+            final String err = String.format("Asset '%s' not found in locations: %s",
                     assets.getRelativePath(absolutePath), assets.getMatchingLocations(absolutePath));
             // logged here to provide additional diagnostic info
             logger.info(err);

@@ -10,6 +10,7 @@ import ru.vyarus.guicey.gsp.views.template.ManualErrorHandling;
 import ru.vyarus.guicey.spa.SpaBundle;
 
 import java.lang.reflect.Method;
+import java.util.HashMap;
 import java.util.Map;
 
 import static ru.vyarus.dropwizard.guice.module.installer.util.Reporter.NEWLINE;
@@ -40,8 +41,10 @@ public final class AppReportBuilder {
                 app.name, app.fullUriPath + '*', app.mainContext ? "main" : "admin"));
 
         reportStaticResources(res, app);
-        reportViewMappings(res, app);
-        reportRestPaths(res, app);
+        if (!app.viewPaths.isEmpty()) {
+            final Map<String, String> idx = reportViewMappings(res, app);
+            reportRestPaths(res, app, idx);
+        }
         reportErrorPages(res, app);
         reportSpaSupport(res, app);
 
@@ -62,21 +65,30 @@ public final class AppReportBuilder {
         }
     }
 
-    private static void reportViewMappings(final StringBuilder res, final ServerPagesApp app) {
+    private static Map<String, String> reportViewMappings(final StringBuilder res, final ServerPagesApp app) {
+        final Map<String, String> idx = new HashMap<>();
+        int i = 1;
         res.append(TAB).append("View rest mappings:").append(NEWLINE);
         for (Map.Entry<String, String> entry : app.views.getPrefixes().entrySet()) {
+            final String url = entry.getKey();
+            // no marker for single mapping
+            final String marker = app.views.getPrefixes().size() == 1 ? "" : ("[" + i++ + "]");
+            idx.put(url, marker);
             res.append(TAB).append(TAB)
-                    .append(String.format("%-20s %s*",
-                            PathUtils.path(app.fullUriPath, entry.getKey()) + STAR,
+                    .append(String.format("%3s %-20s %s*",
+                            marker,
+                            PathUtils.path(app.fullUriPath, url) + STAR,
                             PathUtils.prefixSlash(
                                     PathUtils.normalizePath(app.templateRedirect.getRootPath(), entry.getValue()))))
                     .append(NEWLINE);
         }
         res.append(NEWLINE);
+        return idx;
     }
 
     private static void reportRestPaths(final StringBuilder res,
-                                        final ServerPagesApp app) {
+                                        final ServerPagesApp app,
+                                        final Map<String, String> idx) {
         res.append(TAB).append("Mapped handlers:").append(NEWLINE);
         for (MappedViewPath path : app.viewPaths) {
             final ViewPath handle = path.getPath();
@@ -85,12 +97,13 @@ public final class AppReportBuilder {
             final boolean disabledErrors = handle.getResourceType().isAnnotationPresent(ManualErrorHandling.class)
                     || (handlingMethod != null && handlingMethod.isAnnotationPresent(ManualErrorHandling.class));
 
-            res.append(TAB).append(TAB).append(String.format("%-7s %s  (%s #%s)%s",
+            res.append(TAB).append(TAB).append(String.format("%-7s %s  (%s #%s)%s   %s",
                     handle.getMethod().getHttpMethod(),
                     PathUtils.cleanUpPath(app.fullUriPath + path.getMappedUrl()),
                     handle.getResourceType().getName(),
                     handle.getMethod().getInvocable().getDefinitionMethod().getName(),
-                    disabledErrors ? " [DISABLED ERRORS]" : ""
+                    disabledErrors ? " [DISABLED ERRORS]" : "",
+                    idx.get(path.getMapping())
             )).append(NEWLINE);
         }
 
@@ -99,13 +112,13 @@ public final class AppReportBuilder {
             for (HiddenViewPath path : app.hiddenViewPaths) {
                 final ViewPath handle = path.getPath();
                 res.append(TAB).append(TAB)
-                        .append(String.format("%-7s %s (%s #%s) of %s mapping hidden by %s mapping",
+                        .append(String.format("%-7s %s (%s #%s) of %s hidden by %s ",
                                 handle.getMethod().getHttpMethod(),
                                 PathUtils.path(app.fullUriPath, path.getMappedUrl()),
                                 RenderUtils.getClassName(handle.getResourceType()),
                                 handle.getMethod().getInvocable().getDefinitionMethod().getName(),
-                                PathUtils.path(app.fullUriPath, path.getMapping()) + STAR,
-                                PathUtils.path(app.fullUriPath, path.getOverridingMapping()) + STAR))
+                                idx.get(path.getMapping()),
+                                idx.get(path.getOverridingMapping())))
                         .append(NEWLINE);
             }
         }

@@ -15,9 +15,7 @@ import ru.vyarus.guicey.gsp.support.app.SampleTemplateResource
  * @author Vyacheslav Rusakov
  * @since 21.01.2019
  */
-@UseDropwizardApp(value = App, configOverride = [
-        @ConfigOverride(key = "server.rootPath", value = "/rest/*")
-])
+@UseDropwizardApp(value = App, config = 'src/test/resources/conf.yml')
 class AdminErrorMappingTest extends AbstractTest {
 
     def "Check error mapping"() {

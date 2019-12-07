@@ -63,11 +63,19 @@ public class ViewRestLookup {
     }
 
     /**
+     * @param context context (resolved with {@link #lookupSubContext(String)})
+     * @return target rest prefix for provided context
+     */
+    public String lookupRestPrefix(final String context) {
+        return prefixes.get(context);
+    }
+
+    /**
      * @param subContext context resolved with {@link #lookupSubContext(String)}
      * @param path       path to resolve
      * @return target rest prefix for provided context
      */
-    public String lookupRestPrefix(final String subContext, final String path) {
+    public String buildRestPath(final String subContext, final String path) {
         final String prefix = prefixes.get(subContext);
         // cut off custom app mapping and add correct rest mapping part
         final String relativeUrl = path.startsWith(subContext) ? path.substring(subContext.length()) : path;

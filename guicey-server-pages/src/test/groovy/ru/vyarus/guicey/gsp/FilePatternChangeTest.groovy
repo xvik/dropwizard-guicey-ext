@@ -5,16 +5,13 @@ import io.dropwizard.Configuration
 import io.dropwizard.setup.Bootstrap
 import io.dropwizard.setup.Environment
 import ru.vyarus.dropwizard.guice.GuiceBundle
-import ru.vyarus.dropwizard.guice.test.spock.ConfigOverride
 import ru.vyarus.dropwizard.guice.test.spock.UseDropwizardApp
 
 /**
  * @author Vyacheslav Rusakov
  * @since 30.01.2019
  */
-@UseDropwizardApp(value = App, configOverride = [
-        @ConfigOverride(key = "server.rootPath", value = "/rest/*")
-])
+@UseDropwizardApp(value = App, config = 'src/test/resources/conf.yml')
 class FilePatternChangeTest extends AbstractTest {
 
     def "Check changed file detection regex"() {
@@ -31,9 +28,8 @@ class FilePatternChangeTest extends AbstractTest {
 
         when: "accessing html page"
         getHtml("/index.html")
-        then: "failed to render template"
-        def ex = thrown(IOException)
-        ex.message == "status code: 500, reason phrase: Internal Server Error"
+        then: "path not found (detected that its not a template)"
+        thrown(FileNotFoundException)
     }
 
     static class App extends Application<Configuration> {

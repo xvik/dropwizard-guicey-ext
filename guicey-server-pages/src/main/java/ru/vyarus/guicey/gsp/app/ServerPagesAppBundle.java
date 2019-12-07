@@ -7,8 +7,6 @@ import org.slf4j.LoggerFactory;
 import ru.vyarus.dropwizard.guice.module.installer.bundle.GuiceyBootstrap;
 import ru.vyarus.dropwizard.guice.module.installer.bundle.GuiceyBundle;
 import ru.vyarus.dropwizard.guice.module.installer.bundle.GuiceyEnvironment;
-import ru.vyarus.dropwizard.guice.module.lifecycle.GuiceyLifecycleAdapter;
-import ru.vyarus.dropwizard.guice.module.lifecycle.event.run.BundlesStartedEvent;
 import ru.vyarus.guicey.gsp.ServerPagesBundle;
 import ru.vyarus.guicey.gsp.app.filter.redirect.ErrorRedirect;
 import ru.vyarus.guicey.gsp.app.util.PathUtils;
@@ -59,14 +57,6 @@ public class ServerPagesAppBundle implements GuiceyBundle {
     @Override
     public void run(final GuiceyEnvironment environment) {
         validateRequirements();
-        environment.listen(new GuiceyLifecycleAdapter() {
-            @Override
-            protected void bundlesStarted(final BundlesStartedEvent event) {
-                // init app after all bundles to be sure all extensions applied
-                app.setup(environment.environment(), config);
-            }
-        });
-
     }
 
     private void validateRequirements() {

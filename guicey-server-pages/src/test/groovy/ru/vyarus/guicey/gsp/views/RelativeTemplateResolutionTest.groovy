@@ -47,8 +47,7 @@ class RelativeTemplateResolutionTest extends AbstractTest {
         info.getApplication("app").getViewPaths().collect { it.mappedUrl } as Set == [
                 "/relative/dir",
                 "/relative/direct",
-                "/relative/relative",
-                "/{file:.*}"] as Set
+                "/relative/relative"] as Set
 
         info.getApplication("app").getHiddenViewPaths().isEmpty()
     }

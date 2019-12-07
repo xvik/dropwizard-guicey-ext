@@ -26,6 +26,7 @@ import javax.ws.rs.ext.Provider;
 @Provider
 @Singleton
 public class TemplateExceptionListener implements ApplicationEventListener {
+    public static final String QUOTE = "'";
     // use single instance
     private final RequestListener listener = new RequestListener();
 
@@ -49,14 +50,16 @@ public class TemplateExceptionListener implements ApplicationEventListener {
         @Override
         public void onEvent(final RequestEvent event) {
             // event may be called multiple times, but redirect will detect it and do nothing
-            if (event.getType() == RequestEvent.Type.ON_EXCEPTION) {
+            if (event.getType() == RequestEvent.Type.ON_EXCEPTION
+                    && !DirectTemplateExceptionMapper.canHandle(event)) {
                 final Throwable exception = event.getException();
                 if (!(exception instanceof WebApplicationException)) {
-                    // most likely unexpected exception
-                    logger.info("Exception processing view rest path " + event.getUriInfo().getPath(), exception);
+                    // most likely unexpected exception (dropwizard will log this stacktrace again)
+                    logger.error("Exception processing view rest path '"
+                            + event.getUriInfo().getPath() + QUOTE, exception);
                 } else if (logger.isDebugEnabled()) {
-                    logger.debug("View rest processing exception detected for path " + event.getUriInfo().getPath(),
-                            exception);
+                    logger.debug("View rest processing exception detected for path '"
+                            + event.getUriInfo().getPath() + QUOTE, exception);
                 }
 
                 // immediately perform redirect to error page (or do nothing)
