@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.vyarus.dropwizard.guice.module.installer.feature.jersey.JerseyManaged;
 import ru.vyarus.guicey.gsp.app.filter.redirect.ErrorRedirect;
+import ru.vyarus.guicey.gsp.app.filter.redirect.TemplateRedirect;
 import ru.vyarus.guicey.gsp.app.util.PathUtils;
 import ru.vyarus.guicey.gsp.views.template.ErrorTemplateView;
 import ru.vyarus.guicey.gsp.views.template.TemplateContext;
@@ -105,7 +106,7 @@ public class DirectTemplateExceptionMapper implements ExtendedExceptionMapper<No
     }
 
     private static boolean isDirectTemplateRequest() {
-        final TemplateContext context = TemplateContext.getInstance();
+        final TemplateContext context = TemplateRedirect.templateContext();
         return context != null && context.isDirectTemplate();
     }
 }
