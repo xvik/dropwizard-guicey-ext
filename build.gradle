@@ -67,7 +67,7 @@ subprojects {
     }
     dependencies {
         provided 'com.google.code.findbugs:jsr305:3.0.2'
-        provided 'com.google.code.findbugs:annotations:3.0.1'
+        provided 'com.google.code.findbugs:annotations:3.0.1u2'
 
         compile "ru.vyarus:dropwizard-guicey"
 
