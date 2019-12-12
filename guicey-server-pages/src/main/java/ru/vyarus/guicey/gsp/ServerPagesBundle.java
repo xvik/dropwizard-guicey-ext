@@ -306,7 +306,7 @@ public class ServerPagesBundle extends UniqueGuiceyBundle {
         });
         // delayed initialization until jersey starts (required data not available before it)
         // (started only if real server starts)
-        environment.listen(it -> {
+        environment.listenServer(it -> {
             final Environment env = environment.environment();
             final String contextPath = env.getJerseyServletContainer()
                     .getServletConfig().getServletContext().getContextPath();

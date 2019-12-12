@@ -77,6 +77,6 @@ public class LifecycleAnnotationsBundle extends UniqueGuiceyBundle {
                 .modules(module)
                 // do not register as extension to not put additional beans into the guice context
                 .manage(lifecycle)
-                .listen(lifecycle);
+                .listenServer(lifecycle);
     }
 }
