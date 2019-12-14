@@ -55,7 +55,8 @@ subprojects {
 
     dependencyManagement {
         imports {
-            mavenBom "ru.vyarus:dropwizard-guicey:$guicey"
+//            mavenBom "ru.vyarus:dropwizard-guicey:$guicey"
+            mavenBom 'com.github.xvik:dropwizard-guicey:833db4ec52'
         }
         dependencies {
             // jdbi deprecated by dropwizard and moved to separate module https://github.com/dropwizard/dropwizard-jdbi
@@ -69,7 +70,8 @@ subprojects {
         provided 'com.google.code.findbugs:jsr305:3.0.2'
         provided 'com.google.code.findbugs:annotations:3.0.1'
 
-        compile "ru.vyarus:dropwizard-guicey"
+//        compile "ru.vyarus:dropwizard-guicey"
+        compile 'com.github.xvik:dropwizard-guicey:833db4ec52'
 
         testCompile "org.spockframework:spock-core"
         testCompile "io.dropwizard:dropwizard-testing"
