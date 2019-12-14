@@ -1,11 +1,11 @@
 package ru.vyarus.guicey.gsp.app;
 
 import ru.vyarus.dropwizard.guice.debug.util.RenderUtils;
+import ru.vyarus.dropwizard.guice.module.installer.util.PathUtils;
 import ru.vyarus.guicey.gsp.app.filter.redirect.ErrorRedirect;
 import ru.vyarus.guicey.gsp.app.rest.log.HiddenViewPath;
 import ru.vyarus.guicey.gsp.app.rest.log.MappedViewPath;
 import ru.vyarus.guicey.gsp.app.rest.log.ViewPath;
-import ru.vyarus.guicey.gsp.app.util.PathUtils;
 import ru.vyarus.guicey.gsp.views.template.ManualErrorHandling;
 import ru.vyarus.guicey.spa.SpaBundle;
 
@@ -56,7 +56,7 @@ public final class AppReportBuilder {
                 .append(TAB).append("Static resources locations:").append(NEWLINE);
         for (String url : app.assets.getLocations().keySet()) {
             res.append(TAB).append(TAB)
-                    .append(PathUtils.cleanUpPath(app.fullUriPath + PathUtils.prefixSlash(url))).append(NEWLINE);
+                    .append(PathUtils.normalize(app.fullUriPath + PathUtils.leadingSlash(url))).append(NEWLINE);
             for (String path : app.assets.getLocations().get(url)) {
                 res.append(TAB).append(TAB).append(TAB)
                         .append(PathUtils.trimSlashes(path).replace('/', '.')).append(NEWLINE);
@@ -78,8 +78,8 @@ public final class AppReportBuilder {
                     .append(String.format("%3s %-20s %s*",
                             marker,
                             PathUtils.path(app.fullUriPath, url) + STAR,
-                            PathUtils.prefixSlash(
-                                    PathUtils.normalizePath(app.templateRedirect.getRootPath(), entry.getValue()))))
+                            PathUtils.leadingSlash(
+                                    PathUtils.path(app.templateRedirect.getRootPath(), entry.getValue()))))
                     .append(NEWLINE);
         }
         res.append(NEWLINE);
@@ -99,7 +99,7 @@ public final class AppReportBuilder {
 
             res.append(TAB).append(TAB).append(String.format("%-7s %s  (%s #%s)%s   %s",
                     handle.getMethod().getHttpMethod(),
-                    PathUtils.cleanUpPath(app.fullUriPath + path.getMappedUrl()),
+                    PathUtils.path(app.fullUriPath, path.getMappedUrl()),
                     handle.getResourceType().getName(),
                     handle.getMethod().getInvocable().getDefinitionMethod().getName(),
                     disabledErrors ? " [DISABLED ERRORS]" : "",
@@ -142,7 +142,7 @@ public final class AppReportBuilder {
 
     private static void printErrorPage(final StringBuilder res, final String code, final String page) {
         res.append(TAB).append(TAB)
-                .append(String.format("%-7s %s", code, PathUtils.prefixSlash(page)))
+                .append(String.format("%-7s %s", code, PathUtils.leadingSlash(page)))
                 .append(NEWLINE);
     }
 

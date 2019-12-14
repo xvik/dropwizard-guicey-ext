@@ -1,6 +1,6 @@
 package ru.vyarus.guicey.gsp.app.rest.log;
 
-import ru.vyarus.guicey.gsp.app.util.PathUtils;
+import ru.vyarus.dropwizard.guice.module.installer.util.PathUtils;
 
 /**
  * Gsp application view rest mapping. Represent mapping of sub url into prefixed rest.
@@ -50,7 +50,7 @@ public class MappedViewPath {
      * @return server pages application url, leading to this rest method
      */
     public String getMappedUrl() {
-        return PathUtils.prefixSlash(PathUtils.path(mapping, path.getUrl().substring(prefix.length())));
+        return PathUtils.leadingSlash(PathUtils.path(mapping, path.getUrl().substring(prefix.length())));
     }
 
     @Override

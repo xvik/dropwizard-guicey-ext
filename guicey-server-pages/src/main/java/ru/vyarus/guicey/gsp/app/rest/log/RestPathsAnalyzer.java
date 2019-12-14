@@ -5,7 +5,7 @@ import com.fasterxml.classmate.TypeResolver;
 import io.dropwizard.jersey.DropwizardResourceConfig;
 import org.glassfish.jersey.server.model.Resource;
 import org.glassfish.jersey.server.model.ResourceMethod;
-import ru.vyarus.guicey.gsp.app.util.PathUtils;
+import ru.vyarus.dropwizard.guice.module.installer.util.PathUtils;
 import ru.vyarus.guicey.gsp.views.template.Template;
 
 import java.util.HashSet;
@@ -61,7 +61,7 @@ public class RestPathsAnalyzer {
      */
     public Set<ViewPath> select(final String app) {
         final Set<ViewPath> res = new TreeSet<>();
-        final String prefix = PathUtils.prefixSlash(PathUtils.endSlash(app));
+        final String prefix = PathUtils.leadingSlash(PathUtils.trailingSlash(app));
         for (ViewPath path : paths) {
             if (path.getUrl().startsWith(prefix)) {
                 res.add(path);
@@ -78,7 +78,7 @@ public class RestPathsAnalyzer {
                                  final Set<ViewPath> handles) {
         String basePath = rootPath;
         if (!isLocator) {
-            basePath = PathUtils.normalizePath(rootPath, resource.getPath());
+            basePath = PathUtils.path(rootPath, resource.getPath());
         }
 
         for (ResourceMethod method : resource.getResourceMethods()) {
@@ -89,10 +89,10 @@ public class RestPathsAnalyzer {
         for (Resource childResource : resource.getChildResources()) {
             for (ResourceMethod method : childResource.getAllMethods()) {
                 if (method.getType() == ResourceMethod.JaxrsType.RESOURCE_METHOD) {
-                    final String path = PathUtils.normalizePath(basePath, childResource.getPath());
+                    final String path = PathUtils.path(basePath, childResource.getPath());
                     handles.add(new ViewPath(method, childResource, klass, path));
                 } else if (method.getType() == ResourceMethod.JaxrsType.SUB_RESOURCE_LOCATOR) {
-                    final String path = PathUtils.normalizePath(basePath, childResource.getPath());
+                    final String path = PathUtils.path(basePath, childResource.getPath());
                     final ResolvedType responseType = TYPE_RESOLVER
                             .resolve(method.getInvocable().getResponseType());
                     final Class<?> erasedType = !responseType.getTypeBindings().isEmpty()

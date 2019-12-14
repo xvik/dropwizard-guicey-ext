@@ -35,21 +35,24 @@ public class MapperInstaller implements FeatureInstaller, BindingInstaller {
     @Override
     public void bindExtension(final Binder binder, final Class<?> type, final boolean lazy) {
         binder.bind(type).in(Singleton.class);
+        register(binder, type);
     }
 
     @Override
-    public <T> void checkBinding(final Binder binder, final Class<T> type, final Binding<T> manualBinding) {
-        // nothing to do
+    public <T> void manualBinding(final Binder binder, final Class<T> type, final Binding<T> binding) {
+        register(binder, type);
     }
 
-    @Override
     @SuppressWarnings("unchecked")
-    public void installBinding(final Binder binder, final Class<?> type) {
+    private void register(final Binder binder, final Class<?> type) {
         // just combine mappers in set and special bean, installed by module will bind it to dbi
         Multibinder.newSetBinder(binder, ResultSetMapper.class).addBinding()
                 .to((Class<? extends ResultSetMapper>) type);
+    }
 
-        if (binder.currentStage() != Stage.TOOL) {
+    @Override
+    public void extensionBound(final Stage stage, final Class<?> type) {
+        if (stage != Stage.TOOL) {
             final String target = GenericsResolver.resolve(type).type(ResultSetMapper.class).genericAsString(0);
             reporter.line("%-20s (%s)", target, type.getName());
         }

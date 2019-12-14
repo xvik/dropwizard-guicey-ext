@@ -3,9 +3,9 @@ package ru.vyarus.guicey.gsp.app.filter.redirect;
 import com.google.common.base.Preconditions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.vyarus.dropwizard.guice.module.installer.util.PathUtils;
 import ru.vyarus.guicey.gsp.app.filter.AssetError;
 import ru.vyarus.guicey.gsp.app.rest.support.TemplateRestCodeError;
-import ru.vyarus.guicey.gsp.app.util.PathUtils;
 import ru.vyarus.guicey.spa.filter.SpaUtils;
 
 import javax.servlet.http.HttpServletRequest;
@@ -52,7 +52,7 @@ public class ErrorRedirect {
         this.spa = spa;
         // normalize paths to be absolute
         for (int code : pages.keySet()) {
-            errorPages.put(code, PathUtils.normalizePath(appMapping, errorPages.get(code)));
+            errorPages.put(code, PathUtils.path(appMapping, errorPages.get(code)));
         }
     }
 

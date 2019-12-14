@@ -8,6 +8,7 @@ import io.dropwizard.views.ViewRenderer;
 import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.vyarus.dropwizard.guice.module.installer.util.PathUtils;
 import ru.vyarus.guicey.gsp.ServerPagesBundle;
 import ru.vyarus.guicey.gsp.app.asset.AssetLookup;
 import ru.vyarus.guicey.gsp.app.asset.AssetSources;
@@ -22,7 +23,6 @@ import ru.vyarus.guicey.gsp.app.rest.log.RestPathsAnalyzer;
 import ru.vyarus.guicey.gsp.app.rest.log.ViewPath;
 import ru.vyarus.guicey.gsp.app.rest.mapping.ViewRestLookup;
 import ru.vyarus.guicey.gsp.app.rest.mapping.ViewRestSources;
-import ru.vyarus.guicey.gsp.app.util.PathUtils;
 import ru.vyarus.guicey.gsp.info.model.GspApp;
 import ru.vyarus.guicey.gsp.views.ViewRendererConfigurationModifier;
 import ru.vyarus.guicey.spa.SpaBundle;
@@ -274,7 +274,7 @@ public class ServerPagesApp {
             // sub url (related to application root)
             final String sub = entry.getKey();
             // mapping rest prefix for this sub url
-            final String prefix = PathUtils.prefixSlash(entry.getValue());
+            final String prefix = PathUtils.leadingSlash(entry.getValue());
             for (ViewPath handle : analyzer.select(prefix)) {
                 final String relativeUrl = handle.getUrl().substring(prefix.length());
                 boolean hidden = false;

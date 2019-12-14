@@ -1,7 +1,7 @@
 package ru.vyarus.guicey.gsp.app.rest.mapping;
 
 import com.google.common.base.Preconditions;
-import ru.vyarus.guicey.gsp.app.util.PathUtils;
+import ru.vyarus.dropwizard.guice.module.installer.util.PathUtils;
 
 import java.util.HashMap;
 import java.util.Map;

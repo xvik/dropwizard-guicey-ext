@@ -6,10 +6,10 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.glassfish.jersey.server.internal.process.MappableException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.vyarus.dropwizard.guice.module.installer.util.PathUtils;
 import ru.vyarus.guicey.gsp.app.asset.AssetLookup;
 import ru.vyarus.guicey.gsp.app.filter.redirect.ErrorRedirect;
 import ru.vyarus.guicey.gsp.app.filter.redirect.TemplateRedirect;
-import ru.vyarus.guicey.gsp.app.util.PathUtils;
 import ru.vyarus.guicey.gsp.app.util.ResourceLookup;
 
 import javax.annotation.Nullable;
@@ -102,7 +102,7 @@ public class TemplateContext {
      */
     public String getRestSubContext() {
         // just to avoid confusion, because normally context is relative
-        return PathUtils.prefixSlash(restSubContext);
+        return PathUtils.leadingSlash(restSubContext);
     }
 
     /**
@@ -113,7 +113,7 @@ public class TemplateContext {
      */
     public String getRestPrefix() {
         // just to avoid confusion, because normally prefix is relative
-        return PathUtils.prefixSlash(restPrefix);
+        return PathUtils.leadingSlash(restPrefix);
     }
 
     /**
@@ -220,7 +220,7 @@ public class TemplateContext {
         if (!path.startsWith(PathUtils.SLASH) && resourceClass != null) {
             final String resourceBaseLocation = ResourceLookup.lookup(resourceClass, path);
             if (resourceBaseLocation != null) {
-                path = PathUtils.prefixSlash(resourceBaseLocation);
+                path = PathUtils.leadingSlash(resourceBaseLocation);
                 logger.debug("Relative template '{}' found relative to {} class: '{}'",
                         template, resourceClass.getSimpleName(), path);
             }
@@ -229,9 +229,9 @@ public class TemplateContext {
         // search in configured locations
         if (!path.startsWith(PathUtils.SLASH)) {
             // recover original calling path to properly resolve asset (inside sub context mapped view)
-            path = PathUtils.normalizePath(restSubContext, path);
+            path = PathUtils.path(restSubContext, path);
             // search in configured folders
-            path = PathUtils.prefixSlash(ResourceLookup.lookupOrFail(path, assets));
+            path = PathUtils.leadingSlash(ResourceLookup.lookupOrFail(path, assets));
             logger.debug("Relative template '{}' resolved to '{}'", template, path);
         }
 

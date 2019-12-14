@@ -1,6 +1,6 @@
 package ru.vyarus.guicey.gsp.app.rest.log;
 
-import ru.vyarus.guicey.gsp.app.util.PathUtils;
+import ru.vyarus.dropwizard.guice.module.installer.util.PathUtils;
 
 /**
  * Gsp application hidden mapping. Appears when different rest prefix mapped to sub url (so root prefix resources
@@ -31,7 +31,7 @@ public class HiddenViewPath extends MappedViewPath {
 
     @Override
     public String toString() {
-        return super.toString() + " hidden by " + PathUtils.prefixSlash(overridingMapping);
+        return super.toString() + " hidden by " + PathUtils.leadingSlash(overridingMapping);
     }
 
     @Override

@@ -2,10 +2,10 @@ package ru.vyarus.guicey.gsp.app.filter.redirect;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.vyarus.dropwizard.guice.module.installer.util.PathUtils;
 import ru.vyarus.guicey.gsp.app.asset.AssetLookup;
 import ru.vyarus.guicey.gsp.app.rest.mapping.ViewRestLookup;
 import ru.vyarus.guicey.gsp.app.rest.support.TemplateAnnotationFilter;
-import ru.vyarus.guicey.gsp.app.util.PathUtils;
 import ru.vyarus.guicey.gsp.app.util.TemplateRequest;
 import ru.vyarus.guicey.gsp.views.template.TemplateContext;
 

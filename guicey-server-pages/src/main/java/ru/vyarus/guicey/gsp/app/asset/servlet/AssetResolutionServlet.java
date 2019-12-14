@@ -3,8 +3,8 @@ package ru.vyarus.guicey.gsp.app.asset.servlet;
 import io.dropwizard.servlets.assets.AssetServlet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.vyarus.dropwizard.guice.module.installer.util.PathUtils;
 import ru.vyarus.guicey.gsp.app.asset.AssetLookup;
-import ru.vyarus.guicey.gsp.app.util.PathUtils;
 
 import javax.annotation.Nullable;
 import java.net.URL;
@@ -40,7 +40,7 @@ public class AssetResolutionServlet extends AssetServlet {
         String realPath = absolutePath;
         // do nothing on root request (wait while index page will be requested)
         // otherwise look for resource in all registered locations
-        if (!PathUtils.endSlash(realPath).equals(assets.getPrimaryLocation())) {
+        if (!PathUtils.trailingSlash(realPath).equals(assets.getPrimaryLocation())) {
             realPath = assets.lookup(realPath);
         }
         if (realPath == null && logger.isInfoEnabled()) {

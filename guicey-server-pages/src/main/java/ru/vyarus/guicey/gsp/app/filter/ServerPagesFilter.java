@@ -5,10 +5,10 @@ import io.dropwizard.views.View;
 import io.dropwizard.views.ViewRenderer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.vyarus.dropwizard.guice.module.installer.util.PathUtils;
 import ru.vyarus.guicey.gsp.app.filter.redirect.ErrorRedirect;
 import ru.vyarus.guicey.gsp.app.filter.redirect.SpaSupport;
 import ru.vyarus.guicey.gsp.app.filter.redirect.TemplateRedirect;
-import ru.vyarus.guicey.gsp.app.util.PathUtils;
 import ru.vyarus.guicey.spa.filter.ResponseWrapper;
 
 import javax.servlet.*;
@@ -131,7 +131,7 @@ public class ServerPagesFilter implements Filter {
 
     private boolean isRoot(final HttpServletRequest req) {
         final String uri = req.getRequestURI();
-        final String path = PathUtils.endSlash(uri);
+        final String path = PathUtils.trailingSlash(uri);
         return path.equals(uriPath);
     }
 

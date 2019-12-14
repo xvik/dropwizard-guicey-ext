@@ -7,9 +7,9 @@ import org.slf4j.LoggerFactory;
 import ru.vyarus.dropwizard.guice.module.installer.bundle.GuiceyBootstrap;
 import ru.vyarus.dropwizard.guice.module.installer.bundle.GuiceyBundle;
 import ru.vyarus.dropwizard.guice.module.installer.bundle.GuiceyEnvironment;
+import ru.vyarus.dropwizard.guice.module.installer.util.PathUtils;
 import ru.vyarus.guicey.gsp.ServerPagesBundle;
 import ru.vyarus.guicey.gsp.app.filter.redirect.ErrorRedirect;
-import ru.vyarus.guicey.gsp.app.util.PathUtils;
 import ru.vyarus.guicey.gsp.views.ViewRendererConfigurationModifier;
 import ru.vyarus.guicey.gsp.views.template.ManualErrorHandling;
 import ru.vyarus.guicey.spa.SpaBundle;
@@ -90,7 +90,7 @@ public class ServerPagesAppBundle implements GuiceyBundle {
 
             app.mainContext = mainContext;
             app.name = checkNotNull(name, "Name is required");
-            app.uriPath = PathUtils.endSlash(uri);
+            app.uriPath = PathUtils.trailingSlash(uri);
 
             app.mainAssetsPath = PathUtils.normalizeClasspathPath(path);
             checkArgument(!SLASH.equals(app.mainAssetsPath), "%s is the classpath root", app.mainAssetsPath);

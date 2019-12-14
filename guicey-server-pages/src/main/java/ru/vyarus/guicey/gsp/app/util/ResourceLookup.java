@@ -4,6 +4,7 @@ import com.google.common.base.CharMatcher;
 import com.google.common.base.MoreObjects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.vyarus.dropwizard.guice.module.installer.util.PathUtils;
 import ru.vyarus.guicey.gsp.app.asset.AssetLookup;
 import ru.vyarus.guicey.gsp.views.template.TemplateNotFoundException;
 
@@ -30,7 +31,7 @@ public final class ResourceLookup {
      * @return found full path or null
      */
     public static String lookup(final Class base, final String path) {
-        final String resourceBaseLocation = PathUtils.path(PathUtils.getPath(base),
+        final String resourceBaseLocation = PathUtils.path(PathUtils.packagePath(base),
                 CharMatcher.is('/').trimLeadingFrom(path));
         return exists(resourceBaseLocation) ? resourceBaseLocation : null;
     }

@@ -2,7 +2,7 @@ package ru.vyarus.guicey.gsp.app.asset;
 
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Multimap;
-import ru.vyarus.guicey.gsp.app.util.PathUtils;
+import ru.vyarus.dropwizard.guice.module.installer.util.PathUtils;
 
 /**
  * Application classpath resources configuration object. Assets may be merged from multiple classpath locations.

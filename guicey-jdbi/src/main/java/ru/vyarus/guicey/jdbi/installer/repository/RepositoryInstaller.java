@@ -65,13 +65,13 @@ public class RepositoryInstaller implements FeatureInstaller, BindingInstaller {
     }
 
     @Override
-    public <T> void checkBinding(final Binder binder, final Class<T> type, final Binding<T> manualBinding) {
+    public <T> void manualBinding(final Binder binder, final Class<T> type, final Binding<T> binding) {
         // it's impossible to bind manually abstract type in guice
     }
 
     @Override
-    public void installBinding(final Binder binder, final Class<?> type) {
-        if (binder.currentStage() != Stage.TOOL) {
+    public void extensionBound(final Stage stage, final Class<?> type) {
+        if (stage != Stage.TOOL) {
             reporter.line(String.format("(%s)", type.getName()));
         }
     }

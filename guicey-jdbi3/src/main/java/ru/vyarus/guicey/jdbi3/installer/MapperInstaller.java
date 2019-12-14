@@ -2,6 +2,7 @@ package ru.vyarus.guicey.jdbi3.installer;
 
 import com.google.inject.Binder;
 import com.google.inject.Binding;
+import com.google.inject.Stage;
 import com.google.inject.multibindings.Multibinder;
 import org.jdbi.v3.core.mapper.RowMapper;
 import ru.vyarus.dropwizard.guice.module.installer.FeatureInstaller;
@@ -36,22 +37,27 @@ public class MapperInstaller implements FeatureInstaller, BindingInstaller {
     @Override
     public void bindExtension(final Binder binder, final Class<?> type, final boolean lazy) {
         binder.bind(type).in(Singleton.class);
+        register(binder, type);
     }
 
     @Override
-    public <T> void checkBinding(final Binder binder, final Class<T> type, final Binding<T> manualBinding) {
-        // nothing to do
+    public <T> void manualBinding(final Binder binder, final Class<T> type, final Binding<T> binding) {
+        register(binder, type);
     }
 
-    @Override
     @SuppressWarnings("unchecked")
-    public void installBinding(final Binder binder, final Class<?> type) {
+    private void register(final Binder binder, final Class<?> type) {
         // just combine mappers in set and special bean, installed by module will bind it to dbi
         Multibinder.newSetBinder(binder, RowMapper.class).addBinding()
                 .to((Class<? extends RowMapper>) type);
+    }
 
-        final String target = GenericsResolver.resolve(type).type(RowMapper.class).genericAsString(0);
-        reporter.line("%-20s (%s)", target, type.getName());
+    @Override
+    public void extensionBound(final Stage stage, final Class<?> type) {
+        if (stage != Stage.TOOL) {
+            final String target = GenericsResolver.resolve(type).type(RowMapper.class).genericAsString(0);
+            reporter.line("%-20s (%s)", target, type.getName());
+        }
     }
 
     @Override

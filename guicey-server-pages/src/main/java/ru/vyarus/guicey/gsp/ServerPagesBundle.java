@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import ru.vyarus.dropwizard.guice.module.context.unique.item.UniqueGuiceyBundle;
 import ru.vyarus.dropwizard.guice.module.installer.bundle.GuiceyBootstrap;
 import ru.vyarus.dropwizard.guice.module.installer.bundle.GuiceyEnvironment;
+import ru.vyarus.dropwizard.guice.module.installer.util.PathUtils;
 import ru.vyarus.dropwizard.guice.module.installer.util.Reporter;
 import ru.vyarus.dropwizard.guice.module.lifecycle.GuiceyLifecycleAdapter;
 import ru.vyarus.dropwizard.guice.module.lifecycle.event.run.BundlesStartedEvent;
@@ -25,7 +26,6 @@ import ru.vyarus.guicey.gsp.app.rest.support.DirectTemplateExceptionMapper;
 import ru.vyarus.guicey.gsp.app.rest.support.TemplateAnnotationFilter;
 import ru.vyarus.guicey.gsp.app.rest.support.TemplateErrorResponseFilter;
 import ru.vyarus.guicey.gsp.app.rest.support.TemplateExceptionListener;
-import ru.vyarus.guicey.gsp.app.util.PathUtils;
 import ru.vyarus.guicey.gsp.info.GspInfoModule;
 import ru.vyarus.guicey.gsp.views.ConfiguredViewBundle;
 import ru.vyarus.guicey.gsp.views.ViewRendererConfigurationModifier;
@@ -311,7 +311,7 @@ public class ServerPagesBundle extends UniqueGuiceyBundle {
             final String contextPath = env.getJerseyServletContainer()
                     .getServletConfig().getServletContext().getContextPath();
             // server.rootPath
-            final String restMapping = PathUtils.endSlash(PathUtils.trimStars(env.jersey().getUrlPattern()));
+            final String restMapping = PathUtils.trailingSlash(PathUtils.trimStars(env.jersey().getUrlPattern()));
             final RestPathsAnalyzer analyzer = RestPathsAnalyzer.build(env.jersey().getResourceConfig());
             for (ServerPagesApp app : config.getApps()) {
                 app.jerseyStarted(contextPath, restMapping, analyzer);
