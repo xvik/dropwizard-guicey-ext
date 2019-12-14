@@ -3,6 +3,7 @@ package ru.vyarus.guicey.spa.filter;
 import com.google.common.base.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.vyarus.dropwizard.guice.module.installer.util.PathUtils;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -20,7 +21,6 @@ import java.util.regex.Pattern;
  */
 public final class SpaUtils {
     private static final Logger LOGGER = LoggerFactory.getLogger(SpaUtils.class);
-    private static final String SLASH = "/";
 
     private SpaUtils() {
     }
@@ -33,7 +33,7 @@ public final class SpaUtils {
      * @return true if provided path is application root path, false otherwise
      */
     public static boolean isRootPage(final String currentPath, final String rootPath) {
-        final String path = currentPath.endsWith(SLASH) ? currentPath : currentPath + SLASH;
+        final String path = PathUtils.trailingSlash(currentPath);
         return path.equals(rootPath);
     }
 

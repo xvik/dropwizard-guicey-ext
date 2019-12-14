@@ -20,7 +20,7 @@ import java.util.List;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
-import static ru.vyarus.guicey.spa.SpaBundle.SLASH;
+import static ru.vyarus.dropwizard.guice.module.installer.util.PathUtils.SLASH;
 
 /**
  * Bundle for server pages application installation (initialized with either

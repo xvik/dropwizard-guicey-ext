@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import ru.vyarus.dropwizard.guice.module.installer.bundle.GuiceyBootstrap;
 import ru.vyarus.dropwizard.guice.module.installer.bundle.GuiceyBundle;
 import ru.vyarus.dropwizard.guice.module.installer.bundle.GuiceyEnvironment;
+import ru.vyarus.dropwizard.guice.module.installer.util.PathUtils;
 import ru.vyarus.guicey.spa.filter.SpaRoutingFilter;
 
 import javax.servlet.DispatcherType;
@@ -20,6 +21,7 @@ import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static ru.vyarus.dropwizard.guice.module.installer.util.PathUtils.SLASH;
 
 /**
  * Provides support for SPA (for example, angular apps).
@@ -40,7 +42,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 @SuppressWarnings("PMD.ImmutableField")
 public class SpaBundle implements GuiceyBundle {
 
-    public static final String SLASH = "/";
     public static final String DEFAULT_PATTERN =
             "\\.(html|css|js|png|jpg|jpeg|gif|ico|xml|rss|txt|eot|svg|ttf|woff|woff2|cur)"
                     + "(\\?((r|v|rel|rev)=[\\-\\.\\w]*)?)?$";
@@ -126,12 +127,10 @@ public class SpaBundle implements GuiceyBundle {
                        final String uri) {
             bundle.mainContext = mainContext;
             bundle.assetName = checkNotNull(name, "Name is required");
-            bundle.uriPath = uri.endsWith(SLASH) ? uri : (uri + SLASH);
+            bundle.uriPath = PathUtils.trailingSlash(uri);
 
-            String clearPath = path.replace("\\", SLASH).replace(".", SLASH).replaceAll("/+", SLASH);
-            clearPath = clearPath.endsWith(SLASH) ? clearPath : (clearPath + SLASH);
-            checkArgument(!SLASH.equals(clearPath), "%s is the classpath root", path);
-            bundle.resourcePath = clearPath;
+            bundle.resourcePath = PathUtils.normalizeClasspathPath(path);
+            checkArgument(!SLASH.equals(bundle.resourcePath), "%s is the classpath root", path);
         }
 
         /**
