@@ -90,11 +90,13 @@ http://localhost:8080/someroute -> application client route - index page returne
 Example registration to admin context:
 
 ```java
-.bundles(SpaBundle.adminApp("admin", "/com/mycompany/adminapp/", "/manager").build());
+.bundles(SpaBundle.adminApp("admin", "com.mycompany.adminapp", "/manager").build());
 ```
 
 Register "admin" application with resources in "/com/mycompany/adminapp/" package, served from "manager' 
 admin context (note that admin root is already used by dropwizard admin servlet).
+
+NOTE: resources location can be declared both as path (`/com/mycompany/adminapp/`) or as package (`com.mycompany.adminapp`).
 
 ```
 http://localhost:8081/manager -> admin app index
