@@ -43,7 +43,7 @@ public class RepositoryInstaller implements FeatureInstaller, BindingInstaller {
 
     @Override
     @SuppressWarnings({"unchecked", "checkstyle:Indentation"})
-    public void bindExtension(final Binder binder, final Class<?> type, final boolean lazy) {
+    public void bind(final Binder binder, final Class<?> type, final boolean lazy) {
         Preconditions.checkState(!lazy, "@LazyBinding not supported");
         // jdbi on demand proxy with custom ding
         final Object jdbiProxy = SqlObjectFactory.instance(type, getDing(binder));

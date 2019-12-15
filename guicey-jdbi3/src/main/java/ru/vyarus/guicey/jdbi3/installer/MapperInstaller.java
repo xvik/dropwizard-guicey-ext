@@ -35,7 +35,7 @@ public class MapperInstaller implements FeatureInstaller, BindingInstaller {
     }
 
     @Override
-    public void bindExtension(final Binder binder, final Class<?> type, final boolean lazy) {
+    public void bind(final Binder binder, final Class<?> type, final boolean lazy) {
         binder.bind(type).in(Singleton.class);
         register(binder, type);
     }
