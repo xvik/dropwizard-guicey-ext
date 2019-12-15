@@ -11,7 +11,7 @@ Migrate [to jdbi3](#migration-to-jdbi3)
 `io.dropwizard:dropwizard-jdbi:2.0.0-rc9`. Normally, it should be `io.dropwizard.modules:dropwizard-jdbi:2.0.0-0`.
 Anyway, internally nothing should be changed (because of module deprecation).
 
-Integrates [JDBI](http://jdbi.org/) with guice. Based on [dropwizard-jdbi](http://www.dropwizard.io/1.1.0/docs/manual/jdbi.html) integration.
+Integrates [JDBI](http://jdbi.org/) with guice. Based on [dropwizard-jdbi](https://www.dropwizard.io/en/release-1.3.x/manual/jdbi.html) integration.
  
 Features:
 
@@ -40,14 +40,14 @@ Maven:
 <dependency>
   <groupId>ru.vyarus.guicey</groupId>
   <artifactId>guicey-jdbi</artifactId>
-  <version>5.0.0-0-rc.2</version>
+  <version>5.0.0-0</version>
 </dependency>
 ```
 
 Gradle:
 
 ```groovy
-compile 'ru.vyarus.guicey:guicey-jdbi:5.0.0-0-rc.2'
+compile 'ru.vyarus.guicey:guicey-jdbi:5.0.0-0'
 ```
 
 See the most recent version in the badge above.
@@ -63,7 +63,7 @@ GuiceBundle.builder()
 ```
 
 Here default DBI instance will be created from database configuration (much like it's described in 
-[dropwizard documentation](http://www.dropwizard.io/1.1.0/docs/manual/jdbi.html)).
+[dropwizard documentation](https://www.dropwizard.io/en/release-1.3.x/manual/jdbi.html)).
 
 Or build DBI instance yourself:
 

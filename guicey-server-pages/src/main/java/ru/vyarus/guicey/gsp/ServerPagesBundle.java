@@ -129,7 +129,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * guice bean. But it could be used only after complete gsp initialization (between dropwizard run and jersey start).
  *
  * @author Vyacheslav Rusakov
- * @see <a href="https://www.dropwizard.io/1.3.5/docs/manual/views.html">dropwizard views</a>
+ * @see <a href="https://www.dropwizard.io/en/release-2.0.x/manual/views.html">dropwizard views</a>
  * @since 22.10.2018
  */
 @SuppressWarnings("PMD.ExcessiveImports")

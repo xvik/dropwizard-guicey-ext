@@ -6,7 +6,7 @@ For migration from *jdbi2* see [jdbi2 module](../guicey-jdbi#migration-to-jdbi3)
 
 ### About
 
-Integrates [JDBI3](http://jdbi.org/) with guice. Based on [dropwizard-jdbi3](https://www.dropwizard.io/1.3.5/docs/manual/jdbi3.html) integration.
+Integrates [JDBI3](http://jdbi.org/) with guice. Based on [dropwizard-jdbi3](https://www.dropwizard.io/en/release-2.0.x/manual/jdbi3.html) integration.
  
 Features:
 
@@ -37,14 +37,14 @@ Maven:
 <dependency>
   <groupId>ru.vyarus.guicey</groupId>
   <artifactId>guicey-jdbi3</artifactId>
-  <version>5.0.0-0-rc.2</version>
+  <version>5.0.0-0</version>
 </dependency>
 ```
 
 Gradle:
 
 ```groovy
-compile 'ru.vyarus.guicey:guicey-jdbi3:5.0.0-0-rc.2'
+compile 'ru.vyarus.guicey:guicey-jdbi3:5.0.0-0'
 ```
 
 See the most recent version in the badge above.
@@ -60,7 +60,7 @@ GuiceBundle.builder()
 ```
 
 Here default JDBI instance will be created from database configuration (much like it's described in 
-[dropwizard documentation](http://www.dropwizard.io/1.3.5/docs/manual/jdbi3.html)).
+[dropwizard documentation](https://www.dropwizard.io/en/release-2.0.x/manual/jdbi3.html)).
 
 Or build JDBI instance yourself:
 
