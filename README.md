@@ -34,15 +34,15 @@ to unify versions management.
 
 Note that BOM will also provide guice and dropwizard BOMs, so you can avoid declaring versions of these modules too. 
 
-<!--
-##### Snapshots
+### Snapshots
 
-You can use snapshot versions through [JitPack](https://jitpack.io):
+Snapshots could be used through JitPack:
 
-* Go to [JitPack project page](https://jitpack.io/#xvik/dropwizard-guicey-ext)
-* Select `Commits` section and click `Get it` on commit you want to use (top one - the most recent)
-* Follow displayed instruction: add repository and change dependency (NOTE: due to JitPack convention artifact group will be different)
--->
+* Go to [JitPack project page](https://jitpack.io/#ru.vyarus.guicey/dropwizard-guicey-ext)
+* Select `Commits` section and click `Get it` on commit you want to use (you may need to wait while version builds if no one requested it before)
+* Follow displayed instruction: 
+    - Add jitpack repository: `maven { url 'https://jitpack.io' }`
+    - Use commit hash as version: `ru.vyarus.guicey:guicey-bom:8585300d12`
 
 ### Modules
 
