@@ -1,3 +1,5 @@
+* Update dropwizard-flyway to 2.0.0-1
+
 ### 5.0.0-0 (2019-12-15)
 * Update to guicey 5.0.0
     - Ext version now aligned with guicey the same way as dropwizard modules: guiceyVersion-number (5.0.0-0)

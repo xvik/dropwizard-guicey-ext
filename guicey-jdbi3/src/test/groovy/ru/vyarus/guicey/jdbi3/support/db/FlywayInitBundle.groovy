@@ -33,9 +33,8 @@ class FlywayInitBundle implements GuiceyBundle {
             if (flyway != null) {
                 return
             }
-            flyway = new Flyway();
             DataSourceFactory f = conf.getDatabase();
-            flyway.setDataSource(f.getUrl(), f.getUser(), f.getPassword());
+            flyway = Flyway.configure().dataSource(f.getUrl(), f.getUser(), f.getPassword()).load();
             flyway.migrate();
         }
 

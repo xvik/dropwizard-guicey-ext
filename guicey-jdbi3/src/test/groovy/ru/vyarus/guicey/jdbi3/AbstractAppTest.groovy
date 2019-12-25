@@ -8,5 +8,5 @@ import ru.vyarus.guicey.jdbi3.support.SampleApp
  * @since 31.08.2018
  */
 @UseGuiceyApp(value = SampleApp, config = 'src/test/resources/test-config.yml')
-class AbstractAppTest extends AbstractTest {
+abstract class AbstractAppTest extends AbstractTest {
 }
