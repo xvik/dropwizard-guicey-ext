@@ -1,12 +1,9 @@
 package ru.vyarus.guicey.gsp.app.ext;
 
-import com.google.common.base.Preconditions;
 import ru.vyarus.dropwizard.guice.module.installer.bundle.GuiceyBundle;
 import ru.vyarus.dropwizard.guice.module.installer.bundle.GuiceyEnvironment;
 import ru.vyarus.guicey.gsp.ServerPagesBundle;
 import ru.vyarus.guicey.gsp.app.GlobalConfig;
-import ru.vyarus.guicey.gsp.app.asset.AssetSources;
-import ru.vyarus.guicey.gsp.app.rest.mapping.ViewRestSources;
 
 /**
  * Bundle for extending (or overriding) registered server pages app resources (through
@@ -20,27 +17,21 @@ import ru.vyarus.guicey.gsp.app.rest.mapping.ViewRestSources;
  */
 public class ServerPagesAppExtensionBundle implements GuiceyBundle {
 
-    private final String name;
-    private final AssetSources assets = new AssetSources();
-    private DelayedConfigurationCallback delayedConfigCallback;
-    private final ViewRestSources views = new ViewRestSources();
+    private final ExtendedConfiguration ext;
 
     protected ServerPagesAppExtensionBundle(final String name) {
-        this.name = name;
+        this.ext = new ExtendedConfiguration(name);
     }
 
     @Override
     public void run(final GuiceyEnvironment environment) throws Exception {
-        final GlobalConfig config = environment.sharedStateOrFail(ServerPagesBundle.class,
+        environment.<GlobalConfig>sharedStateOrFail(ServerPagesBundle.class,
                 "Either server pages support bundle was not installed (use %s.builder() to create bundle) "
                         + " or it was installed after '%s' application extension bundle",
-                ServerPagesBundle.class.getSimpleName(), name);
-
-        if (delayedConfigCallback != null) {
-            delayedConfigCallback.configure(environment, assets, views);
-        }
-        config.extendAssets(name, assets);
-        config.extendViews(name, views);
+                ServerPagesBundle.class.getSimpleName(), this.ext.getName())
+                // delayed callback will be called just before gsp application initialization
+                // (after guicey initialization complete, but before jersey init)
+                .extendApp(ext);
     }
 
     /**
@@ -76,7 +67,7 @@ public class ServerPagesAppExtensionBundle implements GuiceyBundle {
          * @see ru.vyarus.guicey.gsp.app.ServerPagesAppBundle.AppBuilder#mapViews(String, String)
          */
         public AppExtensionBuilder mapViews(final String subUrl, final String prefix) {
-            bundle.views.map(subUrl, prefix);
+            bundle.ext.getViews().map(subUrl, prefix);
             return this;
         }
 
@@ -91,7 +82,7 @@ public class ServerPagesAppExtensionBundle implements GuiceyBundle {
          * @see ru.vyarus.guicey.gsp.app.ServerPagesAppBundle.AppBuilder#attachAssets(String)
          */
         public AppExtensionBuilder attachAssets(final String path) {
-            bundle.assets.attach(path);
+            bundle.ext.getAssets().attach(path);
             return this;
         }
 
@@ -109,13 +100,14 @@ public class ServerPagesAppExtensionBundle implements GuiceyBundle {
          * @see ru.vyarus.guicey.gsp.app.ServerPagesAppBundle.AppBuilder#attachAssets(String, String)
          */
         public AppExtensionBuilder attachAssets(final String subUrl, final String path) {
-            bundle.assets.attach(subUrl, path);
+            bundle.ext.getAssets().attach(subUrl, path);
             return this;
         }
 
         /**
          * Used to delay actual configuration till runtime phase, when dropwizard configuration will be available
          * (or, in case of complex setup, other bundles will perform all required initializations).
+         * Called after guicey initialization (when guice injector created and extensions installed).
          * <p>
          * Only one callback may be registered.
          *
@@ -123,9 +115,7 @@ public class ServerPagesAppExtensionBundle implements GuiceyBundle {
          * @return builder instance for chained calls
          */
         public AppExtensionBuilder delayedConfiguration(final DelayedConfigurationCallback callback) {
-            Preconditions.checkArgument(bundle.delayedConfigCallback == null,
-                    "Only one delayed configuration could be registered");
-            bundle.delayedConfigCallback = callback;
+            bundle.ext.setDelayedCallback(callback);
             return this;
         }
 

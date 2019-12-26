@@ -16,7 +16,7 @@ import ru.vyarus.dropwizard.guice.module.installer.bundle.GuiceyEnvironment;
 import ru.vyarus.dropwizard.guice.module.installer.util.PathUtils;
 import ru.vyarus.dropwizard.guice.module.installer.util.Reporter;
 import ru.vyarus.dropwizard.guice.module.lifecycle.GuiceyLifecycleAdapter;
-import ru.vyarus.dropwizard.guice.module.lifecycle.event.run.BundlesStartedEvent;
+import ru.vyarus.dropwizard.guice.module.lifecycle.event.run.ApplicationRunEvent;
 import ru.vyarus.guicey.gsp.app.GlobalConfig;
 import ru.vyarus.guicey.gsp.app.ServerPagesApp;
 import ru.vyarus.guicey.gsp.app.ServerPagesAppBundle.AppBuilder;
@@ -291,16 +291,17 @@ public class ServerPagesBundle extends UniqueGuiceyBundle {
 
     @Override
     public void run(final GuiceyEnvironment environment) {
-        // init applications after all guicey bundles started (so all extensions applied)
+        // init applications after guicey initialization
         environment.listen(new GuiceyLifecycleAdapter() {
             @Override
-            protected void bundlesStarted(final BundlesStartedEvent event) {
+            protected void applicationRun(final ApplicationRunEvent event) {
+                config.applyDelayedExtensions(environment);
+
                 for (ServerPagesApp app : config.getApps()) {
                     // finalize app configuration
                     // assume noone will ever map gsp applications on intercepting paths!
                     // (e.g. /app/ and /app/app2)
                     app.install(environment.environment(), config);
-
                 }
             }
         });

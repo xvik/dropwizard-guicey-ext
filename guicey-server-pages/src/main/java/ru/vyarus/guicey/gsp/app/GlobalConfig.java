@@ -5,7 +5,9 @@ import com.google.common.collect.Multimap;
 import io.dropwizard.Configuration;
 import io.dropwizard.views.ViewConfigurable;
 import io.dropwizard.views.ViewRenderer;
+import ru.vyarus.dropwizard.guice.module.installer.bundle.GuiceyEnvironment;
 import ru.vyarus.guicey.gsp.app.asset.AssetSources;
+import ru.vyarus.guicey.gsp.app.ext.ExtendedConfiguration;
 import ru.vyarus.guicey.gsp.app.rest.mapping.ViewRestSources;
 import ru.vyarus.guicey.gsp.views.ViewRendererConfigurationModifier;
 
@@ -34,6 +36,8 @@ public class GlobalConfig {
     private final Map<String, AssetSources> assetExtensions = new HashMap<>();
     // app name -- view rest prefix collector
     private final Map<String, ViewRestSources> restExtensions = new HashMap<>();
+    // app delayed extensions
+    private final List<ExtendedConfiguration> delayedExtensions = new ArrayList<>();
     private ViewConfigurable<Configuration> configurable;
     private boolean printConfig;
     @SuppressWarnings("PMD.AvoidFieldNameMatchingMethodName")
@@ -181,25 +185,38 @@ public class GlobalConfig {
     }
 
     /**
-     * Register application resources extension.
+     * Register, possibly delayed, application configuration.
      *
-     * @param app     application name to apply new resources to
-     * @param sources additional asset sources
+     * @param ext application extensions configuration
      */
-    public void extendAssets(final String app, final AssetSources sources) {
-        checkAppNotInitialized(app);
-        if (!assetExtensions.containsKey(app)) {
-            assetExtensions.put(app, new AssetSources());
-        }
-        assetExtensions.get(app).merge(sources);
+    public void extendApp(final ExtendedConfiguration ext) {
+        this.delayedExtensions.add(ext);
     }
 
-    public void extendViews(final String app, final ViewRestSources sources) {
-        checkAppNotInitialized(app);
-        if (!restExtensions.containsKey(app)) {
-            restExtensions.put(app, new ViewRestSources());
+    /**
+     * Apply all configured extensions. Must be called just before applications initialization (the latest moment).
+     */
+    @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
+    public void applyDelayedExtensions(final GuiceyEnvironment environment) {
+        for (ExtendedConfiguration ext : delayedExtensions) {
+            final String app = ext.getName();
+            checkAppNotInitialized(app);
+
+            // apply delayed ext callbacks
+            ext.configure(environment);
+
+            // register extended assets
+            if (!assetExtensions.containsKey(app)) {
+                assetExtensions.put(app, new AssetSources());
+            }
+            assetExtensions.get(app).merge(ext.getAssets());
+
+            // register extended views
+            if (!restExtensions.containsKey(app)) {
+                restExtensions.put(app, new ViewRestSources());
+            }
+            restExtensions.get(app).merge(ext.getViews());
         }
-        restExtensions.get(app).merge(sources);
     }
 
     /**
