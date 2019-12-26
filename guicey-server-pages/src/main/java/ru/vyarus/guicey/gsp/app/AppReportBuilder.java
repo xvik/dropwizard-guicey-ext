@@ -72,10 +72,10 @@ public final class AppReportBuilder {
         for (Map.Entry<String, String> entry : app.views.getPrefixes().entrySet()) {
             final String url = entry.getKey();
             // no marker for single mapping
-            final String marker = app.views.getPrefixes().size() == 1 ? "" : ("[" + i++ + "]");
+            final String marker = app.views.getPrefixes().size() == 1 ? "" : (String.format("%2s|  ", i++));
             idx.put(url, marker);
             res.append(TAB).append(TAB)
-                    .append(String.format("%3s %-20s %s*",
+                    .append(String.format("%s%-20s %s*",
                             marker,
                             PathUtils.path(app.fullUriPath, url) + STAR,
                             PathUtils.leadingSlash(
@@ -97,13 +97,13 @@ public final class AppReportBuilder {
             final boolean disabledErrors = handle.getResourceType().isAnnotationPresent(ManualErrorHandling.class)
                     || (handlingMethod != null && handlingMethod.isAnnotationPresent(ManualErrorHandling.class));
 
-            res.append(TAB).append(TAB).append(String.format("%-7s %s  (%s #%s)%s   %s",
+            res.append(TAB).append(TAB).append(String.format("%s%-7s %s  (%s #%s)%s",
+                    idx.get(path.getMapping()),
                     handle.getMethod().getHttpMethod(),
                     PathUtils.path(app.fullUriPath, path.getMappedUrl()),
                     handle.getResourceType().getName(),
                     handle.getMethod().getInvocable().getDefinitionMethod().getName(),
-                    disabledErrors ? " [DISABLED ERRORS]" : "",
-                    idx.get(path.getMapping())
+                    disabledErrors ? " [DISABLED ERRORS]" : ""
             )).append(NEWLINE);
         }
 
