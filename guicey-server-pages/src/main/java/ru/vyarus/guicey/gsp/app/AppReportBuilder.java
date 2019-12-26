@@ -112,13 +112,13 @@ public final class AppReportBuilder {
             for (HiddenViewPath path : app.hiddenViewPaths) {
                 final ViewPath handle = path.getPath();
                 res.append(TAB).append(TAB)
-                        .append(String.format("%-7s %s (%s #%s) of %s hidden by %s ",
+                        .append(String.format("%s hides %s%-7s %s (%s #%s)",
+                                idx.get(path.getOverridingMapping()),
+                                idx.get(path.getMapping()),
                                 handle.getMethod().getHttpMethod(),
                                 PathUtils.path(app.fullUriPath, path.getMappedUrl()),
                                 RenderUtils.getClassName(handle.getResourceType()),
-                                handle.getMethod().getInvocable().getDefinitionMethod().getName(),
-                                idx.get(path.getMapping()),
-                                idx.get(path.getOverridingMapping())))
+                                handle.getMethod().getInvocable().getDefinitionMethod().getName()))
                         .append(NEWLINE);
             }
         }
