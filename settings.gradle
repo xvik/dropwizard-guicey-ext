@@ -7,5 +7,6 @@ include 'guicey-bom',
         'guicey-spa',
         'guicey-lifecycle-annotations',
         'guicey-server-pages',
-        'guicey-admin-rest'
+        'guicey-admin-rest',
+        'guicey-validation'
 

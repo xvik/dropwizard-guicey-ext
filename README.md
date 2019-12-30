@@ -52,7 +52,11 @@ Admin context rest support (mirror main rest).
 
 #### [Lifecycle annotations](guicey-lifecycle-annotations)
 
-Support for @PostConstruct, @PreDestroy, @PostStartup annotations on guice beans. 
+Support for @PostConstruct, @PreDestroy, @PostStartup annotations on guice beans.
+
+#### [Validation](guicey-validation)
+
+Allows using validation annotations on any guice bean method (the same way as [dropwizard rest validation](https://www.dropwizard.io/en/stable/manual/validation.html)) 
 
 #### [Guava EventBus integration](guicey-eventbus) 
 

@@ -2,6 +2,8 @@
 * [gsp]
     - Move configuration initialization after guicey complete startup to be able to use guicey extensions
         via delayedConfiguration (change does not affect current usages)
+* Add validation module: applies validation annotations support on all guice-managed service methods
+    (the same way as dropwizard allows validation annotations on rest services)        
 
 ### 5.0.0-0 (2019-12-15)
 * Update to guicey 5.0.0

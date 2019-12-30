@@ -62,6 +62,7 @@ subprojects {
             // the correct module is "io.dropwizard.modules:dropwizard-jdbi:2.0.0", but it's not published yet
             dependency "io.dropwizard:dropwizard-jdbi:2.0.0-rc9"
             dependency "ru.vyarus:guice-ext-annotations:$guiceExtAnn"
+            dependency 'ru.vyarus:guice-validator:2.0.0'
             dependency 'com.h2database:h2:1.4.200'
             dependency 'io.dropwizard.modules:dropwizard-flyway:2.0.0-1'
         }
