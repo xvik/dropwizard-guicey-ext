@@ -30,7 +30,7 @@ Maven:
 Gradle:
 
 ```groovy
-compile 'ru.vyarus.guicey:lifecycle-annotations:5.0.0-0'
+compile 'ru.vyarus.guicey:guicey-lifecycle-annotations:5.0.0-0'
 ```
 
 See the most recent version in the badge above.
