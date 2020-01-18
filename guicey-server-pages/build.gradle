@@ -1,11 +1,11 @@
 description = "Guicey server pages"
 
 dependencies {
-    compile 'io.dropwizard:dropwizard-views'
-    compile project(':guicey-spa')
-    
-    testCompile 'io.dropwizard:dropwizard-views-freemarker'
-    testCompile 'io.dropwizard:dropwizard-views-mustache'
-    testCompile 'org.codehaus.groovy.modules.http-builder:http-builder:0.7.2'
-    testCompile 'org.webjars.npm:jquery:3.4.1'
+    implementation 'io.dropwizard:dropwizard-views'
+    implementation project(':guicey-spa')
+
+    testImplementation 'io.dropwizard:dropwizard-views-freemarker'
+    testImplementation 'io.dropwizard:dropwizard-views-mustache'
+    testImplementation 'org.codehaus.groovy.modules.http-builder:http-builder:0.7.2'
+    testImplementation 'org.webjars.npm:jquery:3.4.1'
 }

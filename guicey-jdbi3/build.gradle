@@ -1,9 +1,9 @@
 description = "Guicey integration for JDBI 3"
 
 dependencies {
-    compile 'io.dropwizard:dropwizard-jdbi3'
-    compile 'ru.vyarus:guice-ext-annotations'
+    implementation 'io.dropwizard:dropwizard-jdbi3'
+    implementation 'ru.vyarus:guice-ext-annotations'
 
-    testCompile 'io.dropwizard.modules:dropwizard-flyway'
-    testCompile 'com.h2database:h2'
+    testImplementation 'io.dropwizard.modules:dropwizard-flyway'
+    testImplementation 'com.h2database:h2'
 }

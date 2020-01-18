@@ -1,7 +1,7 @@
 description = "Guice-managed beans methoods pre/post validations"
 
 dependencies {
-    compile 'ru.vyarus:guice-validator'
+    implementation 'ru.vyarus:guice-validator'
 
-    testCompile 'org.codehaus.groovy.modules.http-builder:http-builder:0.7.2'
+    testImplementation 'org.codehaus.groovy.modules.http-builder:http-builder:0.7.2'
 }
