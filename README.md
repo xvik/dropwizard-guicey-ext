@@ -36,13 +36,74 @@ Note that BOM will also provide guice and dropwizard BOMs, so you can avoid decl
 
 ### Snapshots
 
-Snapshots could be used through JitPack:
+<details>
+      <summary>Snapshots may be used through JitPack</summary>
+
+Add [JitPack](https://jitpack.io/#ru.vyarus.guicey/dropwizard-guicey-ext) repository:
+
+```groovy
+repositories { maven { url 'https://jitpack.io' } }
+```
+
+For spring dependencies plugin:
+
+```groovy
+dependencyManagement {
+    resolutionStrategy {
+        cacheChangingModulesFor 0, 'seconds'
+    }
+    imports {
+        mavenBom "ru.vyarus.guicey:guicey-bom:master-SNAPSHOT"
+    }
+}
+``` 
+
+If you don't use BOM:
+
+```groovy
+configurations.all {
+    resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
+}
+
+dependencies {
+    implementation 'ru.vyarus.guicey:guicey-validation:master-SNAPSHOT'
+}
+```
+
+Note that in both cases `resolutionStrategy` setting required for correct updating snapshot with recent commits
+(without it you will not always have up-to-date snapshot)
+
+OR you can depend on exact commit:
 
 * Go to [JitPack project page](https://jitpack.io/#ru.vyarus.guicey/dropwizard-guicey-ext)
-* Select `Commits` section and click `Get it` on commit you want to use (you may need to wait while version builds if no one requested it before)
-* Follow displayed instruction: 
-    - Add jitpack repository: `maven { url 'https://jitpack.io' }`
-    - Use commit hash as version: `ru.vyarus.guicey:guicey-bom:8585300d12`
+* Select `Commits` section and click `Get it` on commit you want to use and 
+ use commit hash as version: `ru.vyarus.guicey:guicey-bom:8585300d12`
+
+
+Maven:
+
+```xml
+<repositories>
+    <repository>
+        <id>jitpack.io</id>
+        <url>https://jitpack.io</url>
+    </repository>
+</repositories>  
+
+<dependencies>
+    <dependency>
+        <groupId>ru.vyarus.guicey</groupId>
+        <artifactId>guicey-bom</artifactId>
+        <version>master-SNAPSHOT</version>
+        <type>pom</type>
+        <scope>import</scope>
+    </dependency>
+</dependencies>
+```     
+
+Or simply change dependency version if BOM not used (repository definition is still required).
+
+</details>    
 
 ### Modules
 
