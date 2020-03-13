@@ -1,3 +1,4 @@
+### 5.0.1-1 (2020-03-13)
 * Update dropwizard-flyway to 2.0.2-1
 * [gsp]
     - Move configuration initialization after guicey complete startup to be able to use guicey extensions
