@@ -27,7 +27,7 @@ Maven:
 Gradle:
 
 ```groovy
-compile 'ru.vyarus.guicey:guicey-validation:5.0.0-1'
+implementation 'ru.vyarus.guicey:guicey-validation:5.0.0-1'
 ```
 
 See the most recent version in the badge above.

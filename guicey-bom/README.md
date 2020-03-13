@@ -24,7 +24,7 @@ Maven:
         <dependency>
             <groupId>ru.vyarus.guicey</groupId>
             <artifactId>guicey-bom</artifactId>
-            <version>5.0.0-0</version>
+            <version>5.0.1-1</version>
             <type>pom</type>
             <scope>import</scope>
         </dependency>
@@ -44,9 +44,9 @@ Maven:
     </dependency>
     <!-- Example of extension module usage -->
     <dependency>
-          <groupId>ru.vyarus.guicey</groupId>
-          <artifactId>guicey-eventbus</artifactId>
-        </dependency>
+      <groupId>ru.vyarus.guicey</groupId>
+      <artifactId>guicey-eventbus</artifactId>
+    </dependency>
 </dependencies>
 ```
 
@@ -54,23 +54,26 @@ Gradle:
 
 ```groovy
 plugins {
-    id "io.spring.dependency-management" version "1.0.8.RELEASE"
+    id "io.spring.dependency-management" version "1.0.9.RELEASE"
 }
 
 dependencyManagement {
     // Implicitly imports Dropwizard and Guice BOMs 
     imports {
-        mavenBom "ru.vyarus.guicey:guicey-bom:5.0.0-0"
+        mavenBom "ru.vyarus.guicey:guicey-bom:5.0.1-1"
+        // uncomment to override dropwizard version    
+        // mavenBom 'io.dropwizard:dropwizard-bom:2.0.2'
+        // mavenBom 'io.dropwizard:dropwizard-dependencies:2.0.2' 
     }
 }
 
 // declare guice and ext modules without versions 
 dependencies {
-    compile 'ru.vyarus:dropwizard-guicey'
+    implementation 'ru.vyarus:dropwizard-guicey'
     // For example, using dropwizard module (without version)
-    compile 'io.dropwizard:dropwizard-auth'
+    implementation 'io.dropwizard:dropwizard-auth'
     // Example of extension module usage
-    compile 'ru.vyarus.guicey:guicey-eventbus' 
+    implementation 'ru.vyarus.guicey:guicey-eventbus' 
 }
     
 ```

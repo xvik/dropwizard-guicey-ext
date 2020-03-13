@@ -7,10 +7,6 @@
 **DEPRECATED**: because jdbi2 dropwizard module is deprecated and moved [outside of core modules](https://github.com/dropwizard/dropwizard-jdbi).
 Migrate [to jdbi3](#migration-to-jdbi3) 
 
-**IMPORTANT** new jdbi2 module is not released yet and that's why guicey-jdbi rely on the latest RC version
-`io.dropwizard:dropwizard-jdbi:2.0.0-rc9`. Normally, it should be `io.dropwizard.modules:dropwizard-jdbi:2.0.0-0`.
-Anyway, internally nothing should be changed (because of module deprecation).
-
 Integrates [JDBI](http://jdbi.org/) with guice. Based on [dropwizard-jdbi](https://www.dropwizard.io/en/release-1.3.x/manual/jdbi.html) integration.
  
 Features:
@@ -40,14 +36,14 @@ Maven:
 <dependency>
   <groupId>ru.vyarus.guicey</groupId>
   <artifactId>guicey-jdbi</artifactId>
-  <version>5.0.0-0</version>
+  <version>5.0.1-1</version>
 </dependency>
 ```
 
 Gradle:
 
 ```groovy
-compile 'ru.vyarus.guicey:guicey-jdbi:5.0.0-0'
+implementation 'ru.vyarus.guicey:guicey-jdbi:5.0.1-1'
 ```
 
 See the most recent version in the badge above.

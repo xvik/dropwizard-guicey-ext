@@ -10,8 +10,8 @@
 Provided modules may be used directly and for educational purposes (as examples for custom integrations).
 
 NOTE: Extension modules version is derived from guicey version: guiceyVersion-Number 
-(the same convention as for dropwizard modules). For example version 5.0.0-0 means
-first extensions release (0) for guicey 5.0.0. 
+(the same convention as for dropwizard modules). For example version 5.0.0-1 means
+first extensions release (1) for guicey 5.0.0. 
 
 Also, guicey base package `ru.vyarus.dropwizard.guice` is different from extensions base package `ru.vyarus.guicey`.
 
@@ -21,18 +21,15 @@ Older versions:
 
 ### Setup
  
-Releases are published to [bintray jcenter](https://bintray.com/vyarus/xvik/dropwizard-guicey-ext/) and 
-[maven central](https://maven-badges.herokuapp.com/maven-central/ru.vyarus.guicey/guicey-bom) 
-
 [![JCenter](https://img.shields.io/bintray/v/vyarus/xvik/dropwizard-guicey-ext.svg?label=jcenter)](https://bintray.com/vyarus/xvik/dropwizard-guicey-ext/_latestVersion)
 [![Maven Central](https://img.shields.io/maven-central/v/ru.vyarus.guicey/guicey-bom.svg?style=flat)](https://maven-badges.herokuapp.com/maven-central/ru.vyarus.guicey/guicey-bom)
 
 You can either use [modules](#modules) directly (in this case see module page for setup) or use provided [BOM](guicey-bom)
 to unify versions management.
 
-[BOM usage](guicey-bom#setup) is recommended.
+Note that BOM will also provide guice and dropwizard BOMs, so you can avoid declaring versions of these modules too.
 
-Note that BOM will also provide guice and dropwizard BOMs, so you can avoid declaring versions of these modules too. 
+[BOM usage](guicey-bom#setup) is recommended as it allows correct dropwizard dependencies update. 
 
 ### Snapshots
 
