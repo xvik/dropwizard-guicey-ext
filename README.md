@@ -55,6 +55,10 @@ dependencyManagement {
     imports {
         mavenBom "ru.vyarus.guicey:guicey-bom:master-SNAPSHOT"
     }
+}   
+
+dependencies {
+    implementation 'ru.vyarus.guicey:guicey-validation'
 }
 ``` 
 
@@ -90,13 +94,22 @@ Maven:
     </repository>
 </repositories>  
 
+<dependencyManagement> 
+    <dependencies>
+        <dependency>
+            <groupId>ru.vyarus.guicey</groupId>
+            <artifactId>guicey-bom</artifactId>
+            <version>master-SNAPSHOT</version>
+            <type>pom</type>
+            <scope>import</scope>
+        </dependency>
+    </dependencies>
+</dependencyManagement>  
+ 
 <dependencies>
     <dependency>
         <groupId>ru.vyarus.guicey</groupId>
-        <artifactId>guicey-bom</artifactId>
-        <version>master-SNAPSHOT</version>
-        <type>pom</type>
-        <scope>import</scope>
+        <artifactId>guicey-validation</artifactId>
     </dependency>
 </dependencies>
 ```     
