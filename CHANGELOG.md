@@ -1,9 +1,11 @@
-* Update dropwizard-flyway to 2.0.0-1
+* Update dropwizard-flyway to 2.0.2-1
 * [gsp]
     - Move configuration initialization after guicey complete startup to be able to use guicey extensions
         via delayedConfiguration (change does not affect current usages)
+* [jdbi]
+    - Switch to externalized dropwizard-jdbi module (2.0.2)             
 * Add validation module: applies validation annotations support on all guice-managed service methods
-    (the same way as dropwizard allows validation annotations on rest services)        
+    (the same way as dropwizard allows validation annotations on rest services)     
 
 ### 5.0.0-0 (2019-12-15)
 * Update to guicey 5.0.0

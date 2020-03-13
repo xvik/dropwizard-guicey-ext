@@ -1,7 +1,7 @@
 description = "Guicey integration for JDBI"
 
 dependencies {
-    implementation 'io.dropwizard:dropwizard-jdbi'
+    implementation 'io.dropwizard.modules:dropwizard-jdbi'
     implementation 'ru.vyarus:guice-ext-annotations'
 
     testImplementation 'io.dropwizard.modules:dropwizard-flyway'
