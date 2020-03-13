@@ -36,6 +36,8 @@ Note that BOM will also provide guice and dropwizard BOMs, so you can avoid decl
 <details>
       <summary>Snapshots may be used through JitPack</summary>
 
+WARNING: snapshot may not contain today's commits due to ~1day publication lag!
+
 Add [JitPack](https://jitpack.io/#ru.vyarus.guicey/dropwizard-guicey-ext) repository:
 
 ```groovy

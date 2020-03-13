@@ -28,6 +28,21 @@ Maven:
             <type>pom</type>
             <scope>import</scope>
         </dependency>
+        <!-- uncomment to override dropwizard and its dependencies versions  
+        <dependency>
+            <groupId>io.dropwizard/groupId>
+            <artifactId>dropwizard-bom</artifactId>
+            <version>2.0.2</version>
+            <type>pom</type>
+            <scope>import</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.dropwizard/groupId>
+            <artifactId>dropwizard-dependencies</artifactId>
+            <version>2.0.2</version>
+            <type>pom</type>
+            <scope>import</scope>
+        </dependency> --> 
     </dependencies>
 </dependencyManagement>
 
