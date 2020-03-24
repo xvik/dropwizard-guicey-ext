@@ -82,7 +82,8 @@ public class ServerPagesFilter implements Filter {
                          final FilterChain chain) throws IOException, ServletException {
         final HttpServletRequest req = (HttpServletRequest) servletRequest;
         final HttpServletResponse resp = (HttpServletResponse) servletResponse;
-        logger.debug("[GSP IN] Processing request '{}'", req.getRequestURI());
+        final String requestURI = req.getRequestURI();
+        logger.debug("[GSP IN] Processing request '{}'", requestURI);
 
         spa.markPossibleSpaRoute(req, resp);
 
@@ -92,7 +93,7 @@ public class ServerPagesFilter implements Filter {
         final String pathFile = findFileInPath(req);
         final boolean directTemplateCall = pathFile != null && isTemplate(pathFile);
         if (pathFile != null && !directTemplateCall) {
-            logger.debug("Serving asset: {}", req.getRequestURI());
+            logger.debug("Serving asset: {}", requestURI);
             // delegate to asset servlet
             serveAsset(req, resp, chain);
             return;
@@ -100,7 +101,15 @@ public class ServerPagesFilter implements Filter {
 
         // cut of application mapping prefix to get page url (same as in rest url, but without app prefix)
         // (it may be direct path to template file under classpath)
-        String page = req.getRequestURI().substring(uriPath.length());
+        String page;
+        if (PathUtils.trailingSlash(requestURI).equals(uriPath)) {
+            // special case when root called without trailing slash (page instead of page/)
+            // uriPath will always end with slash
+            page = "";
+        } else {
+            page = requestURI.substring(uriPath.length());
+        }
+
         if (page.isEmpty()) {
             page = index;
         }

@@ -1,3 +1,6 @@
+* [gsp]
+    - Fix template index page recognition when root context called without trailing slash  
+
 ### 5.0.1-1 (2020-03-13)
 * Update dropwizard-flyway to 2.0.2-1
 * [gsp]
