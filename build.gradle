@@ -3,7 +3,7 @@ plugins {
     id 'ru.vyarus.java-lib' version '2.1.0' apply false
     id 'ru.vyarus.github-info' version '1.2.0' apply false
     id 'ru.vyarus.quality' version '4.1.0' apply false
-    id 'com.jfrog.bintray' version '1.8.4' apply false
+    id 'com.jfrog.bintray' version '1.8.5' apply false
     id "io.spring.dependency-management" version "1.0.9.RELEASE" apply false
 
     id 'base'
