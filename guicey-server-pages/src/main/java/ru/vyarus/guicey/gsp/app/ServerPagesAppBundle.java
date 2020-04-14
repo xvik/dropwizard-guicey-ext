@@ -81,12 +81,16 @@ public class ServerPagesAppBundle implements GuiceyBundle {
      */
     public static class AppBuilder {
         private final ServerPagesApp app;
+        private final ClassLoader loader;
 
         public AppBuilder(final boolean mainContext,
                           final String name,
                           final String path,
-                          final String uri) {
+                          final String uri,
+                          final ClassLoader loader) {
             this.app = new ServerPagesApp();
+            // if loader is null, default loader would be set automatically by AssetSources
+            this.loader = loader;
 
             app.mainContext = mainContext;
             app.name = checkNotNull(name, "Name is required");
@@ -95,7 +99,7 @@ public class ServerPagesAppBundle implements GuiceyBundle {
             app.mainAssetsPath = PathUtils.normalizeClasspathPath(path);
             checkArgument(!SLASH.equals(app.mainAssetsPath), "%s is the classpath root", app.mainAssetsPath);
             // register main path for assets lookup
-            app.assetLocations.attach(app.mainAssetsPath);
+            app.assetLocations.attach(app.mainAssetsPath, loader);
         }
 
         /**
@@ -259,7 +263,7 @@ public class ServerPagesAppBundle implements GuiceyBundle {
          * @see #attachAssets(String, String) to register assets on specific sub url
          */
         public AppBuilder attachAssets(final String path) {
-            app.assetLocations.attach(path);
+            app.assetLocations.attach(path, loader);
             return this;
         }
 
@@ -277,7 +281,7 @@ public class ServerPagesAppBundle implements GuiceyBundle {
          * @return builder instance for chained calls
          */
         public AppBuilder attachAssets(final String subUrl, final String path) {
-            app.assetLocations.attach(subUrl, path);
+            app.assetLocations.attach(subUrl, path, loader);
             return this;
         }
 

@@ -40,9 +40,12 @@ public class ServerPagesAppExtensionBundle implements GuiceyBundle {
     public static class AppExtensionBuilder {
 
         private final ServerPagesAppExtensionBundle bundle;
+        private final ClassLoader loader;
 
-        public AppExtensionBuilder(final String name) {
+        public AppExtensionBuilder(final String name, final ClassLoader loader) {
             this.bundle = new ServerPagesAppExtensionBundle(name);
+            // if loader is null, default loader would be set automatically by AssetSources
+            this.loader = loader;
         }
 
         /**
@@ -82,7 +85,7 @@ public class ServerPagesAppExtensionBundle implements GuiceyBundle {
          * @see ru.vyarus.guicey.gsp.app.ServerPagesAppBundle.AppBuilder#attachAssets(String)
          */
         public AppExtensionBuilder attachAssets(final String path) {
-            bundle.ext.getAssets().attach(path);
+            bundle.ext.getAssets().attach(path, loader);
             return this;
         }
 
@@ -100,7 +103,7 @@ public class ServerPagesAppExtensionBundle implements GuiceyBundle {
          * @see ru.vyarus.guicey.gsp.app.ServerPagesAppBundle.AppBuilder#attachAssets(String, String)
          */
         public AppExtensionBuilder attachAssets(final String subUrl, final String path) {
-            bundle.ext.getAssets().attach(subUrl, path);
+            bundle.ext.getAssets().attach(subUrl, path, loader);
             return this;
         }
 
@@ -110,6 +113,10 @@ public class ServerPagesAppExtensionBundle implements GuiceyBundle {
          * Called after guicey initialization (when guice injector created and extensions installed).
          * <p>
          * Only one callback may be registered.
+         * <p>
+         * WARNING: if extension bundle created with custom class loader, it will not be applied to callback
+         * configuration because callback is a low level configuration, and it supports custom class loader with an
+         * additional parameter.
          *
          * @param callback callback for extensions configuration under run phase
          * @return builder instance for chained calls

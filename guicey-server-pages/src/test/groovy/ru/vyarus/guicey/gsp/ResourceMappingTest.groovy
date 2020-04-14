@@ -24,7 +24,7 @@ class ResourceMappingTest extends AbstractTest {
     @Inject
     GspInfoService info
 
-    def "Chek custom resource mapping"() {
+    def "Check custom resource mapping"() {
 
         when: "accessing template through resource"
         String res = getHtml("/sample/tt")

@@ -1,5 +1,6 @@
 package ru.vyarus.guicey.gsp.views.template;
 
+import com.google.common.base.CharMatcher;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -16,6 +17,7 @@ import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.WebApplicationException;
+import java.net.URL;
 
 /**
  * Contains context information for rendered template. The most useful information is original request path:
@@ -195,7 +197,7 @@ public class TemplateContext {
     }
 
     /**
-     * Lookup relative template path either relative to reosurce class (if annotated with {@link Template} or
+     * Lookup relative template path either relative to resource class (if annotated with {@link Template} or
      * in one of pre-configured classpath locations. If passed template is null it will be
      * taken from {@link Template} annotation from resource class.
      * <p>
@@ -218,11 +220,13 @@ public class TemplateContext {
 
         // search relative path relative to resource class
         if (!path.startsWith(PathUtils.SLASH) && resourceClass != null) {
-            final String resourceBaseLocation = ResourceLookup.lookup(resourceClass, path);
-            if (resourceBaseLocation != null) {
-                path = PathUtils.leadingSlash(resourceBaseLocation);
+            final String classRelativePath = PathUtils.path(PathUtils.packagePath(resourceClass),
+                    CharMatcher.is('/').trimLeadingFrom(path));
+            if (assets.load(classRelativePath) != null) {
                 logger.debug("Relative template '{}' found relative to {} class: '{}'",
                         template, resourceClass.getSimpleName(), path);
+                // indicate absolute path
+                path = PathUtils.leadingSlash(classRelativePath);
             }
         }
 
@@ -236,8 +240,27 @@ public class TemplateContext {
         }
 
         // check direct absolute path
-        ResourceLookup.existsOrFail(path);
+        ResourceLookup.existsOrFail(path, assets);
         return path;
+    }
+
+    /**
+     * Load asset from one of registered locations.
+     * <p>
+     * Method assumes to load absolute classpath location (through all custom class loaders, if registered).
+     * But, if direct lookup fails, it will perform relative resolution (search in all registered
+     * locations).
+     * <p>
+     * If custom class loaders used for assets declarations then template engines must be customized to resolve
+     * templates through this method (otherwise they would not be able to find it in custom class loader).
+     * For freemarker integration already provided and could be activated with
+     * {@link ru.vyarus.guicey.gsp.ServerPagesBundle.ViewsBuilder#enableFreemarkerCustomClassLoadersSupport()}.
+     *
+     * @param path absolute or relative path
+     * @return resource url or null if not found
+     */
+    public URL loadAsset(final String path) {
+        return assets.load(path);
     }
 
     /**

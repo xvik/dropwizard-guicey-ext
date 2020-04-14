@@ -3,7 +3,6 @@ package ru.vyarus.guicey.gsp.app.asset.servlet;
 import io.dropwizard.servlets.assets.AssetServlet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.vyarus.dropwizard.guice.module.installer.util.PathUtils;
 import ru.vyarus.guicey.gsp.app.asset.AssetLookup;
 
 import javax.annotation.Nullable;
@@ -37,19 +36,18 @@ public class AssetResolutionServlet extends AssetServlet {
     @Override
     @SuppressWarnings("PMD.AvoidLiteralsInIfCondition")
     protected URL getResourceUrl(final String absolutePath) {
-        String realPath = absolutePath;
-        // do nothing on root request (wait while index page will be requested)
-        // otherwise look for resource in all registered locations
-        if (!PathUtils.trailingSlash(realPath).equals(assets.getPrimaryLocation())) {
-            realPath = assets.lookup(realPath);
+        // do lookup even if directory requested: assets servlet will detect it and ask for index file
+        final URL res = assets.lookupUrl(absolutePath);
+        if (res == null) {
+            if (logger.isInfoEnabled()) {
+                final String err = String.format("Asset '%s' not found in locations: %s",
+                        assets.getRelativePath(absolutePath), assets.getMatchingLocations(absolutePath));
+                // logged here to provide additional diagnostic info
+                logger.info(err);
+            }
+            // mimic super method behaviour
+            throw new IllegalArgumentException("resource " + absolutePath + " not found");
         }
-        if (realPath == null && logger.isInfoEnabled()) {
-            final String err = String.format("Asset '%s' not found in locations: %s",
-                    assets.getRelativePath(absolutePath), assets.getMatchingLocations(absolutePath));
-            // logged here to provide additional diagnostic info
-            logger.info(err);
-        }
-        // mimic default behaviour when resource not found
-        return super.getResourceUrl(realPath);
+        return res;
     }
 }

@@ -184,7 +184,7 @@ public class ServerPagesApp {
             assetLocations.merge(ext);
         }
 
-        final ImmutableMultimap.Builder<String, String> builder = ImmutableMultimap.<String, String>builder()
+        final ImmutableMultimap.Builder<String, String> urlsBuilder = ImmutableMultimap.<String, String>builder()
                 // order by size to correctly handle overlapped paths (e.g. /foo/bar checked before /foo)
                 .orderKeysBy(Comparator.comparing(String::length).reversed());
 
@@ -193,11 +193,23 @@ public class ServerPagesApp {
             final String[] values = src.get(key).toArray(new String[0]);
             // reverse registered locations to preserve registration order priority during lookup
             ArrayUtils.reverse(values);
-            builder.putAll(key, values);
+            urlsBuilder.putAll(key, values);
+        }
+
+        final ImmutableMultimap.Builder<String, ClassLoader> loadersBuilder =
+                ImmutableMultimap.<String, ClassLoader>builder()
+                        .orderKeysBy(Comparator.comparing(String::length).reversed());
+
+        final Multimap<String, ClassLoader> loaders = assetLocations.getLoaders();
+        for (String key : loaders.keySet()) {
+            final ClassLoader[] values = loaders.get(key).toArray(new ClassLoader[0]);
+            // reverse registered loaders to preserve registration order priority during lookup
+            ArrayUtils.reverse(values);
+            loadersBuilder.putAll(key, values);
         }
 
         // process paths the same way as assets servlet does
-        return new AssetLookup(mainAssetsPath, builder.build());
+        return new AssetLookup(mainAssetsPath, urlsBuilder.build(), loadersBuilder.build());
     }
 
     @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")

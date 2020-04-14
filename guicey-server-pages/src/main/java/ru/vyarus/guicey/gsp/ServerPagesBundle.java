@@ -20,6 +20,7 @@ import ru.vyarus.dropwizard.guice.module.lifecycle.event.run.ApplicationRunEvent
 import ru.vyarus.guicey.gsp.app.GlobalConfig;
 import ru.vyarus.guicey.gsp.app.ServerPagesApp;
 import ru.vyarus.guicey.gsp.app.ServerPagesAppBundle.AppBuilder;
+import ru.vyarus.guicey.gsp.app.asset.freemarker.FreemarkerTemplateLoader;
 import ru.vyarus.guicey.gsp.app.ext.ServerPagesAppExtensionBundle;
 import ru.vyarus.guicey.gsp.app.rest.log.RestPathsAnalyzer;
 import ru.vyarus.guicey.gsp.app.rest.support.DirectTemplateExceptionMapper;
@@ -187,9 +188,36 @@ public class ServerPagesBundle extends UniqueGuiceyBundle {
     public static AppBuilder app(final String name,
                                  final String assetsPath,
                                  final String uriPath) {
+        return app(name, assetsPath, uriPath, null);
+    }
+
+    /**
+     * Same as {@link #app(String, String, String)} but with custom classloader to use for assets loading.
+     * All additional registration through this builder ({@link AppBuilder#attachAssets(String)}) would also
+     * be registered with provided class loader.
+     * <p>
+     * WARNING: custom class loader will be automatically supported for static resources, but template engine
+     * may not be able to resolve template. For example, freemarker use class loader of resource class
+     * serving view, so if resource class and view template are in the same class loader then it will work.
+     * For sure direct template rendering (without custom resource class) will not work. Freemarker may be configured
+     * to support all cases with custom template loader
+     * (see {@link ViewsBuilder#enableFreemarkerCustomClassLoadersSupport()}) which must be configured
+     * manually. Mustache is impossible to configure properly (with current mustache views renderer).
+     *
+     * @param name       application name (used as servlet name)
+     * @param assetsPath path to application resources (classpath); may be in form of package (dot-separated)
+     * @param uriPath    mapping uri
+     * @param loader     class loader to use for assets loading
+     * @return builder instance for server pages application configuration
+     * @see #builder()  for server pages applications global support
+     */
+    public static AppBuilder app(final String name,
+                                 final String assetsPath,
+                                 final String uriPath,
+                                 final ClassLoader loader) {
         LOGGER.debug("Registering server pages application {} on path {} with resources in {}",
                 name, uriPath, assetsPath);
-        return new AppBuilder(true, name, assetsPath, uriPath);
+        return new AppBuilder(true, name, assetsPath, uriPath, loader);
     }
 
     /**
@@ -212,9 +240,36 @@ public class ServerPagesBundle extends UniqueGuiceyBundle {
     public static AppBuilder adminApp(final String name,
                                       final String assetsPath,
                                       final String uriPath) {
+        return adminApp(name, assetsPath, uriPath, null);
+    }
+
+    /**
+     * Same as {@link #adminApp(String, String, String)} but with custom classloader to use for assets loading.
+     * All additional registration through this builder ({@link AppBuilder#attachAssets(String)}) would also
+     * be registered with provided class loader.
+     * <p>
+     * WARNING: custom class loader will be automatically supported for static resources, but template engine
+     * may not be able to resolve template. For example, freemarker use class loader of resource class
+     * serving view, so if resource class and view template are in the same class loader then it will work.
+     * For sure direct template rendering (without custom resource class) will not work. Freemarker may be configured
+     * to support all cases with custom template loader
+     * (see {@link ViewsBuilder#enableFreemarkerCustomClassLoadersSupport()}) which must be configured
+     * manually. Mustache is impossible to configure properly (with current mustache views renderer).
+     *
+     * @param name       application name (used as servlet name)
+     * @param assetsPath path to application resources (classpath)
+     * @param uriPath    mapping uri
+     * @param loader     class loader to use for assets loading
+     * @return builder instance for server pages application configuration
+     * @see #builder()  for server pages applications global support
+     */
+    public static AppBuilder adminApp(final String name,
+                                      final String assetsPath,
+                                      final String uriPath,
+                                      final ClassLoader loader) {
         LOGGER.debug("Registering admin server pages application {} on path {} with resources in {}",
                 name, uriPath, assetsPath);
-        return new AppBuilder(false, name, assetsPath, uriPath);
+        return new AppBuilder(false, name, assetsPath, uriPath, loader);
     }
 
     /**
@@ -243,7 +298,29 @@ public class ServerPagesBundle extends UniqueGuiceyBundle {
      * @return application extension bundle
      */
     public static ServerPagesAppExtensionBundle.AppExtensionBuilder extendApp(final String name) {
-        return new ServerPagesAppExtensionBundle.AppExtensionBuilder(name);
+        return extendApp(name, null);
+    }
+
+    /**
+     * Same as {@link #extendApp(String)} but with custom classloader to use for assets loading.
+     * All additional registration through this builder ({@link AppBuilder#attachAssets(String)}) would also
+     * be registered with provided class loader.
+     * <p>
+     * WARNING: custom class loader will be automatically supported for static resources, but template engine
+     * may not be able to resolve template. For example, freemarker use class loader of resource class
+     * serving view, so if resource class and view template are in the same class loader then it will work.
+     * For sure direct template rendering (without custom resource class) will not work. Freemarker may be configured
+     * to support all cases with custom template loader
+     * (see {@link ViewsBuilder#enableFreemarkerCustomClassLoadersSupport()}) which must be configured
+     * manually. Mustache is impossible to configure properly (with current mustache views renderer).
+     *
+     * @param name   extended application name
+     * @param loader class loader to use for assets loading
+     * @return application extension bundle
+     */
+    public static ServerPagesAppExtensionBundle.AppExtensionBuilder extendApp(final String name,
+                                                                              final ClassLoader loader) {
+        return new ServerPagesAppExtensionBundle.AppExtensionBuilder(name, loader);
     }
 
     /**
@@ -422,6 +499,21 @@ public class ServerPagesBundle extends UniqueGuiceyBundle {
         public ViewsBuilder printViewsConfiguration() {
             config.printConfiguration();
             return this;
+        }
+
+        /**
+         * Configures custom freemarker {@link freemarker.cache.TemplateLoader} so freemarker could also see
+         * templates declared in custom class loaders.
+         *
+         * @return builder instance for chained calls
+         * @see #app(String, String, String, ClassLoader)
+         * @see #adminApp(String, String, String, ClassLoader)
+         * @see #extendApp(String, ClassLoader)
+         */
+        public ViewsBuilder enableFreemarkerCustomClassLoadersSupport() {
+            return viewsConfigurationModifier("freemarker", config ->
+                    config.put(freemarker.template.Configuration.TEMPLATE_LOADER_KEY,
+                            FreemarkerTemplateLoader.class.getName()));
         }
 
         /**

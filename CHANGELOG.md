@@ -1,5 +1,14 @@
 * [gsp]
-    - Fix template index page recognition when root context called without trailing slash  
+    - Fix template index page recognition when root context called without trailing slash
+    - Support assets loading from custom class loaders (very specialized case):
+        - Alternative methods added with class loader parameter: `ServerPagesBundle.app(..., class loader)`, 
+          `ServerPagesBundle.adminApp(..., class loader)` and `ServerPagesBundle.extendApp(..., class loader)`.
+          Also, in extended bundle dynamic configuration callback could specify loaders directly.
+        - NOTE: by default this will work ONLY for static resources, template engines in most cases would not
+          be aware of custom class loaders (but in some cases would be able to resolve resources with view resource class loader).
+          It is only possible to properly support custom loaders in freemarker. Support activation shortcut
+          added to global builder: `ServerPagesBundle.builder().enableFreemarkerCustomClassLoadersSupport()`
+          (which will register custom freemarker template loader).                        
 
 ### 5.0.1-1 (2020-03-13)
 * Update dropwizard-flyway to 2.0.2-1
