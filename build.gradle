@@ -2,7 +2,7 @@ plugins {
     id 'com.gradle.build-scan' version '3.2.1'
     id 'ru.vyarus.java-lib' version '2.1.0' apply false
     id 'ru.vyarus.github-info' version '1.2.0' apply false
-    id 'ru.vyarus.quality' version '4.2.0' apply false
+    id 'ru.vyarus.quality' version '4.2.1' apply false
     id 'com.jfrog.bintray' version '1.8.5' apply false
     id "io.spring.dependency-management" version "1.0.9.RELEASE" apply false
 
@@ -41,6 +41,8 @@ subprojects {
     apply plugin: 'groovy'
     apply plugin: 'jacoco'
     apply plugin: 'ru.vyarus.java-lib'
+    // explicit spotbugs required for fixing classpath after dependencies plugin (remove later)
+    apply plugin: 'com.github.spotbugs'
     apply plugin: 'ru.vyarus.quality'
     apply plugin: 'ru.vyarus.github-info'
     apply plugin: 'com.github.ben-manes.versions'
@@ -78,6 +80,9 @@ subprojects {
         testImplementation "org.spockframework:spock-core"
         testImplementation "io.dropwizard:dropwizard-testing"
         testImplementation 'com.github.stefanbirkner:system-rules'
+
+        // dependency management plugin affects spotbugs configuration lowering asm to 7.2 (due to guice bom)
+        spotbugs 'org.ow2.asm:asm:8.0.1'
     }
 
     group = 'ru.vyarus.guicey'
