@@ -2,7 +2,7 @@ plugins {
     id 'com.gradle.build-scan' version '3.2.1'
     id 'ru.vyarus.java-lib' version '2.1.0' apply false
     id 'ru.vyarus.github-info' version '1.2.0' apply false
-    id 'ru.vyarus.quality' version '4.2.1' apply false
+    id 'ru.vyarus.quality' version '4.2.2' apply false
     id 'com.jfrog.bintray' version '1.8.5' apply false
     id "io.spring.dependency-management" version "1.0.9.RELEASE" apply false
 
@@ -82,6 +82,8 @@ subprojects {
         testImplementation 'com.github.stefanbirkner:system-rules'
 
         // dependency management plugin affects spotbugs configuration lowering asm to 7.2 (due to guice bom)
+        spotbugs "com.github.spotbugs:spotbugs:${quality.spotbugsVersion}"
+        spotbugs "org.slf4j:slf4j-simple:1.7.30"
         spotbugs 'org.ow2.asm:asm:8.0.1'
     }
 
