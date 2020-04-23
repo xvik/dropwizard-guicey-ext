@@ -1,5 +1,4 @@
 plugins {
-    id 'com.gradle.build-scan' version '3.2.1'
     id 'ru.vyarus.java-lib' version '2.1.0' apply false
     id 'ru.vyarus.github-info' version '1.2.0' apply false
     id 'ru.vyarus.quality' version '4.2.2' apply false
@@ -13,7 +12,7 @@ plugins {
 }
 
 wrapper {
-    gradleVersion = '5.6.2'
+    gradleVersion = '6.3'
 }
 
 description = 'Dropwizard-guicey extensions'
@@ -194,10 +193,3 @@ task jacocoTestReport(type: JacocoReport, description: 'Generates aggregated cov
 }
 
 htmlDependencyReport.projects = allprojects
-
-buildScan {
-    termsOfServiceUrl = 'https://gradle.com/terms-of-service'
-    termsOfServiceAgree = 'yes'
-    publishOnFailure()
-}
-
