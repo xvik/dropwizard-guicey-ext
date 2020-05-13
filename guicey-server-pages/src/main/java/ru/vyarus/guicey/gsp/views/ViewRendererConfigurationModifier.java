@@ -14,7 +14,7 @@ import java.util.Map;
  *
  * @author Vyacheslav Rusakov
  * @see ru.vyarus.guicey.gsp.app.ServerPagesAppBundle.AppBuilder#viewsConfigurationModifier(
- *String, ViewRendererConfigurationModifier)
+ * String, ViewRendererConfigurationModifier)
  * @see ru.vyarus.guicey.gsp.ServerPagesBundle.ViewsBuilder#viewsConfigurationModifier(
  *  String, ViewRendererConfigurationModifier)
  * @since 06.12.2018
