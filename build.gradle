@@ -109,7 +109,7 @@ subprojects {
 
     jar {
         manifest {
-            attributes 'Automatic-Module-Name': project.name.replace('guicey-', 'dropwizard-guicey.')
+            attributes 'Automatic-Module-Name': project.name.replace('guicey-', 'ru.vyarus.dropwizard.guicey.')
         }
     }
 

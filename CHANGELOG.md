@@ -8,7 +8,8 @@
           be aware of custom class loaders (but in some cases would be able to resolve resources with view resource class loader).
           It is only possible to properly support custom loaders in freemarker. Support activation shortcut
           added to global builder: `ServerPagesBundle.builder().enableFreemarkerCustomClassLoadersSupport()`
-          (which will register custom freemarker template loader).                        
+          (which will register custom freemarker template loader). 
+* Fix invalid Automatic-Module-Name to "ru.vyarus.dropwizard.guicey.<module>"                                 
 
 ### 5.0.1-1 (2020-03-13)
 * Update dropwizard-flyway to 2.0.2-1
