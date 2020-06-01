@@ -30,6 +30,8 @@ public class ExtendedConfiguration {
 
     /**
      * Apply delayed configuration, if registered.
+     *
+     * @param environment environment
      */
     public void configure(final GuiceyEnvironment environment) {
         if (delayedConfigCallback != null) {

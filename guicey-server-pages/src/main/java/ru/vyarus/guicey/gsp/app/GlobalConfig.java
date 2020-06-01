@@ -195,6 +195,8 @@ public class GlobalConfig {
 
     /**
      * Apply all configured extensions. Must be called just before applications initialization (the latest moment).
+     *
+     * @param environment environment
      */
     @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
     public void applyDelayedExtensions(final GuiceyEnvironment environment) {

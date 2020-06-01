@@ -44,7 +44,8 @@ public final class ResourceLookup {
     /**
      * Shortcut for {@link AssetLookup#load(String)} with fail in case of not found template.
      *
-     * @param path path to check (absolute (/) or relative)
+     * @param path   path to check (absolute (/) or relative)
+     * @param assets assets resolution object
      * @throws TemplateNotFoundException if template not found
      */
     public static void existsOrFail(final String path, final AssetLookup assets) throws TemplateNotFoundException {
