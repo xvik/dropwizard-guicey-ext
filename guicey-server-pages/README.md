@@ -138,14 +138,14 @@ Maven:
 <dependency>
   <groupId>ru.vyarus.guicey</groupId>
   <artifactId>guicey-server-pages</artifactId>
-  <version>5.0.1-1</version>
+  <version>5.1.0-1</version>
 </dependency>
 ```
 
 Gradle:
 
 ```groovy
-implementation 'ru.vyarus.guicey:guicey-server-pages:5.0.1-1'
+implementation 'ru.vyarus.guicey:guicey-server-pages:5.1.0-1'
 ```
 
 See the most recent version in the badge above.
@@ -837,3 +837,36 @@ OR
 
 Note: you can always see the content of webjar on [webjars site](https://www.webjars.org/) by clicking
 on package "Files" column. Use everything after "META-INF/resources/webjars/" to reference file.
+
+#### Custom classloaders
+
+*Very specific case*
+
+There is a limited support for custom classloaders. Assumed case is when application resources
+could be loaded with different class loaders.
+
+Custom classloader could be specified during application registration, for example:
+
+```java
+.bundles(ServerPagesBundle.app("com.project.ui", "/com/app/ui/", "/", classLoader)                    
+                    .build())
+```
+
+The same for admin app and extension.
+
+But this will affect only static resources! Template engine will not be able to resolve
+resources because it is not aware of custom loaders. Only in case of template declaration 
+relative to view class, it may use view class class loader and if it is correct loader then
+template could load. Direct templates rendering will not work.
+
+To resolve this, special templates resolver is required. For freemarker it is provided out of the box, 
+but must be enabled on main bundle:
+
+```java
+ServerPagesBundle.builder()
+    .enableFreemarkerCustomClassLoadersSupport()
+    ...
+```
+
+For mustache module it is impossible to write such integration.
+ 

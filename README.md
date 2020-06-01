@@ -38,6 +38,8 @@ Note that BOM will also provide guice and dropwizard BOMs, so you can avoid decl
 
 WARNING: snapshot may not contain today's commits due to ~1day publication lag!
 
+WARNING2: master-SHAPSHOT versions are not working due to incorrect pom generation (yet unkown reason), use exact commits instead
+
 Add [JitPack](https://jitpack.io/#ru.vyarus.guicey/dropwizard-guicey-ext) repository:
 
 ```groovy
@@ -52,7 +54,7 @@ dependencyManagement {
         cacheChangingModulesFor 0, 'seconds'
     }
     imports {
-        mavenBom "ru.vyarus.guicey:guicey-bom:master-SNAPSHOT"
+        mavenBom "ru.vyarus.guicey:guicey-bom:COMMIT-HASH"
     }
 }   
 
@@ -69,7 +71,7 @@ configurations.all {
 }
 
 dependencies {
-    implementation 'ru.vyarus.guicey:guicey-validation:master-SNAPSHOT'
+    implementation 'ru.vyarus.guicey:guicey-validation:COMMIT-HASH'
 }
 ```
 
@@ -98,7 +100,7 @@ Maven:
         <dependency>
             <groupId>ru.vyarus.guicey</groupId>
             <artifactId>guicey-bom</artifactId>
-            <version>master-SNAPSHOT</version>
+            <version>COMMIT-HASH</version>
             <type>pom</type>
             <scope>import</scope>
         </dependency>
