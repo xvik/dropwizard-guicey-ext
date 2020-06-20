@@ -1,6 +1,6 @@
 # JDBI 3 integration
 
-> [Example app](https://github.com/xvik/dropwizard-guicey-examples/tree/master/jdbi3)
+> [Example app](https://github.com/xvik/dropwizard-guicey-examples/tree/master/ext-jdbi3)
 
 For migration from *jdbi2* see [jdbi2 module](../guicey-jdbi#migration-to-jdbi3) .
 
