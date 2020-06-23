@@ -24,7 +24,7 @@ Maven:
         <dependency>
             <groupId>ru.vyarus.guicey</groupId>
             <artifactId>guicey-bom</artifactId>
-            <version>5.1.0-1</version>
+            <version>5.1.0-2</version>
             <type>pom</type>
             <scope>import</scope>
         </dependency>
@@ -62,7 +62,7 @@ Gradle:
 
 ```groovy
 dependencies {
-    implementation platform('ru.vyarus.guicey:guicey-bom:5.1.0-1')
+    implementation platform('ru.vyarus.guicey:guicey-bom:5.1.0-2')
     // uncomment to override dropwizard and its dependencies versions    
     //implementation platform('io.dropwizard:dropwizard-dependencies:2.0.10')
     

@@ -1,3 +1,4 @@
+### 5.1.0-2 (2020-06-23)
 * [jdbi3]
     - Fix unit of work closing after connection error (preventing application recover) (#35)
     - Add eager jdbi proxies initialization option: `JdbiBundle.withEagerInitialization()` (#33)

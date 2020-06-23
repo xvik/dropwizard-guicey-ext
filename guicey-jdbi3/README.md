@@ -37,14 +37,14 @@ Maven:
 <dependency>
   <groupId>ru.vyarus.guicey</groupId>
   <artifactId>guicey-jdbi3</artifactId>
-  <version>5.1.0-1</version>
+  <version>5.1.0-2</version>
 </dependency>
 ```
 
 Gradle:
 
 ```groovy
-implementation 'ru.vyarus.guicey:guicey-jdbi3:5.1.0-1'
+implementation 'ru.vyarus.guicey:guicey-jdbi3:5.1.0-2'
 ```
 
 See the most recent version in the badge above.
@@ -236,7 +236,7 @@ public interface MyRepository {
 ```
 
 Note the use of `@InTransaction`: it was used to be able to call repository methods without extra annotations
-(the lowest transaction scope it's repository itself). It will make beans "feel the same" as usual DBI on demand
+(the lowest transaction scope is repository itself). It will make beans "feel the same" as usual DBI on demand
 sql object proxies.
 
 `@InTransaction` annotation is handled using guice aop. You can use any other guice aop related features.
@@ -251,6 +251,21 @@ INFO  [2016-12-05 19:42:27,374] ru.vyarus.guicey.jdbi3.installer.repository.Repo
 
     (ru.vyarus.guicey.jdbi3.support.repository.SampleRepository)
 ```
+
+#### Laziness
+
+By default, JDBI proxies for declared repositories created only on first repository method call.
+Lazy behaviour is important to take into account all registered JDBI extensions. Laziness also
+slightly speeds up application startup. 
+
+If required, you can enable eager initialization during bundle construction:   
+
+```java
+JdbiBundle.forDatabase((conf, env) -> conf.getDatabase())
+    .withEagerInitialization()
+```
+
+In the eager mode all proxies would be constructed after application initialization (before web part initialization).
 
 #### Guice beans access
 

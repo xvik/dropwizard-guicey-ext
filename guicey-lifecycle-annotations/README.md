@@ -23,14 +23,14 @@ Maven:
 <dependency>
   <groupId>ru.vyarus.guicey</groupId>
   <artifactId>guicey-lifecycle-annotations</artifactId>
-  <version>5.1.0-1</version>
+  <version>5.1.0-2</version>
 </dependency>
 ```
 
 Gradle:
 
 ```groovy
-implementation 'ru.vyarus.guicey:guicey-lifecycle-annotations:5.1.0-1'
+implementation 'ru.vyarus.guicey:guicey-lifecycle-annotations:5.1.0-2'
 ```
 
 See the most recent version in the badge above.
