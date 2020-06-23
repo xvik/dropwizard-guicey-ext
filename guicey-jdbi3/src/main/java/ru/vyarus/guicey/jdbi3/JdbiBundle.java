@@ -2,6 +2,10 @@ package ru.vyarus.guicey.jdbi3;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import com.google.inject.Injector;
+import com.google.inject.Key;
+import com.google.inject.TypeLiteral;
+import com.google.inject.name.Names;
 import io.dropwizard.Configuration;
 import io.dropwizard.db.PooledDataSourceFactory;
 import org.jdbi.v3.core.Jdbi;
@@ -14,15 +18,18 @@ import ru.vyarus.guicey.jdbi3.dbi.SimpleDbiProvider;
 import ru.vyarus.guicey.jdbi3.installer.MapperInstaller;
 import ru.vyarus.guicey.jdbi3.installer.repository.JdbiRepository;
 import ru.vyarus.guicey.jdbi3.installer.repository.RepositoryInstaller;
+import ru.vyarus.guicey.jdbi3.installer.repository.sql.SqlObjectProvider;
 import ru.vyarus.guicey.jdbi3.module.JdbiModule;
 import ru.vyarus.guicey.jdbi3.tx.InTransaction;
 import ru.vyarus.guicey.jdbi3.tx.TransactionTemplate;
 import ru.vyarus.guicey.jdbi3.unit.UnitManager;
 
+import javax.inject.Provider;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Consumer;
 
 /**
@@ -54,6 +61,7 @@ import java.util.function.Consumer;
  * customization details
  * @since 31.08.2018
  */
+@SuppressWarnings("PMD.ExcessiveImports")
 public final class JdbiBundle extends UniqueGuiceyBundle {
 
     private final ConfigAwareProvider<Jdbi, ?> jdbi;
@@ -63,6 +71,7 @@ public final class JdbiBundle extends UniqueGuiceyBundle {
             .build();
     private List<JdbiPlugin> plugins = Collections.emptyList();
     private Consumer<Jdbi> configurer;
+    private boolean eagerInit;
 
     private JdbiBundle(final ConfigAwareProvider<Jdbi, ?> jdbi) {
         this.jdbi = jdbi;
@@ -105,6 +114,21 @@ public final class JdbiBundle extends UniqueGuiceyBundle {
         return this;
     }
 
+    /**
+     * By default, repository beans (annotated with {@link JdbiRepository}) are initialized on first method call.
+     * Lazy initialization is required to properly add all registered jdbi extensions. Also, this slightly speed
+     * up startup.
+     * <p>
+     * This option will enable eager repositories initialization after application startup. It may be important if
+     * execution time of first method call is important (e.g. due to some metrics).
+     *
+     * @return bundle instance for chained calls
+     */
+    public JdbiBundle withEagerInitialization() {
+        this.eagerInit = true;
+        return this;
+    }
+
     @Override
     public void initialize(final GuiceyBootstrap bootstrap) {
         bootstrap.installers(
@@ -122,6 +146,10 @@ public final class JdbiBundle extends UniqueGuiceyBundle {
         }
 
         environment.modules(new JdbiModule(jdbi, txAnnotations));
+        if (eagerInit) {
+            // eager repository proxies creation
+            environment.onApplicationStartup(this::performEagerInitialization);
+        }
     }
 
     /**
@@ -145,5 +173,13 @@ public final class JdbiBundle extends UniqueGuiceyBundle {
     public static <C extends Configuration> JdbiBundle forDatabase(
             final ConfigAwareProvider<PooledDataSourceFactory, C> db) {
         return forDbi(new SimpleDbiProvider<C>(db));
+    }
+
+    private void performEagerInitialization(final Injector injector) {
+        final Set<SqlObjectProvider> proxies = injector.getInstance(
+                Key.get(new TypeLiteral<Set<SqlObjectProvider>>() { }, Names.named("jdbi3.proxies")));
+        for (Provider<?> proxy : proxies) {
+            proxy.get();
+        }
     }
 }

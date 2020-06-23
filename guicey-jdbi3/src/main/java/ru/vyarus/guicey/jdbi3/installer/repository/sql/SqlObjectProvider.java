@@ -50,6 +50,15 @@ public class SqlObjectProvider<T> implements Provider<T> {
         return res;
     }
 
+    /**
+     * Method used only for testing.
+     *
+     * @return true if jdbi proxy created, false if not
+     */
+    public boolean isInitialized() {
+        return res != null;
+    }
+
     private T create() {
         // Jdbi::onDemand(Class)
         if (!extensionType.isInterface()) {

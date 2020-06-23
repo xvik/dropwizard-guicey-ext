@@ -5,6 +5,10 @@ import com.google.inject.Binder;
 import com.google.inject.Binding;
 import com.google.inject.Stage;
 import com.google.inject.matcher.Matchers;
+import com.google.inject.multibindings.Multibinder;
+import com.google.inject.name.Names;
+import org.aopalliance.intercept.MethodInterceptor;
+import org.aopalliance.intercept.MethodInvocation;
 import ru.vyarus.dropwizard.guice.debug.report.guice.util.GuiceModelUtils;
 import ru.vyarus.dropwizard.guice.module.installer.FeatureInstaller;
 import ru.vyarus.dropwizard.guice.module.installer.install.binding.BindingInstaller;
@@ -56,8 +60,12 @@ public class RepositoryInstaller implements FeatureInstaller, BindingInstaller {
 
         // jdbi on demand proxy creator: laziness required to wait for global configuration complete
         // to let proxy factory create method configs with all global configurations (mappers)
-        final Provider<Object> jdbiProxy = new SqlObjectProvider(type);
+        final SqlObjectProvider jdbiProxy = new SqlObjectProvider(type);
         binder.requestInjection(jdbiProxy);
+
+        // collect proxies to be able to eagerly bootstrap them (and avoid slow first proxy execution)
+        Multibinder.newSetBinder(binder, SqlObjectProvider.class, Names.named("jdbi3.proxies"))
+                .addBinding().toInstance(jdbiProxy);
 
         // prepare non abstract implementation class (instantiated by guice)
         final Class guiceType = DynamicClassGenerator.generate(type);
@@ -66,14 +74,8 @@ public class RepositoryInstaller implements FeatureInstaller, BindingInstaller {
         // interceptor registered for each dao and redirect calls to actual jdbi proxy
         // (at this point all guice interceptors are already involved)
         binder.bindInterceptor(Matchers.subclassesOf(type), NoSyntheticMatcher.instance(),
-                invocation -> {
-                    try {
-                        return invocation.getMethod().invoke(jdbiProxy.get(), invocation.getArguments());
-                    } catch (InvocationTargetException th) {
-                        // avoid exception wrapping (simpler to handle outside)
-                        throw th.getCause();
-                    }
-                });
+                // exact class instead of compact lambda to make AOP report more informative
+                new JdbiProxyRedirect(jdbiProxy));
     }
 
     @Override
@@ -108,6 +110,28 @@ public class RepositoryInstaller implements FeatureInstaller, BindingInstaller {
                         type.getSimpleName(),
                         check.getSimpleName(),
                         JdbiRepository.class.getSimpleName()));
+            }
+        }
+    }
+
+    /**
+     * Guice interceptor redirects calls from guice repository bean into jdbi proxy instance.
+     */
+    public static class JdbiProxyRedirect implements MethodInterceptor {
+
+        private final Provider<Object> jdbiProxy;
+
+        public JdbiProxyRedirect(final Provider<Object> jdbiProxy) {
+            this.jdbiProxy = jdbiProxy;
+        }
+
+        @Override
+        public Object invoke(final MethodInvocation invocation) throws Throwable {
+            try {
+                return invocation.getMethod().invoke(jdbiProxy.get(), invocation.getArguments());
+            } catch (InvocationTargetException th) {
+                // avoid exception wrapping (simpler to handle outside)
+                throw th.getCause();
             }
         }
     }

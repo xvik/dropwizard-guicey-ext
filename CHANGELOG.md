@@ -1,5 +1,6 @@
 * [jdbi3]
     - Fix unit of work closing after connection error (preventing application recover) (#35)
+    - Add eager jdbi proxies initialization option: `JdbiBundle.withEagerInitialization()` (#33)
 * [jdbi2]
     - Fix unit of work closing after connection error (preventing application recover) (#35)    
 
