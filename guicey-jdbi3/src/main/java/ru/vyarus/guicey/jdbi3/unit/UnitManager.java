@@ -56,10 +56,10 @@ public class UnitManager implements Provider<Handle> {
      * @throws IllegalStateException if unit of work already started
      */
     public void beginUnit() {
-        logger.debug("Transaction start");
         Preconditions.checkState(!isUnitStarted(), "Unit of work already started");
         final Handle handle = jdbi.open();
         unit.set(handle);
+        logger.trace("Transaction start");
     }
 
     /**
@@ -79,6 +79,6 @@ public class UnitManager implements Provider<Handle> {
             // and so there will already be logged traces indicating connection problem
             logger.warn("JDBI handle close error ({})", ex.getMessage());
         }
-        logger.debug("Transaction end");
+        logger.trace("Transaction end");
     }
 }

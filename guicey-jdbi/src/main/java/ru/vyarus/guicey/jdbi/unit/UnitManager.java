@@ -3,6 +3,8 @@ package ru.vyarus.guicey.jdbi.unit;
 import com.google.common.base.Preconditions;
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
@@ -23,6 +25,8 @@ import javax.inject.Singleton;
  */
 @Singleton
 public class UnitManager implements Provider<Handle> {
+
+    private final Logger logger = LoggerFactory.getLogger(UnitManager.class);
 
     private final DBI dbi;
     private final ThreadLocal<Handle> unit = new ThreadLocal<>();
@@ -54,6 +58,7 @@ public class UnitManager implements Provider<Handle> {
         Preconditions.checkState(!isUnitStarted(), "Unit of work already started");
         final Handle handle = dbi.open();
         unit.set(handle);
+        logger.trace("Transaction start");
     }
 
     /**
@@ -63,7 +68,16 @@ public class UnitManager implements Provider<Handle> {
      */
     public void endUnit() {
         Preconditions.checkState(isUnitStarted(), "Stop called outside of unit of work");
-        unit.get().close();
+        final Handle handle = unit.get();
+        // first remove handle to avoid stale handles in any case
         unit.remove();
+        try {
+            handle.close();
+        } catch (Exception ex) {
+            // not entire stacktrace to avoid confusion: it may appear here only because of connection damage
+            // and so there will already be logged traces indicating connection problem
+            logger.warn("JDBI handle close error ({})", ex.getMessage());
+        }
+        logger.trace("Transaction end");
     }
 }
