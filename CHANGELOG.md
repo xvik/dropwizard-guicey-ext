@@ -1,3 +1,6 @@
+[jdbi3]
+    - Fix unit of work closing after connection error (preventing application recover) (#35)
+
 ### 5.1.0-1 (2020-06-02)
 * [gsp]
     - Fix template index page recognition when root context called without trailing slash

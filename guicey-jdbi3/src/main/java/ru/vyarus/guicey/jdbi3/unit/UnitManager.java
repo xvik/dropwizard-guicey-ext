@@ -69,8 +69,16 @@ public class UnitManager implements Provider<Handle> {
      */
     public void endUnit() {
         Preconditions.checkState(isUnitStarted(), "Stop called outside of unit of work");
-        unit.get().close();
+        final Handle handle = unit.get();
+        // first remove handle to avoid stale handles in any case
         unit.remove();
+        try {
+            handle.close();
+        } catch (Exception ex) {
+            // not entire stacktrace to avoid confusion: it may appear here only because of connection damage
+            // and so there will already be logged traces indicating connection problem
+            logger.warn("JDBI handle close error ({})", ex.getMessage());
+        }
         logger.debug("Transaction end");
     }
 }
