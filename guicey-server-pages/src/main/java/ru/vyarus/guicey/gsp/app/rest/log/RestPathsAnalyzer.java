@@ -39,7 +39,7 @@ public class RestPathsAnalyzer {
             final Resource resource = Resource.from(cls);
             // other template resources will be processed by other applications or not used at all
             if (resource != null) {
-                populate("", cls, false, resource, analyzer.paths);
+                populate("/", cls, false, resource, analyzer.paths);
             }
         }
         // manually added resources

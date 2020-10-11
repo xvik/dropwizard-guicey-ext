@@ -1,3 +1,7 @@
+* [gsp]
+    - Auto append leading slash to provided app mapping uri (to prevent hard to understand configuration error)
+    - Fix app reporting for view paths not started with slash (e.g. @Path("views/something")) 
+
 ### 5.1.0-2 (2020-06-23)
 * [jdbi3]
     - Fix unit of work closing after connection error (preventing application recover) (#35)
