@@ -94,7 +94,8 @@ public class ServerPagesAppBundle implements GuiceyBundle {
 
             app.mainContext = mainContext;
             app.name = checkNotNull(name, "Name is required");
-            app.uriPath = PathUtils.trailingSlash(uri);
+            // both side paths are required!
+            app.uriPath = PathUtils.leadingSlash(PathUtils.trailingSlash(uri));
 
             app.mainAssetsPath = PathUtils.normalizeClasspathPath(path);
             checkArgument(!SLASH.equals(app.mainAssetsPath), "%s is the classpath root", app.mainAssetsPath);
