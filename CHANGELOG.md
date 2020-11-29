@@ -1,3 +1,4 @@
+### 5.2.0-1 (2020-11-29)
 * [gsp]
     - Auto append leading slash to provided app mapping uri (to prevent hard to understand configuration error)
     - Fix app reporting for view paths not started with slash (e.g. @Path("views/something")) 
