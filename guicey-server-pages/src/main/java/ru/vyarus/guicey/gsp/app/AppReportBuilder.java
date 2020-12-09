@@ -65,6 +65,7 @@ public final class AppReportBuilder {
         }
     }
 
+    @SuppressWarnings("PMD.UnusedAssignment")
     private static Map<String, String> reportViewMappings(final StringBuilder res, final ServerPagesApp app) {
         final Map<String, String> idx = new HashMap<>();
         int i = 1;
