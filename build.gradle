@@ -63,7 +63,7 @@ subprojects {
             mavenBom "ru.vyarus:dropwizard-guicey:$guicey"
         }
         dependencies {
-            dependency 'io.dropwizard.modules:dropwizard-jdbi:2.0.14'
+            dependency 'io.dropwizard.modules:dropwizard-jdbi:2.0.17'
             dependency "ru.vyarus:guice-ext-annotations:$guiceExtAnn"
             dependency 'ru.vyarus:guice-validator:2.0.0'
             dependency 'com.h2database:h2:1.4.200'
