@@ -67,7 +67,7 @@ subprojects {
             dependency "ru.vyarus:guice-ext-annotations:$guiceExtAnn"
             dependency 'ru.vyarus:guice-validator:2.0.0'
             dependency 'com.h2database:h2:1.4.200'
-            dependency 'io.dropwizard.modules:dropwizard-flyway:2.0.17-1'
+            dependency 'io.dropwizard.modules:dropwizard-flyway:2.0.18-1'
         }
     }
     dependencies {
