@@ -82,7 +82,7 @@ subprojects {
 
         // dependency management plugin affects spotbugs configuration lowering asm to 7.2 (due to guice bom)
         spotbugs "com.github.spotbugs:spotbugs:${quality.spotbugsVersion}"
-        spotbugs 'org.ow2.asm:asm:8.0.1'
+        spotbugs 'org.ow2.asm:asm:9.1'
     }
 
     group = 'ru.vyarus.guicey'
