@@ -21,7 +21,7 @@ allprojects {
     apply plugin: 'project-report'
     apply plugin: 'com.jfrog.bintray'
 
-    repositories { jcenter(); mavenCentral(); mavenLocal(); maven { url 'https://jitpack.io' } }
+    repositories { mavenCentral(); mavenLocal(); maven { url 'https://jitpack.io' } }
 
     bintray {
         user = findProperty('bintrayUser')
@@ -79,6 +79,7 @@ subprojects {
         testImplementation 'org.spockframework:spock-core'
         testImplementation 'io.dropwizard:dropwizard-testing'
         testImplementation 'com.github.stefanbirkner:system-rules'
+        testImplementation 'org.codehaus.groovy.modules.http-builder:http-builder:0.7.1'
     }
 
     group = 'ru.vyarus.guicey'

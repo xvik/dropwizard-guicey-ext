@@ -7,6 +7,6 @@ dependencies {
     provided 'io.dropwizard:dropwizard-views-freemarker'
 
     testImplementation 'io.dropwizard:dropwizard-views-mustache'
-    testImplementation 'org.codehaus.groovy.modules.http-builder:http-builder:0.7.2'
+    testImplementation 'org.codehaus.groovy.modules.http-builder:http-builder'
     testImplementation 'org.webjars.npm:jquery:3.4.1'
 }
