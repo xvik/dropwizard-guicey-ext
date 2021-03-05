@@ -21,7 +21,7 @@ allprojects {
     apply plugin: 'project-report'
     apply plugin: 'com.jfrog.bintray'
 
-    repositories { mavenCentral(); mavenLocal(); maven { url 'https://jitpack.io' } }
+    repositories { mavenCentral(); jcenter(); mavenLocal(); maven { url 'https://jitpack.io' } }
 
     bintray {
         user = findProperty('bintrayUser')
