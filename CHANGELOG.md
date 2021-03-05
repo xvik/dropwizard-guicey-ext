@@ -1,3 +1,6 @@
+### 5.3.0-1 (2021-03-06)
+* No changes, except BOM versions
+
 ### 5.2.0-1 (2020-11-29)
 * [gsp]
     - Auto append leading slash to provided app mapping uri (to prevent hard to understand configuration error)
