@@ -1,19 +1,18 @@
 plugins {
-    id 'ru.vyarus.java-lib' version '1.1.2' apply false
-    id 'ru.vyarus.github-info' version '1.1.0' apply false
-    id 'ru.vyarus.quality' version '3.1.1' apply false
-    id 'com.jfrog.bintray' version '1.8.4' apply false
-    id "io.spring.dependency-management" version "1.0.6.RELEASE" apply false
+    id 'ru.vyarus.java-lib' version '2.1.0' apply false
+    id 'ru.vyarus.github-info' version '1.2.0' apply false
+    id 'ru.vyarus.quality' version '4.5.0' apply false
+    id 'com.jfrog.bintray' version '1.8.5' apply false
+    id "io.spring.dependency-management" version "1.0.11.RELEASE" apply false
 
     id 'base'
     id 'jacoco'
-    id 'net.researchgate.release' version '2.7.0'
-    id 'com.github.kt3k.coveralls' version '2.8.2'
-    id 'com.github.ben-manes.versions' version '0.20.0'
+    id 'net.researchgate.release' version '2.8.1'
+    id 'com.github.ben-manes.versions' version '0.38.0'
 }
 
 wrapper {
-    gradleVersion = '4.8.1'
+    gradleVersion = '6.3'
 }
 
 description = 'Dropwizard-guicey extensions'
@@ -41,7 +40,9 @@ subprojects {
     apply plugin: 'groovy'
     apply plugin: 'jacoco'
     apply plugin: 'ru.vyarus.java-lib'
+    // explicit spotbugs required for fixing classpath after dependencies plugin (remove later)
     apply plugin: 'ru.vyarus.quality'
+    apply plugin: ru.vyarus.gradle.plugin.quality.spotbugs.CustomSpotBugsPlugin
     apply plugin: 'ru.vyarus.github-info'
     apply plugin: 'com.github.ben-manes.versions'
     apply plugin: 'io.spring.dependency-management'
@@ -54,6 +55,10 @@ subprojects {
     }
 
     dependencyManagement {
+        // force guicey snapshot updates
+        resolutionStrategy {
+            cacheChangingModulesFor 0, 'seconds'
+        }
         imports {
             mavenBom "ru.vyarus:dropwizard-guicey:$guicey"
         }
@@ -65,11 +70,20 @@ subprojects {
     dependencies {
         provided 'com.github.spotbugs:spotbugs-annotations:3.1.2'
 
-        compile "ru.vyarus:dropwizard-guicey"
+        implementation "ru.vyarus:dropwizard-guicey"
 
-        testCompile "org.spockframework:spock-core"
-        testCompile "io.dropwizard:dropwizard-testing"
-        testCompile 'com.github.stefanbirkner:system-rules'
+        testImplementation "org.spockframework:spock-core"
+        testImplementation "io.dropwizard:dropwizard-testing"
+        testImplementation 'com.github.stefanbirkner:system-rules'
+        testImplementation 'org.codehaus.groovy.modules.http-builder:http-builder:0.7.1'
+    }
+
+    // dependency management plugin affects spotbugs configuration lowering asm to 7.2 (due to guice bom)
+    afterEvaluate {
+        dependencies {
+            spotbugs "com.github.spotbugs:spotbugs:${quality.spotbugsVersion}"
+            spotbugs "org.ow2.asm:asm:9.1"
+        }
     }
 
     group = 'ru.vyarus.guicey'
@@ -92,13 +106,19 @@ subprojects {
         }
     }
 
+    jar {
+        manifest {
+            attributes 'Automatic-Module-Name': project.name.replace('guicey-', 'ru.vyarus.dropwizard.guicey.')
+        }
+    }
+
     bintray {
         publications = ['maven']
     }
 
     test {
         testLogging {
-            events 'skipped', 'failed', 'standard_error'
+            events 'skipped', 'failed'
             exceptionFormat 'full'
         }
         maxHeapSize = '512m'
@@ -106,6 +126,11 @@ subprojects {
     jacocoTestReport.reports.xml.enabled = true
 
     dependencyUpdates.revision = 'release'
+
+    // disable gradle metadata publishing (because it confuse A LOT)
+    tasks.withType(GenerateModuleMetadata) {
+        enabled = false
+    }
 
     task showDependenciesTree(dependsOn: 'htmlDependencyReport', group: 'help', description:
             'Generates dependencies tree report and opens it in browser') {
@@ -168,14 +193,9 @@ task jacocoMerge(type: JacocoMerge, description: 'Merge coverage results for agg
 task jacocoTestReport(type: JacocoReport, description: 'Generates aggregated coverage report') {
     dependsOn jacocoMerge
     executionData jacocoMerge.destinationFile
-    sourceDirectories = files(subprojects.sourceSets.main.allSource.srcDirs)
-    classDirectories = files(subprojects.sourceSets.main.output)
+    sourceDirectories.setFrom(files(subprojects.sourceSets.main.allSource.srcDirs))
+    classDirectories.setFrom(files(subprojects.sourceSets.main.output))
     reports.xml.enabled = true
-}
-
-coveralls {
-    sourceDirs = subprojects.sourceSets.main.allSource.srcDirs.flatten()
-    jacocoReportPath = 'build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml'
 }
 
 htmlDependencyReport.projects = allprojects
