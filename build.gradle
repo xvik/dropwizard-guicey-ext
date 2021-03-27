@@ -151,6 +151,8 @@ afterReleaseBuild {
     }
 }
 
+release.git.requireBranch = 'guicey-4'
+
 task testReport(type: TestReport, description: 'Generates an aggregate test report') {
     destinationDir = file("${buildDir}/reports/tests")
     reportOn subprojects.test

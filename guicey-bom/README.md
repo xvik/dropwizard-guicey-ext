@@ -2,7 +2,7 @@
 
 Extension modules BOM. 
 
-Additionally provides:
+Provides:
 
 * Guicey version
 * Guice bom
@@ -23,7 +23,7 @@ Maven:
         <dependency>
             <groupId>ru.vyarus.guicey</groupId>
             <artifactId>guicey-bom</artifactId>
-            <version>0.7.0</version>
+            <version>0.7.1</version>
             <type>pom</type>
             <scope>import</scope>
         </dependency>
@@ -53,13 +53,13 @@ Gradle:
 
 ```groovy
 plugins {
-    id "io.spring.dependency-management" version "1.0.6.RELEASE"
+    id "io.spring.dependency-management" version "1.0.11.RELEASE"
 }
 
 dependencyManagement {
     // Implicitly imports Dropwizard and Guice BOMs 
     imports {
-        mavenBom "ru.vyarus.guicey:guicey-bom:0.7.0"
+        mavenBom "ru.vyarus.guicey:guicey-bom:0.7.1"
     }
 }
 

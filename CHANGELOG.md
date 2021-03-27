@@ -1,3 +1,7 @@
+### 0.7.1 (2021-03-27)
+* Update to guicey 4.2.3
+* Fix jdbi3 compatibility
+
 ### 0.7.0 (2019-06-17)
 * Add Guicey Server Pages module (bringing JSP like usage simplicity to dropwizard-views)
 
