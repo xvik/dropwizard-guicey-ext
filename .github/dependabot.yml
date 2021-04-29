@@ -1,0 +1,18 @@
+version: 2
+updates:
+- package-ecosystem: gradle
+  directory: "/"
+  schedule:
+    interval: daily
+    time: "23:00"
+  open-pull-requests-limit: 10
+  ignore:
+  - dependency-name: org.webjars.npm:jquery
+    versions:
+    - "> 3.4.1"
+  - dependency-name: org.ow2.asm:asm
+    versions:
+    - "9.1"
+  - dependency-name: ru.vyarus.quality
+    versions:
+    - 4.5.0
