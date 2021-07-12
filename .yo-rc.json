@@ -4,17 +4,14 @@
     "authorName": "Vyacheslav Rusakov",
     "authorEmail": "vyarus@gmail.com",
     "libName": "dropwizard-guicey-ext",
-    "libGroup": "ru.vyarus",
+    "libGroup": "ru.vyarus.guicey",
     "libPackage": "ru.vyarus.guicey",
     "libVersion": "0.1.0",
     "libDesc": "Dropwizard-guicey extensions",
-    "targetJava": "1.8",
-    "libTags": "dropwizard, guice",
-    "bintrayUser": "vyarus",
-    "bintrayRepo": "xvik",
-    "bintraySignFiles": true,
-    "mavenCentralSync": true,
     "enableQualityChecks": true,
-    "usedGeneratorVersion": "2.2.0"
+    "usedGeneratorVersion": "3.0.0",
+    "multiModule": true,
+    "modulePrefix": "guicey",
+    "moduleName": "jdbi"
   }
 }

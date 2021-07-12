@@ -1,3 +1,6 @@
+* Module poms use direct dependencies (without dependencyManagement section as before)
+* BOM does not declare properties from guicey BOM anymore: dropwizard.version, guice.version and hk2.version 
+
 ### 5.3.0-1 (2021-03-06)
 * No changes, except BOM versions
 
