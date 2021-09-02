@@ -1,6 +1,6 @@
 # Dropwizard-guicey extensions
 [![License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat)](http://www.opensource.org/licenses/MIT)
-[![Build Status](https://travis-ci.com/xvik/dropwizard-guicey-ext.svg?branch=master)](https://travis-ci.com/xvik/dropwizard-guicey-ext)
+[![CI](https://github.com/xvik/dropwizard-guicey-ext/actions/workflows/CI.yml/badge.svg)](https://github.com/xvik/dropwizard-guicey-ext/actions/workflows/CI.yml)
 [![Appveyor build status](https://ci.appveyor.com/api/projects/status/github/xvik/dropwizard-guicey-ext?svg=true&branch=master)](https://ci.appveyor.com/project/xvik/dropwizard-guicey-ext)
 [![codecov](https://codecov.io/gh/xvik/dropwizard-guicey-ext/branch/master/graph/badge.svg)](https://codecov.io/gh/xvik/dropwizard-guicey-ext)
 
