@@ -30,7 +30,7 @@ dependencies {
         api "ru.vyarus:guice-ext-annotations:$guiceExtAnn"
         api 'ru.vyarus:guice-validator:2.0.0'
         api 'com.h2database:h2:1.4.200'
-        api 'io.dropwizard.modules:dropwizard-flyway:2.0.24-2'
+        api 'io.dropwizard.modules:dropwizard-flyway:2.0.25-1'
 
         // add subprojects to BOM
         project.subprojects.each { api it }
