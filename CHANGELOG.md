@@ -1,5 +1,7 @@
 * Module poms use direct dependencies (without dependencyManagement section as before)
-* BOM does not declare properties from guicey BOM anymore: dropwizard.version, guice.version and hk2.version 
+* BOM does not declare properties from guicey BOM anymore: dropwizard.version, guice.version and hk2.version
+* [validation]
+  - Add strictGroupsDeclaration() for ValidationBundle (avoid implicit Default group usage) (#69)
 
 ### 5.3.0-1 (2021-03-06)
 * No changes, except BOM versions

@@ -49,6 +49,7 @@ public class ValidationBundle extends UniqueGuiceyBundle {
     private Matcher<? super Method> methodMatcher = new DeclaredMethodMatcher()
             .and(Matchers.not(new RestMethodMatcher()));
     private Class<? extends Annotation> targetAnnotation;
+    private boolean strictGroups;
 
 
     /**
@@ -118,6 +119,20 @@ public class ValidationBundle extends UniqueGuiceyBundle {
         return this;
     }
 
+    /**
+     * By default, ({@link javax.validation.groups.Default}) group is always added to groups
+     * defined with {@link ru.vyarus.guice.validator.group.annotation.ValidationGroups} annotation.
+     * <p>
+     * Calling this method disables default behavior: after calling it, {@link javax.validation.groups.Default}
+     * must be explicitly declared.
+     *
+     * @return bundle instance
+     */
+    public ValidationBundle strictGroupsDeclaration() {
+        this.strictGroups = true;
+        return this;
+    }
+
     @Override
     public void initialize(final GuiceyBootstrap bootstrap) {
         // excluding rest beans because dropwizard already applies validation support there
@@ -127,6 +142,10 @@ public class ValidationBundle extends UniqueGuiceyBundle {
 
         if (targetAnnotation != null) {
             module.validateAnnotatedOnly(targetAnnotation);
+        }
+
+        if (strictGroups) {
+            module.strictGroupsDeclaration();
         }
 
         bootstrap.modules(module);
