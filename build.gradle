@@ -28,7 +28,7 @@ dependencies {
     constraints {
         api 'io.dropwizard.modules:dropwizard-jdbi:2.0.24'
         api "ru.vyarus:guice-ext-annotations:$guiceExtAnn"
-        api 'ru.vyarus:guice-validator:2.0.1'
+        api 'ru.vyarus:guice-validator:3.0.1'
         api 'com.h2database:h2:1.4.200'
         api 'io.dropwizard.modules:dropwizard-flyway:2.0.25-1'
 
