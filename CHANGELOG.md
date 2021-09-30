@@ -3,6 +3,14 @@
 * [validation]
   - Add strictGroupsDeclaration() for ValidationBundle (avoid implicit Default group usage) (#69)
 
+IMPORTANT: Since dropwizard 2.0.22 dropwizard-jdbi3 module [dropped java 8 compatibility](https://github.com/dropwizard/dropwizard/releases/tag/v2.0.22)
+due to caffeine library upgrade (see [caffeine author explanation](https://github.com/jdbi/jdbi/issues/1853#issuecomment-819101724))
+(actually, new jdbi3 version depends on caffeine 3 while dropwizard itself still depends on caffeine 2).
+
+To bring back jdk 8 compatibility you must manually force caffeine version:
+
+    implementation com.github.ben-manes.caffeine:caffeine:2.9.2
+
 ### 5.3.0-1 (2021-03-06)
 * No changes, except BOM versions
 

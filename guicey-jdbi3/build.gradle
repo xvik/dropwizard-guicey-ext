@@ -1,6 +1,11 @@
 description = "Guicey integration for JDBI 3"
 
 dependencies {
+    // jdk 8 compatible (https://github.com/dropwizard/dropwizard/releases/tag/v2.0.22)
+//    implementation ('io.dropwizard:dropwizard-jdbi3') {
+//        exclude module: 'caffeine'
+//    }
+
     implementation 'io.dropwizard:dropwizard-jdbi3'
     implementation 'ru.vyarus:guice-ext-annotations'
 
