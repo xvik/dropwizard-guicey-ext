@@ -21,6 +21,7 @@ rootProject.name = 'dropwizard-guicey-ext'
 include 'guicey-eventbus',
         'guicey-jdbi',
         'guicey-jdbi3',
+        'guicey-jdbi3-jdk8',
         'guicey-spa',
         'guicey-lifecycle-annotations',
         'guicey-server-pages',
