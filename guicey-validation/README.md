@@ -19,14 +19,14 @@ Maven:
 <dependency>
   <groupId>ru.vyarus.guicey</groupId>
   <artifactId>guicey-validation</artifactId>
-  <version>5.0.0-1</version>
+  <version>5.4.0-1</version>
 </dependency>
 ```
 
 Gradle:
 
 ```groovy
-implementation 'ru.vyarus.guicey:guicey-validation:5.0.0-1'
+implementation 'ru.vyarus.guicey:guicey-validation:5.4.0-1'
 ```
 
 See the most recent version in the badge above.
@@ -107,4 +107,17 @@ Or excluding methods:
 Now methods annotated with `@SuppressValidation` will not be validated. Note that
 `.and(new DirectMethodMatcher())` condition was added to aslo exclude synthetic and bridge methods (jvm generated methods).
 
-NOTE: you can verify AOP appliance with guicey `.printGuiceAopMap()` report.                                      
+NOTE: you can verify AOP appliance with guicey `.printGuiceAopMap()` report.
+
+#### Validation groups
+
+By default, `Default` validation group is always enabled allowing you to not specify
+groups for each call.
+
+This could be disabled with bundle option:
+
+```java
+.bundles(new ValidationBundle().strictGroupsDeclaration())
+```
+
+Read more in [guice-validator docs](https://github.com/xvik/guice-validator#default-group-specifics).
