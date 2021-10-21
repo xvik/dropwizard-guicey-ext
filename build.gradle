@@ -70,12 +70,16 @@ allprojects {
         license = 'MIT'
     }
 
-    pom {
-        developers {
-            developer {
-                id 'xvik'
-                name 'Vyacheslav Rusakov'
-                email 'vyarus@gmail.com'
+    // delay required because java plugin is activated only in subprojects and without it
+    // pom closure would reference root project only
+    afterEvaluate {
+        pom {
+            developers {
+                developer {
+                    id 'xvik'
+                    name 'Vyacheslav Rusakov'
+                    email 'vyarus@gmail.com'
+                }
             }
         }
     }
@@ -144,6 +148,7 @@ nexusPublishing {
 
 // release manages only root project (subprojects will be checked and released implicitly)
 afterReleaseBuild {
+    dependsOn 'publishToSonatype'
     dependsOn subprojects.collect {":$it.name:publishToSonatype" }
     dependsOn 'closeAndReleaseSonatypeStagingRepository'
     doLast {
