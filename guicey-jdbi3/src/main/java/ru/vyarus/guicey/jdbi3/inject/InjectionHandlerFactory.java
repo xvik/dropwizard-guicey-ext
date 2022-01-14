@@ -41,8 +41,8 @@ public class InjectionHandlerFactory implements HandlerFactory {
         private final Class<?> type;
 
         InjectionHandler(final Injector injector, final Class<?> type) {
-            this.injector = injector;
-            this.type = type;
+            this.injector = Preconditions.checkNotNull(injector, "No injector");
+            this.type = Preconditions.checkNotNull(type, "No type");
             Preconditions.checkState(type != Void.class && type != void.class,
                     "Only non void (getter) method could be anotated with @Inject in order"
                             + "to provide guice bean.");

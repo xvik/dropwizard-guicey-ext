@@ -2,6 +2,7 @@ package ru.vyarus.guicey.jdbi3.module;
 
 import com.google.common.base.Preconditions;
 import com.google.inject.AbstractModule;
+import com.google.inject.Stage;
 import com.google.inject.matcher.Matchers;
 import com.google.inject.multibindings.Multibinder;
 import org.jdbi.v3.core.Handle;
@@ -46,10 +47,13 @@ public class JdbiModule extends AbstractModule {
 
     @Override
     protected void configure() {
-        // allow using guice beans inside proxies with getters, annotated by @Inject
-        final InjectionHandlerFactory gettersInjector = new InjectionHandlerFactory();
-        requestInjection(gettersInjector);
-        jdbi.getConfig(Handlers.class).register(gettersInjector);
+        // avoid handlers registration under tool stage execution - could lead to NPEs
+        if (binder().currentStage() != Stage.TOOL) {
+            // allow using guice beans inside proxies with getters, annotated by @Inject
+            final InjectionHandlerFactory gettersInjector = new InjectionHandlerFactory();
+            requestInjection(gettersInjector);
+            jdbi.getConfig(Handlers.class).register(gettersInjector);
+        }
 
         bind(Jdbi.class).toInstance(jdbi);
 

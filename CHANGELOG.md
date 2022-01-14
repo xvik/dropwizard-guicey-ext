@@ -1,3 +1,6 @@
+* [jdbi3]
+  - Fix NPE on repository injection point (`@Inject` in interface) after .printGuiceAopMap() enabling
+
 ### 5.4.1-1 (2021-12-19)
 * No changes, except BOM versions
 
