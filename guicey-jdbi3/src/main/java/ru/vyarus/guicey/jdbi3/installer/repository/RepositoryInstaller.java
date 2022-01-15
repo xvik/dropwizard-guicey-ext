@@ -24,6 +24,8 @@ import ru.vyarus.java.generics.resolver.GenericsResolver;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 import java.lang.reflect.InvocationTargetException;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Recognize classes annotated with {@link JdbiRepository} and register them. Such classes may be then
@@ -33,6 +35,10 @@ import java.lang.reflect.InvocationTargetException;
  * Dao may use any guice-related annotations because beans participate in guice aop. This is done by creating
  * special guice-managed proxy class (where guice could apply aop). These proxies delegate all method calls to
  * JDBI-managed proxies.
+ * <p>
+ * Manual guice bindings are not allowed, except one case: {@code bind(Base.class).to(Repo.class)} where
+ * {@code Repo.class} is a recognizable (annotated) repository. This case useful for generifying repositories
+ * (so implementation with exact queries could be pluggable).
  *
  * @author Vyacheslav Rusakov
  * @see InTransaction default annotation
@@ -44,6 +50,8 @@ public class RepositoryInstaller implements FeatureInstaller, BindingInstaller {
 
     private final Reporter reporter = new Reporter(RepositoryInstaller.class, "repositories = ");
 
+    private final Set<Class> bound = new HashSet<>();
+
     @Override
     public boolean matches(final Class<?> type) {
         final boolean res = type.getAnnotation(JdbiRepository.class) != null;
@@ -54,9 +62,46 @@ public class RepositoryInstaller implements FeatureInstaller, BindingInstaller {
     }
 
     @Override
-    @SuppressWarnings({"unchecked", "checkstyle:Indentation"})
     public void bind(final Binder binder, final Class<?> type, final boolean lazy) {
         Preconditions.checkState(!lazy, "@LazyBinding not supported");
+
+        generateRepository(binder, type);
+    }
+
+    @Override
+    public <T> void manualBinding(final Binder binder, final Class<T> type, final Binding<T> binding) {
+        if (binding.getKey().getTypeLiteral().getRawType() == type) {
+            // bind(type) case - guice will fail in any case but this way the message would be better
+            // bind(type).to(impl) - extension could be still found by classpath scan and registered failing guice
+            // better use bindings override (more obvious)
+            throw new UnsupportedOperationException(String.format(
+                    "JDBI repository %s can't be installed from binding: %s",
+                    type.getSimpleName(), GuiceModelUtils.getDeclarationSource(binding).toString()));
+        } else {
+            // bind(something).to(type) - binding of something to repo (in this case additional binding could be
+            // added)
+            generateRepository(binder, type);
+        }
+    }
+
+    @Override
+    public void extensionBound(final Stage stage, final Class<?> type) {
+        if (stage != Stage.TOOL) {
+            reporter.line(String.format("(%s)", type.getName()));
+        }
+    }
+
+    @Override
+    public void report() {
+        reporter.report();
+    }
+
+    @SuppressWarnings({"unchecked", "checkstyle:Indentation"})
+    private void generateRepository(final Binder binder, final Class<?> type) {
+        // avoid duplicate bindings from classpath scan and binding
+        if (bound.contains(type)) {
+            return;
+        }
 
         // jdbi on demand proxy creator: laziness required to wait for global configuration complete
         // to let proxy factory create method configs with all global configurations (mappers)
@@ -76,26 +121,11 @@ public class RepositoryInstaller implements FeatureInstaller, BindingInstaller {
         binder.bindInterceptor(Matchers.subclassesOf(type), NoSyntheticMatcher.instance(),
                 // exact class instead of compact lambda to make AOP report more informative
                 new JdbiProxyRedirect(jdbiProxy));
-    }
 
-    @Override
-    public <T> void manualBinding(final Binder binder, final Class<T> type, final Binding<T> binding) {
-        // it's impossible to bind manually abstract type in guice
-        throw new UnsupportedOperationException(String.format(
-                "JDBI repository %s can't be installed from binding: %s",
-                type.getSimpleName(), GuiceModelUtils.getDeclarationSource(binding).toString()));
-    }
-
-    @Override
-    public void extensionBound(final Stage stage, final Class<?> type) {
-        if (stage != Stage.TOOL) {
-            reporter.line(String.format("(%s)", type.getName()));
+        // without it, on reporting phase binding would be cached and not generated on real run
+        if (binder.currentStage() != Stage.TOOL) {
+            bound.add(type);
         }
-    }
-
-    @Override
-    public void report() {
-        reporter.report();
     }
 
     @SuppressWarnings("unchecked")
