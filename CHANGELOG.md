@@ -1,3 +1,4 @@
+### 5.4.1-2 (2022-01-16)
 * [jdbi3]
   - Fix NPE on repository injection point (`@Inject` in interface) after .printGuiceAopMap() enabling
   - Support repository recognition from binding target: bind(Base.class).to(Repository.class) (where Repository extends Base)
