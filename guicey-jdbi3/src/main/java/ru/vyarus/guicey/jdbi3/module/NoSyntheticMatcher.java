@@ -15,7 +15,7 @@ public class NoSyntheticMatcher extends AbstractMatcher<Method> {
     private static final NoSyntheticMatcher NO_SYNTHETIC_MATCHER = new NoSyntheticMatcher();
 
     /**
-     * @return method matcher for filtering syntethic methods
+     * @return method matcher for filtering synthetic methods
      */
     public static final NoSyntheticMatcher instance() {
         return NO_SYNTHETIC_MATCHER;
