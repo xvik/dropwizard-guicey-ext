@@ -26,5 +26,7 @@ include 'guicey-eventbus',
         'guicey-lifecycle-annotations',
         'guicey-server-pages',
         'guicey-admin-rest',
-        'guicey-validation'
+        'guicey-validation',
+        'guicey-test-spock',
+        'guicey-test-junit4'
 

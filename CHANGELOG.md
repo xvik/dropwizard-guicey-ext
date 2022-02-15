@@ -1,3 +1,6 @@
+* Add guicey-test-junit4 module: junit4 integration extracted from guicey core (with the same package)
+* Add guicey-test-spock module: spock1 integration extracted from guicey core (with the same package)
+
 ### 5.4.2-1 (2022-01-26)
 * No changes, except BOM versions
 
