@@ -38,7 +38,6 @@ See the most recent version in the badge above.
 OR you can use it with junit 5 vintage engine (assume BOM used for version management):
 
 ```groovy
-testImplementation 'io.dropwizard:dropwizard-testing'
 testImplementation 'org.junit.jupiter:junit-jupiter-api'
 testRuntimeOnly 'org.junit.jupiter:junit-jupiter'
 testRuntimeOnly 'org.junit.vintage:junit-vintage-engine'
