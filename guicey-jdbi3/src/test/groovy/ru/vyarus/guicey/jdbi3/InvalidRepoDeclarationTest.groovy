@@ -3,9 +3,9 @@ package ru.vyarus.guicey.jdbi3
 import io.dropwizard.Application
 import io.dropwizard.setup.Bootstrap
 import io.dropwizard.setup.Environment
+import io.dropwizard.testing.DropwizardTestSupport
 import org.jdbi.v3.sqlobject.statement.SqlUpdate
 import ru.vyarus.dropwizard.guice.GuiceBundle
-import ru.vyarus.dropwizard.guice.test.GuiceyAppRule
 import ru.vyarus.guicey.jdbi3.installer.repository.JdbiRepository
 import ru.vyarus.guicey.jdbi3.support.SampleConfiguration
 import spock.lang.Specification
@@ -19,10 +19,12 @@ class InvalidRepoDeclarationTest extends Specification {
     def "Check incorrect repo definition detection"() {
 
         when: "staring app with incorrect repo declaration"
-        new GuiceyAppRule(App, 'src/test/resources/test-config.yml').before()
+        // todo use guicey test support instead (after guidey release)
+        // TestSupport.runCoreApp(App, 'src/test/resources/test-config.yml')
+        new DropwizardTestSupport<>(App, 'src/test/resources/test-config.yml').before()
         then: "error"
         def ex = thrown(IllegalStateException)
-        ex.getCause().getMessage() == "Incorrect repository BaseRepository declaration: base interface CrudRepository is also annotated with @JdbiRepository which may break AOP mappings. Only root repository class must be annotated."
+        ex.getMessage() == "Incorrect repository BaseRepository declaration: base interface CrudRepository is also annotated with @JdbiRepository which may break AOP mappings. Only root repository class must be annotated."
     }
 
     static class App extends Application<SampleConfiguration> {

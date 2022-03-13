@@ -5,7 +5,7 @@ import io.dropwizard.Configuration
 import io.dropwizard.setup.Bootstrap
 import io.dropwizard.setup.Environment
 import ru.vyarus.dropwizard.guice.GuiceBundle
-import ru.vyarus.dropwizard.guice.test.spock.UseGuiceyApp
+import ru.vyarus.dropwizard.guice.test.jupiter.TestGuiceyApp
 import spock.lang.Specification
 
 import javax.annotation.PostConstruct
@@ -16,7 +16,7 @@ import javax.inject.Singleton
  * @author Vyacheslav Rusakov
  * @since 27.11.2018
  */
-@UseGuiceyApp(App)
+@TestGuiceyApp(App)
 class InheritedMethodsTest extends Specification {
 
     @Inject

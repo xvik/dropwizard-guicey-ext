@@ -7,7 +7,7 @@ import io.dropwizard.Configuration
 import io.dropwizard.setup.Bootstrap
 import io.dropwizard.setup.Environment
 import ru.vyarus.dropwizard.guice.GuiceBundle
-import ru.vyarus.dropwizard.guice.test.spock.UseGuiceyApp
+import ru.vyarus.dropwizard.guice.test.jupiter.TestGuiceyApp
 import ru.vyarus.guicey.eventbus.service.EventSubscribersInfo
 import ru.vyarus.guicey.eventbus.support.AbstractEvent
 import ru.vyarus.guicey.eventbus.support.Event1
@@ -17,12 +17,11 @@ import spock.lang.Specification
 
 import javax.inject.Inject
 
-
 /**
  * @author Vyacheslav Rusakov
  * @since 02.12.2016
  */
-@UseGuiceyApp(App.class)
+@TestGuiceyApp(App.class)
 class SubscriptionTest extends Specification {
 
     @Inject

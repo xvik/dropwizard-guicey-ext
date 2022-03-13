@@ -1,47 +1,39 @@
 package ru.vyarus.guicey.gsp.error
 
-import groovyx.net.http.ContentType
-import groovyx.net.http.HTTPBuilder
+
 import io.dropwizard.Application
 import io.dropwizard.Configuration
 import io.dropwizard.setup.Bootstrap
 import io.dropwizard.setup.Environment
 import ru.vyarus.dropwizard.guice.GuiceBundle
-import ru.vyarus.dropwizard.guice.test.spock.ConfigOverride
-import ru.vyarus.dropwizard.guice.test.spock.UseDropwizardApp
+import ru.vyarus.dropwizard.guice.test.ClientSupport
+import ru.vyarus.dropwizard.guice.test.jupiter.TestDropwizardApp
 import ru.vyarus.guicey.gsp.ServerPagesBundle
 import spock.lang.Specification
 
 import javax.ws.rs.GET
 import javax.ws.rs.Path
 import javax.ws.rs.WebApplicationException
+import javax.ws.rs.core.MediaType
 
 /**
  * @author Vyacheslav Rusakov
  * @since 27.01.2019
  */
-@UseDropwizardApp(value = App, configOverride = [
-        @ConfigOverride(key = "server.rootPath", value = "/rest/*")
-])
+@TestDropwizardApp(value = App, restMapping = "/rest/*")
 class NonErrorInterceptionTest extends Specification {
 
-    def "Check non error forwarding"() {
+    def "Check non error forwarding"(ClientSupport client) {
 
-        def http = new HTTPBuilder('http://localhost:8080/', ContentType.HTML)
+        when: "calling for non 200 response"
+        def res = client.targetMain('/res').request(MediaType.TEXT_HTML).get()
+        then: "redirect"
+        res.status == 304
 
-        expect: "calling for non 200 response"
-        http.get(path: '/res') {
-            resp, reader ->
-                assert resp.status == 304
-                true
-        }
-
-        and: "direct rest non 200 return"
-        http.get(path: '/res/2') {
-            resp, reader ->
-                assert resp.status == 304
-                true
-        }
+        when: "direct rest non 200 return"
+        res = client.targetMain('/res/2').request(MediaType.TEXT_HTML).get()
+        then: "redirect"
+        res.status == 304
     }
 
     static class App extends Application<Configuration> {

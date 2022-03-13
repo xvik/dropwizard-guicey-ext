@@ -4,7 +4,7 @@ import io.dropwizard.Application
 import io.dropwizard.Configuration
 import io.dropwizard.setup.Bootstrap
 import io.dropwizard.setup.Environment
-import io.dropwizard.testing.junit.DropwizardAppRule
+import io.dropwizard.testing.DropwizardTestSupport
 import ru.vyarus.dropwizard.guice.GuiceBundle
 import ru.vyarus.guicey.gsp.ServerPagesBundle
 import spock.lang.Specification
@@ -18,7 +18,9 @@ class NoViewsSupportTest extends Specification {
     def "Check view support absence detection"() {
 
         when: "starting app"
-        new DropwizardAppRule<>(App).before()
+        // todo use guicey test support instead (after guidey release)
+//        TestSupport.webApp(App, null)
+        new DropwizardTestSupport<>(App, (String) null).before()
         then: "no views support detected"
         def ex = thrown(IllegalStateException)
         ex.message == 'Either server pages support bundle was not installed (use ServerPagesBundle.builder() to create bundle)  or it was installed after \'app\' application bundle'

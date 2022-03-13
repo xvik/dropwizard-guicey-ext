@@ -7,7 +7,7 @@ import io.dropwizard.setup.Environment
 import ru.vyarus.dropwizard.guice.GuiceBundle
 import ru.vyarus.dropwizard.guice.module.installer.bundle.GuiceyBootstrap
 import ru.vyarus.dropwizard.guice.module.installer.bundle.GuiceyBundle
-import ru.vyarus.dropwizard.guice.test.spock.UseDropwizardApp
+import ru.vyarus.dropwizard.guice.test.jupiter.TestDropwizardApp
 import ru.vyarus.guicey.gsp.AbstractTest
 import ru.vyarus.guicey.gsp.ServerPagesBundle
 
@@ -15,7 +15,7 @@ import ru.vyarus.guicey.gsp.ServerPagesBundle
  * @author Vyacheslav Rusakov
  * @since 06.02.2019
  */
-@UseDropwizardApp(value = App, config = 'src/test/resources/conf.yml')
+@TestDropwizardApp(value = App, config = 'src/test/resources/conf.yml')
 class ExtendedFromGuiceyTest extends AbstractTest {
 
     def "Check app mapped"() {

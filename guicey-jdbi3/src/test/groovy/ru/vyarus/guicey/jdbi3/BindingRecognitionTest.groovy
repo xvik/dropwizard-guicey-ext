@@ -6,7 +6,7 @@ import io.dropwizard.setup.Bootstrap
 import io.dropwizard.setup.Environment
 import org.jdbi.v3.sqlobject.statement.SqlQuery
 import ru.vyarus.dropwizard.guice.GuiceBundle
-import ru.vyarus.dropwizard.guice.test.spock.UseGuiceyApp
+import ru.vyarus.dropwizard.guice.test.jupiter.TestGuiceyApp
 import ru.vyarus.guicey.jdbi3.installer.repository.JdbiRepository
 import ru.vyarus.guicey.jdbi3.support.SampleConfiguration
 import ru.vyarus.guicey.jdbi3.support.mapper.SampleMapper
@@ -19,7 +19,7 @@ import javax.inject.Inject
  * @author Vyacheslav Rusakov
  * @since 15.01.2022
  */
-@UseGuiceyApp(value = App, config = 'src/test/resources/test-config.yml')
+@TestGuiceyApp(value = App, config = 'src/test/resources/test-config.yml')
 class BindingRecognitionTest extends AbstractTest {
 
     @Inject

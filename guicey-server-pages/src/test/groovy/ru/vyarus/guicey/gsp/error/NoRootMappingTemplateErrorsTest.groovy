@@ -5,8 +5,7 @@ import io.dropwizard.Configuration
 import io.dropwizard.setup.Bootstrap
 import io.dropwizard.setup.Environment
 import ru.vyarus.dropwizard.guice.GuiceBundle
-import ru.vyarus.dropwizard.guice.test.spock.ConfigOverride
-import ru.vyarus.dropwizard.guice.test.spock.UseDropwizardApp
+import ru.vyarus.dropwizard.guice.test.jupiter.TestDropwizardApp
 import ru.vyarus.guicey.gsp.AbstractTest
 import ru.vyarus.guicey.gsp.ServerPagesBundle
 import ru.vyarus.guicey.gsp.support.app.SampleTemplateResource
@@ -15,10 +14,8 @@ import ru.vyarus.guicey.gsp.support.app.SampleTemplateResource
  * @author Vyacheslav Rusakov
  * @since 23.01.2019
  */
-@UseDropwizardApp(value = App, config = 'src/test/resources/conf.yml',
-        configOverride = [
-                @ConfigOverride(key = "server.applicationContextPath", value = "/prefix/")
-        ])
+@TestDropwizardApp(value = App, config = 'src/test/resources/conf.yml',
+        configOverride = "server.applicationContextPath: /prefix/")
 class NoRootMappingTemplateErrorsTest extends AbstractTest {
 
     def "Check error mapping"() {

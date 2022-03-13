@@ -3,6 +3,5 @@ description = "Singe page applications support"
 dependencies {
     implementation 'io.dropwizard:dropwizard-assets'
 
-    testImplementation 'org.codehaus.groovy.modules.http-builder:http-builder'
-    testImplementation 'com.github.stefanbirkner:system-rules:1.19.0'
+    testImplementation 'uk.org.webcompere:system-stubs-jupiter:2.0.1'
 }    

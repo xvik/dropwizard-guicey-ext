@@ -6,7 +6,7 @@ import io.dropwizard.Configuration
 import io.dropwizard.setup.Bootstrap
 import io.dropwizard.setup.Environment
 import ru.vyarus.dropwizard.guice.GuiceBundle
-import ru.vyarus.dropwizard.guice.test.spock.UseGuiceyApp
+import ru.vyarus.dropwizard.guice.test.jupiter.TestGuiceyApp
 import spock.lang.Specification
 
 import javax.inject.Inject
@@ -18,7 +18,7 @@ import javax.validation.constraints.NotNull
  * @author Vyacheslav Rusakov
  * @since 30.12.2019
  */
-@UseGuiceyApp(App)
+@TestGuiceyApp(App)
 class ScopeCustomizationTest extends Specification {
 
     @Inject

@@ -1,9 +1,12 @@
 package ru.vyarus.guicey.spa
 
-import groovyx.net.http.ContentType
-import groovyx.net.http.HTTPBuilder
-import groovyx.net.http.HttpResponseException
+import org.apache.commons.text.StringEscapeUtils
+import ru.vyarus.dropwizard.guice.test.ClientSupport
 import spock.lang.Specification
+
+import javax.ws.rs.client.WebTarget
+import javax.ws.rs.core.MediaType
+import javax.ws.rs.core.Response
 
 /**
  * @author Vyacheslav Rusakov
@@ -12,28 +15,36 @@ import spock.lang.Specification
 abstract class AbstractTest extends Specification {
 
     // default builder for text/html type (user call simulation)
-    HTTPBuilder mainHttp = new HTTPBuilder('http://localhost:8080/', ContentType.HTML)
-    HTTPBuilder adminHttp = new HTTPBuilder('http://localhost:8081/', ContentType.HTML)
+    ClientSupport client
+
+    void setup(ClientSupport client) {
+        this.client = client
+    }
 
     // shortcut to return body
     String get(String url) {
-        call(mainHttp, url)
+        call(main(), url)
     }
 
     String adminGet(String url) {
-        call(adminHttp, url)
+        call(admin(), url)
     }
 
-    private String call(HTTPBuilder http, String path) {
-        try {
-            return http.get(path: path) { resp, reader ->
-                reader
-            }
-        } catch (HttpResponseException ex) {
-            if (ex.statusCode == 404) {
-                throw new FileNotFoundException()
-            }
-            throw ex
+    protected WebTarget main() {
+        return client.target('http://localhost:8080')
+    }
+
+    protected WebTarget admin() {
+        return client.target('http://localhost:8081')
+    }
+
+    private String call(WebTarget http, String path) {
+        Response res = http.path(path).request(MediaType.TEXT_HTML).get()
+        if (res.status == 404) {
+            throw new FileNotFoundException()
+        } else if (res.status != 200) {
+            throw new IOException("status: ${res.status}")
         }
+        return StringEscapeUtils.unescapeHtml4(res.readEntity(String))
     }
 }

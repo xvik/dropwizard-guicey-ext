@@ -106,9 +106,8 @@ subprojects {
 
         implementation 'ru.vyarus:dropwizard-guicey'
 
-        testImplementation 'org.spockframework:spock-core:1.3-groovy-2.5'
+
         testImplementation 'io.dropwizard:dropwizard-testing'
-        testImplementation 'org.codehaus.groovy.modules.http-builder:http-builder:0.7.1'
     }
 
     javaLib {
@@ -130,9 +129,15 @@ subprojects {
     dependencyUpdates.revision = 'release'
 
     if (!project.name.startsWith('guicey-test-')) {
+        test {
+            useJUnitPlatform()
+        }
         dependencies {
-            testImplementation project(':guicey-test-spock')
-            testImplementation project(':guicey-test-junit4')
+            testImplementation 'org.spockframework:spock-core:2.1-groovy-3.0'
+            testImplementation 'org.junit.jupiter:junit-jupiter-api'
+            testImplementation 'ru.vyarus:spock-junit5:1.0.0'
+
+            testRuntimeOnly 'org.junit.jupiter:junit-jupiter'
         }
     }
 }

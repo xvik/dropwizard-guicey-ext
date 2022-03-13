@@ -1,14 +1,13 @@
 package ru.vyarus.guicey.admin
 
-
-import ru.vyarus.dropwizard.guice.test.spock.UseDropwizardApp
+import ru.vyarus.dropwizard.guice.test.jupiter.TestDropwizardApp
 import ru.vyarus.guicey.admin.support.AdminRestApplication
 
 /**
  * @author Vyacheslav Rusakov 
  * @since 08.08.2015
  */
-@UseDropwizardApp(value = AdminRestApplication,
+@TestDropwizardApp(value = AdminRestApplication,
         config = 'src/test/resources/ru/vyarus/guicey/admin/simpleConfig.yml')
 class SimpleServerTest extends AbstractTest {
 

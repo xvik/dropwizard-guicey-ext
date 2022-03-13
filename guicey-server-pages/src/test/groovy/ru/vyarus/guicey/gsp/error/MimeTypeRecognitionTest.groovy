@@ -1,103 +1,92 @@
 package ru.vyarus.guicey.gsp.error
 
-import groovyx.net.http.ContentType
-import groovyx.net.http.HTTPBuilder
-import groovyx.net.http.HttpResponseException
+
 import io.dropwizard.Application
 import io.dropwizard.Configuration
 import io.dropwizard.setup.Bootstrap
 import io.dropwizard.setup.Environment
 import ru.vyarus.dropwizard.guice.GuiceBundle
-import ru.vyarus.dropwizard.guice.test.spock.ConfigOverride
-import ru.vyarus.dropwizard.guice.test.spock.UseDropwizardApp
+import ru.vyarus.dropwizard.guice.test.ClientSupport
+import ru.vyarus.dropwizard.guice.test.jupiter.TestDropwizardApp
 import ru.vyarus.guicey.gsp.ServerPagesBundle
 import ru.vyarus.guicey.gsp.support.app.SampleTemplateResource
 import spock.lang.Specification
 
+import javax.ws.rs.core.MediaType
 
 /**
  * @author Vyacheslav Rusakov
  * @since 27.01.2019
  */
-@UseDropwizardApp(value = App, configOverride = [
-        @ConfigOverride(key = "server.rootPath", value = "/rest/*")
-])
+@TestDropwizardApp(value = App, restMapping = "/rest/*")
 class MimeTypeRecognitionTest extends Specification {
 
-    def "Check error mapping"() {
-
-        def http = new HTTPBuilder('http://localhost:8080/')
+    def "Check error mapping"(ClientSupport client) {
 
         when: "accessing not existing asset"
-        def res = http.get(path: '/notexisting.html', contentType: ContentType.HTML)
+        def res = client.targetMain('/notexisting.html').request(MediaType.TEXT_HTML).get()
         then: "error page"
-        res == "custom error page"
+        res.readEntity(String) == "custom error page"
 
         when: "accessing not existing asset with text result"
-        http.get(path: '/notexisting.html', contentType: ContentType.TEXT)
+        res = client.targetMain('/notexisting.html').request(MediaType.TEXT_PLAIN).get()
         then: "no error page"
-        def ex = thrown(HttpResponseException)
-        ex.response.status == 404
+        res.status == 404
 
 
         when: "accessing not existing template"
-        res = http.get(path: '/notexisting.ftl', contentType: ContentType.HTML)
+        res = client.targetMain('/notexisting.ftl').request(MediaType.TEXT_HTML).get()
         then: "error page"
-        res == "custom error page"
+        res.readEntity(String) == "custom error page"
 
         when: "accessing not existing template with text result"
-        http.get(path: '/notexisting.ftl', contentType: ContentType.TEXT)
+        res = client.targetMain('/notexisting.ftl').request(MediaType.TEXT_PLAIN).get()
         then: "no error page"
-        ex = thrown(HttpResponseException)
-        ex.response.status == 404
+        res.status == 404
 
 
         when: "accessing not existing path"
-        res = http.get(path: '/notexisting/', contentType: ContentType.HTML)
+        res = client.targetMain('/notexisting/').request(MediaType.TEXT_HTML).get()
         then: "error page"
-        res == "custom error page"
+        res.readEntity(String) == "custom error page"
 
         when: "accessing not existing path with text result"
-        http.get(path: '/notexisting/', contentType: ContentType.TEXT)
+        res = client.targetMain('/notexisting/').request(MediaType.TEXT_PLAIN).get()
         then: "no error page"
-        ex = thrown(HttpResponseException)
-        ex.response.status == 404
+        res.status == 404
 
 
         when: "error processing template"
-        res = http.get(path: '/sample/error', contentType: ContentType.HTML)
+        res = client.targetMain('/sample/error').request(MediaType.TEXT_HTML).get()
         then: "error page"
-        res == "custom error page"
+        res.readEntity(String) == "custom error page"
 
         when: "error processing template with text result"
-        http.get(path: '/sample/error', contentType: ContentType.TEXT)
+        res = client.targetMain('/sample/error').request(MediaType.TEXT_PLAIN).get()
         then: "no error page"
-        ex = thrown(HttpResponseException)
-        ex.response.status == 500
+        res.status == 500
 
 
         when: "error processing template"
-        res = http.get(path: '/sample/error2', contentType: ContentType.HTML)
+        res = client.targetMain('/sample/error2').request(MediaType.TEXT_HTML).get()
         then: "error page"
-        res == "custom error page"
+        res.readEntity(String) == "custom error page"
 
         when: "error processing template with text result"
-        http.get(path: '/sample/error2', contentType: ContentType.TEXT)
+        res = client.targetMain('/sample/error2').request(MediaType.TEXT_PLAIN).get()
         then: "no error page"
-        ex = thrown(HttpResponseException)
-        ex.response.status == 500
+        res.status == 500
 
 
         when: "direct 404 rest response"
-        res = http.get(path: '/sample/notfound', contentType: ContentType.HTML)
+        res = client.targetMain('/sample/notfound').request(MediaType.TEXT_HTML).get()
         then: "error page"
-        res == "custom error page"
+        res.readEntity(String) == "custom error page"
 
         when: "direct 404 rest response with text result"
-        http.get(path: '/sample/notfound', contentType: ContentType.TEXT)
+        res = client.targetMain('/sample/notfound').request(MediaType.TEXT_PLAIN).get()
         then: "error page"
-        ex = thrown(HttpResponseException)
-        ex.response.status == 404
+        res.status == 404
     }
 
     static class App extends Application<Configuration> {

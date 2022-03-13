@@ -5,17 +5,14 @@ import io.dropwizard.Configuration
 import io.dropwizard.setup.Bootstrap
 import io.dropwizard.setup.Environment
 import ru.vyarus.dropwizard.guice.GuiceBundle
-import ru.vyarus.dropwizard.guice.test.spock.ConfigOverride
-import ru.vyarus.dropwizard.guice.test.spock.UseDropwizardApp
+import ru.vyarus.dropwizard.guice.test.jupiter.TestDropwizardApp
 
 /**
  * @author Vyacheslav Rusakov
  * @since 24.01.2019
  */
-@UseDropwizardApp(value = App, configOverride = [
-        @ConfigOverride(key = "server.rootPath", value = "/*"),
-        @ConfigOverride(key = "server.applicationContextPath", value = "/prefix/")
-])
+@TestDropwizardApp(value = App, restMapping = "/*",
+        configOverride = "server.applicationContextPath: /prefix/")
 class RootRestMappingTest extends AbstractTest {
 
     def "Check app mapped"() {
@@ -31,7 +28,7 @@ class RootRestMappingTest extends AbstractTest {
         res.contains("Sample page")
 
         when: "accessing direct template"
-        res = getHtml("http://localhost:8080/prefix/app/template.ftl")
+        res = getHtml("/prefix/app/template.ftl")
         then: "rendered template"
         res.contains("page: /prefix/app/template.ftl")
     }

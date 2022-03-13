@@ -7,7 +7,8 @@ import io.dropwizard.Configuration
 import io.dropwizard.setup.Bootstrap
 import io.dropwizard.setup.Environment
 import ru.vyarus.dropwizard.guice.GuiceBundle
-import ru.vyarus.dropwizard.guice.test.spock.UseGuiceyApp
+import ru.vyarus.dropwizard.guice.test.jupiter.TestGuiceyApp
+import ru.vyarus.dropwizard.guice.test.jupiter.param.Jit
 import ru.vyarus.guicey.eventbus.service.EventSubscribersInfo
 import ru.vyarus.guicey.eventbus.support.AbstractEvent
 import ru.vyarus.guicey.eventbus.support.Event1
@@ -22,17 +23,25 @@ import javax.inject.Inject
  * @author Vyacheslav Rusakov
  * @since 02.12.2016
  */
-@UseGuiceyApp(App)
+@TestGuiceyApp(App)
 class SubscribersInfoTest extends Specification {
 
-    @Inject @Shared
-    Service service // trigger JIT binding
-    @Inject @Shared
-    Service2 service2 // trigger JIT binding
+    // can't use @Inject here because it will not work on shared fields
+    // but shared state is important because there are two tests
+    @Shared
+    Service service
+    @Shared
+    Service2 service2
     @Inject
     EventSubscribersInfo info
     @Inject
     Injector injector
+
+    // trigger JIT binding
+    void setupSpec(@Jit Service service, @Jit Service2 service2) {
+        this.service = service
+        this.service2 = service2
+    }
 
     def "Check correct tracking"() {
 
@@ -51,7 +60,7 @@ class SubscribersInfoTest extends Specification {
         Service2 inst1 = injector.getInstance(Service2)
         Service2 inst2 = injector.getInstance(Service2)
 
-        then: "instaces tracked"
+        then: "instances tracked"
         info.getListeners(Event1) == [service, service2, inst1, inst2] as Set
     }
 

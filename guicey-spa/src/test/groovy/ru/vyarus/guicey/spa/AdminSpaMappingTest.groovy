@@ -5,13 +5,13 @@ import io.dropwizard.Configuration
 import io.dropwizard.setup.Bootstrap
 import io.dropwizard.setup.Environment
 import ru.vyarus.dropwizard.guice.GuiceBundle
-import ru.vyarus.dropwizard.guice.test.spock.UseDropwizardApp
+import ru.vyarus.dropwizard.guice.test.jupiter.TestDropwizardApp
 
 /**
  * @author Vyacheslav Rusakov
  * @since 05.04.2017
  */
-@UseDropwizardApp(App)
+@TestDropwizardApp(App)
 class AdminSpaMappingTest extends AbstractTest {
 
     def "Check spa mapped"() {

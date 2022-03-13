@@ -5,7 +5,7 @@ import io.dropwizard.Configuration
 import io.dropwizard.setup.Bootstrap
 import io.dropwizard.setup.Environment
 import ru.vyarus.dropwizard.guice.GuiceBundle
-import ru.vyarus.dropwizard.guice.test.spock.UseGuiceyApp
+import ru.vyarus.dropwizard.guice.test.jupiter.TestGuiceyApp
 import ru.vyarus.guicey.annotations.lifecycle.support.SampleBean
 import ru.vyarus.guicey.annotations.lifecycle.support.sub.AnotherBean
 import spock.lang.Specification
@@ -16,7 +16,7 @@ import javax.inject.Inject
  * @author Vyacheslav Rusakov
  * @since 27.11.2018
  */
-@UseGuiceyApp(App)
+@TestGuiceyApp(App)
 class PackageScopeTest extends Specification {
 
     @Inject
@@ -37,8 +37,8 @@ class PackageScopeTest extends Specification {
         void initialize(Bootstrap<Configuration> bootstrap) {
             bootstrap
                     .addBundle(GuiceBundle.builder()
-                    .bundles(new LifecycleAnnotationsBundle(AnotherBean.class.package.name))
-                    .build())
+                            .bundles(new LifecycleAnnotationsBundle(AnotherBean.class.package.name))
+                            .build())
         }
 
         @Override

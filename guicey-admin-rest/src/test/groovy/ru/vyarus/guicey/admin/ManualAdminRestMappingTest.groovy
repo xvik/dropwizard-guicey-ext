@@ -1,14 +1,13 @@
 package ru.vyarus.guicey.admin
 
-
-import ru.vyarus.dropwizard.guice.test.spock.UseDropwizardApp
+import ru.vyarus.dropwizard.guice.test.jupiter.TestDropwizardApp
 import ru.vyarus.guicey.admin.support.ManualAdminRestPathApp
 
 /**
  * @author Vyacheslav Rusakov 
  * @since 08.08.2015
  */
-@UseDropwizardApp(ManualAdminRestPathApp)
+@TestDropwizardApp(ManualAdminRestPathApp)
 class ManualAdminRestMappingTest extends AbstractTest {
 
     def "Check access from admin context"() {

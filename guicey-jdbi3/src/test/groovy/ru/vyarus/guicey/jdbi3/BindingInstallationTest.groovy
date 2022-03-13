@@ -1,12 +1,13 @@
 package ru.vyarus.guicey.jdbi3
 
 import com.google.inject.AbstractModule
+import com.google.inject.CreationException
 import io.dropwizard.Application
 import io.dropwizard.setup.Bootstrap
 import io.dropwizard.setup.Environment
+import io.dropwizard.testing.DropwizardTestSupport
 import org.jdbi.v3.sqlobject.statement.SqlUpdate
 import ru.vyarus.dropwizard.guice.GuiceBundle
-import ru.vyarus.dropwizard.guice.test.GuiceyAppRule
 import ru.vyarus.guicey.jdbi3.installer.repository.JdbiRepository
 import ru.vyarus.guicey.jdbi3.support.SampleConfiguration
 import spock.lang.Specification
@@ -19,10 +20,12 @@ class BindingInstallationTest extends Specification {
     def "Check incorrect repo definition detection"() {
 
         when: "staring app with incorrect repo declaration"
-        new GuiceyAppRule(App, 'src/test/resources/test-config.yml').before()
+        // todo use guicey test support instead (after guidey release)
+        // TestSupport.runCoreApp(App, 'src/test/resources/test-config.yml')
+        new DropwizardTestSupport<>(App, 'src/test/resources/test-config.yml').before()
         then: "error"
-        def ex = thrown(IllegalStateException)
-        ex.getCause().getCause().getMessage()
+        def ex = thrown(CreationException)
+        ex.getCause().getMessage()
                 .replace('java.base/jdk.internal', 'sun') == "JDBI repository BaseRepository can't be installed from binding: sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)"
     }
 

@@ -5,8 +5,7 @@ import io.dropwizard.Configuration
 import io.dropwizard.setup.Bootstrap
 import io.dropwizard.setup.Environment
 import ru.vyarus.dropwizard.guice.GuiceBundle
-import ru.vyarus.dropwizard.guice.test.spock.ConfigOverride
-import ru.vyarus.dropwizard.guice.test.spock.UseDropwizardApp
+import ru.vyarus.dropwizard.guice.test.jupiter.TestDropwizardApp
 import ru.vyarus.guicey.gsp.info.GspInfoService
 import ru.vyarus.guicey.gsp.support.app.SampleTemplateResource
 
@@ -16,9 +15,7 @@ import javax.inject.Inject
  * @author Vyacheslav Rusakov
  * @since 14.01.2019
  */
-@UseDropwizardApp(value = App, configOverride = [
-        @ConfigOverride(key = "server.rootPath", value = "/rest/*")
-])
+@TestDropwizardApp(value = App, restMapping = "/rest/*")
 class ResourceMappingTest extends AbstractTest {
 
     @Inject

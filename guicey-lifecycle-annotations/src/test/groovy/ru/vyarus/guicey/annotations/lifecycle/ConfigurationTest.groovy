@@ -6,7 +6,7 @@ import io.dropwizard.Application
 import io.dropwizard.Configuration
 import io.dropwizard.setup.Bootstrap
 import io.dropwizard.setup.Environment
-import io.dropwizard.testing.junit.DropwizardAppRule
+import io.dropwizard.testing.DropwizardTestSupport
 import ru.vyarus.dropwizard.guice.GuiceBundle
 import ru.vyarus.dropwizard.guice.injector.lookup.InjectorLookup
 import spock.lang.Specification
@@ -24,7 +24,9 @@ class ConfigurationTest extends Specification {
     def "Check bundle configuration"() {
 
         setup:
-        DropwizardAppRule rule = new DropwizardAppRule(App)
+        // todo use guicey test support instead (after guidey release)
+        // TestSupport.webApp(App, null)
+        DropwizardTestSupport rule = new DropwizardTestSupport(App, (String) null)
 
         when:
         rule.before()
@@ -49,15 +51,15 @@ class ConfigurationTest extends Specification {
         void initialize(Bootstrap<Configuration> bootstrap) {
             bootstrap
                     .addBundle(GuiceBundle.builder()
-            // SampleBean will not be processed
-                    .bundles(new LifecycleAnnotationsBundle(new AbstractMatcher<TypeLiteral<?>>() {
+                    // SampleBean will not be processed
+                            .bundles(new LifecycleAnnotationsBundle(new AbstractMatcher<TypeLiteral<?>>() {
 
-                @Override
-                boolean matches(TypeLiteral<?> o) {
-                    return o.getRawType() != SampleBean
-                }
-            }))
-                    .build())
+                                @Override
+                                boolean matches(TypeLiteral<?> o) {
+                                    return o.getRawType() != SampleBean
+                                }
+                            }))
+                            .build())
         }
 
         @Override

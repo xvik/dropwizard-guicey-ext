@@ -5,7 +5,7 @@ import io.dropwizard.Configuration
 import io.dropwizard.setup.Bootstrap
 import io.dropwizard.setup.Environment
 import ru.vyarus.dropwizard.guice.GuiceBundle
-import ru.vyarus.dropwizard.guice.test.spock.UseDropwizardApp
+import ru.vyarus.dropwizard.guice.test.jupiter.TestDropwizardApp
 import ru.vyarus.guicey.gsp.ServerPagesBundle
 import ru.vyarus.guicey.gsp.info.GspInfoService
 import spock.lang.Specification
@@ -16,7 +16,7 @@ import javax.inject.Inject
  * @author Vyacheslav Rusakov
  * @since 05.06.2019
  */
-@UseDropwizardApp(value = App)
+@TestDropwizardApp(value = App)
 class ViewConfigurationModificationTest extends Specification {
 
     @Inject

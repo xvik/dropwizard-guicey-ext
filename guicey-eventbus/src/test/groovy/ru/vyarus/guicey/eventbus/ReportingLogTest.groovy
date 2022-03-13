@@ -7,7 +7,7 @@ import io.dropwizard.Configuration
 import io.dropwizard.setup.Bootstrap
 import io.dropwizard.setup.Environment
 import ru.vyarus.dropwizard.guice.GuiceBundle
-import ru.vyarus.dropwizard.guice.test.spock.UseGuiceyApp
+import ru.vyarus.dropwizard.guice.test.jupiter.TestGuiceyApp
 import ru.vyarus.guicey.eventbus.support.AbstractEvent
 import ru.vyarus.guicey.eventbus.support.Event1
 import ru.vyarus.guicey.eventbus.support.Event3
@@ -17,7 +17,7 @@ import spock.lang.Specification
  * @author Vyacheslav Rusakov
  * @since 02.12.2016
  */
-@UseGuiceyApp(App)
+@TestGuiceyApp(App)
 class ReportingLogTest extends Specification {
 
     def "Check correct registration"() {
@@ -36,11 +36,11 @@ class ReportingLogTest extends Specification {
                     .bundles(new EventBusBundle())
                     // need to force listeners registration to actually call reporting to console
                     .modules(new AbstractModule() {
-                @Override
-                protected void configure() {
-                    bind(SubscribersInfoTest.Service).asEagerSingleton()
-                }
-            })
+                        @Override
+                        protected void configure() {
+                            bind(SubscribersInfoTest.Service).asEagerSingleton()
+                        }
+                    })
                     .build())
         }
 

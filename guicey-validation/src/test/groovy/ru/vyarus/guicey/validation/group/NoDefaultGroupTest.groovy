@@ -5,7 +5,7 @@ import io.dropwizard.Configuration
 import io.dropwizard.setup.Bootstrap
 import io.dropwizard.setup.Environment
 import ru.vyarus.dropwizard.guice.GuiceBundle
-import ru.vyarus.dropwizard.guice.test.spock.UseGuiceyApp
+import ru.vyarus.dropwizard.guice.test.jupiter.TestGuiceyApp
 import ru.vyarus.guice.validator.group.ValidationContext
 import ru.vyarus.guicey.validation.ValidationBundle
 import spock.lang.Specification
@@ -20,7 +20,7 @@ import javax.validation.groups.Default
  * @author Vyacheslav Rusakov
  * @since 07.09.2021
  */
-@UseGuiceyApp(App)
+@TestGuiceyApp(App)
 class NoDefaultGroupTest extends Specification {
 
     @Inject

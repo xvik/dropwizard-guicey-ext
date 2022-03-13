@@ -1,9 +1,12 @@
 package ru.vyarus.guicey.gsp
 
-import groovyx.net.http.ContentType
-import groovyx.net.http.HTTPBuilder
-import groovyx.net.http.HttpResponseException
+import org.apache.commons.text.StringEscapeUtils
+import ru.vyarus.dropwizard.guice.test.ClientSupport
 import spock.lang.Specification
+
+import javax.ws.rs.client.WebTarget
+import javax.ws.rs.core.MediaType
+import javax.ws.rs.core.Response
 
 /**
  * @author Vyacheslav Rusakov
@@ -12,38 +15,49 @@ import spock.lang.Specification
 abstract class AbstractTest extends Specification {
 
     // default builder for text/html type (user call simulation)
-    HTTPBuilder mainHttp = new HTTPBuilder('http://localhost:8080/')
-    HTTPBuilder adminHttp = new HTTPBuilder('http://localhost:8081/')
+    ClientSupport client
 
-    // shortcut to return body
+    void setup(ClientSupport client) {
+        this.client = client
+    }
+
+// shortcut to return body
 
     String get(String url) {
-        call(mainHttp, url, false)
+        call(main(), url, false)
     }
 
     String getHtml(String url) {
-        call(mainHttp, url, true)
+        call(main(), url, true)
     }
 
     String adminGet(String url) {
-        call(adminHttp, url, false)
+        call(admin(), url, false)
     }
 
     String adminGetHtml(String url) {
-        call(adminHttp, url, true)
+        call(admin(), url, true)
     }
 
-    private String call(HTTPBuilder http, String path, boolean html) {
-        try {
-            // text if not html to avoid HTTPBuilder response parsing attempt (possible with wildcard)
-            return http.get(path: path, contentType: html ? ContentType.HTML : ContentType.ANY) { resp, reader ->
-                html? reader : reader.text
-            }
-        } catch (HttpResponseException ex) {
-            if (ex.statusCode == 404) {
-                throw new FileNotFoundException()
-            }
-            throw ex
+    private WebTarget main() {
+        return client.target('http://localhost:8080')
+    }
+
+    private WebTarget admin() {
+        return client.target('http://localhost:8081')
+    }
+
+    private String call(WebTarget http, String path, boolean html) {
+        Response res = http.path(path).request(html ? MediaType.TEXT_HTML : MediaType.TEXT_PLAIN).get()
+        if (res.status == 404) {
+            throw new FileNotFoundException()
+        } else if (res.status != 200) {
+            throw new IOException("status: ${res.status}")
         }
+        String body = res.readEntity(String)
+        if (html) {
+            body = StringEscapeUtils.unescapeHtml4(body)
+        }
+        return body
     }
 }

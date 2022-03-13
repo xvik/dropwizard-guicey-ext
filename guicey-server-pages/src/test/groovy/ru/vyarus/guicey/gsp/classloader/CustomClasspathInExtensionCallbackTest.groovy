@@ -6,8 +6,7 @@ import io.dropwizard.setup.Bootstrap
 import io.dropwizard.setup.Environment
 import ru.vyarus.dropwizard.guice.GuiceBundle
 import ru.vyarus.dropwizard.guice.module.installer.bundle.GuiceyEnvironment
-import ru.vyarus.dropwizard.guice.test.spock.ConfigOverride
-import ru.vyarus.dropwizard.guice.test.spock.UseDropwizardApp
+import ru.vyarus.dropwizard.guice.test.jupiter.TestDropwizardApp
 import ru.vyarus.guicey.gsp.AbstractTest
 import ru.vyarus.guicey.gsp.ServerPagesBundle
 import ru.vyarus.guicey.gsp.app.asset.AssetSources
@@ -20,9 +19,7 @@ import java.nio.file.Paths
  * @author Vyacheslav Rusakov
  * @since 13.04.2020
  */
-@UseDropwizardApp(value = App, configOverride = [
-        @ConfigOverride(key = "server.rootPath", value = "/rest/*")
-])
+@TestDropwizardApp(value = App, restMapping = "/rest/*")
 class CustomClasspathInExtensionCallbackTest extends AbstractTest {
 
     def "Check app resources access"() {

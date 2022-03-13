@@ -5,8 +5,7 @@ import io.dropwizard.Configuration
 import io.dropwizard.setup.Bootstrap
 import io.dropwizard.setup.Environment
 import ru.vyarus.dropwizard.guice.GuiceBundle
-import ru.vyarus.dropwizard.guice.test.spock.ConfigOverride
-import ru.vyarus.dropwizard.guice.test.spock.UseDropwizardApp
+import ru.vyarus.dropwizard.guice.test.jupiter.TestDropwizardApp
 import ru.vyarus.guicey.gsp.ServerPagesBundle
 import spock.lang.Specification
 
@@ -14,9 +13,7 @@ import spock.lang.Specification
  * @author Vyacheslav Rusakov
  * @since 11.06.2019
  */
-@UseDropwizardApp(value = App, configOverride = [
-        @ConfigOverride(key = "server.rootPath", value = "/rest/*")
-])
+@TestDropwizardApp(value = App, restMapping = "/rest/*")
 class WebjarsIntegrationTest extends Specification {
 
     def "Check webjars binding"() {

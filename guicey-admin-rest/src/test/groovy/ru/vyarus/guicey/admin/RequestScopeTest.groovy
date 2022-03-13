@@ -1,7 +1,6 @@
 package ru.vyarus.guicey.admin
 
-
-import ru.vyarus.dropwizard.guice.test.spock.UseDropwizardApp
+import ru.vyarus.dropwizard.guice.test.jupiter.TestDropwizardApp
 import ru.vyarus.guicey.admin.support.AdminRestApplication
 import spock.lang.Specification
 
@@ -9,7 +8,7 @@ import spock.lang.Specification
  * @author Vyacheslav Rusakov 
  * @since 03.09.2015
  */
-@UseDropwizardApp(value = AdminRestApplication,
+@TestDropwizardApp(value = AdminRestApplication,
         config = 'src/test/resources/ru/vyarus/guicey/admin/simpleConfig.yml')
 class RequestScopeTest extends Specification {
 

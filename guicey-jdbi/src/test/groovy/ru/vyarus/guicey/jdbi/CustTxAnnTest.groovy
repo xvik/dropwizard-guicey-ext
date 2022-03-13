@@ -5,7 +5,7 @@ import io.dropwizard.Application
 import io.dropwizard.setup.Bootstrap
 import io.dropwizard.setup.Environment
 import ru.vyarus.dropwizard.guice.GuiceBundle
-import ru.vyarus.dropwizard.guice.test.spock.UseGuiceyApp
+import ru.vyarus.dropwizard.guice.test.jupiter.TestGuiceyApp
 import ru.vyarus.guicey.jdbi.support.SampleApp
 import ru.vyarus.guicey.jdbi.support.SampleConfiguration
 import ru.vyarus.guicey.jdbi.support.ann.CustTx
@@ -18,7 +18,7 @@ import javax.inject.Inject
  * @author Vyacheslav Rusakov
  * @since 06.12.2016
  */
-@UseGuiceyApp(value = App, config = 'src/test/resources/test-config.yml')
+@TestGuiceyApp(value = App, config = 'src/test/resources/test-config.yml')
 class CustTxAnnTest extends AbstractTest {
 
     @Inject
@@ -50,7 +50,7 @@ class CustTxAnnTest extends AbstractTest {
             bootstrap.addBundle(GuiceBundle.builder()
                     .enableAutoConfig(SampleApp.package.name)
                     .bundles(JdbiBundle.<SampleConfiguration> forDatabase { conf, env -> conf.database }
-                    .withTxAnnotations(CustTx))
+                            .withTxAnnotations(CustTx))
                     .build())
         }
 

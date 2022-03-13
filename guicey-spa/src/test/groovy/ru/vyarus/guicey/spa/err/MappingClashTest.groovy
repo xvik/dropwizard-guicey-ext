@@ -4,30 +4,37 @@ import io.dropwizard.Application
 import io.dropwizard.Configuration
 import io.dropwizard.setup.Bootstrap
 import io.dropwizard.setup.Environment
-import org.junit.Rule
+import org.junit.jupiter.api.extension.ExtendWith
 import ru.vyarus.dropwizard.guice.GuiceBundle
-import ru.vyarus.dropwizard.guice.test.StartupErrorRule
 import ru.vyarus.guicey.spa.SpaBundle
 import spock.lang.Specification
-
+import uk.org.webcompere.systemstubs.jupiter.SystemStub
+import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension
+import uk.org.webcompere.systemstubs.security.SystemExit
+import uk.org.webcompere.systemstubs.stream.SystemErr
 
 /**
  * @author Vyacheslav Rusakov
  * @since 05.04.2017
  */
+@ExtendWith(SystemStubsExtension)
 class MappingClashTest extends Specification {
 
-    @Rule
-    StartupErrorRule rule = StartupErrorRule.create()
+    @SystemStub
+    SystemExit exit
+    @SystemStub
+    SystemErr err
 
     def "Check uri paths clash"() {
 
         when: "starting app"
-        new App().run(['server'] as String[])
+        exit.execute(() -> {
+            new App().run(['server'] as String[])
+        });
 
         then: "error"
-        thrown(rule.indicatorExceptionType)
-        rule.error.contains("Assets servlet app2 registration clash with already installed servlets on paths: /app/*")
+        exit.exitCode == 1
+        err.text.contains("Assets servlet app2 registration clash with already installed servlets on paths: /app/*")
     }
 
     static class App extends Application<Configuration> {

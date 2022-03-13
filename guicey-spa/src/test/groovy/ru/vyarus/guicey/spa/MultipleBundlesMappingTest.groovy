@@ -6,16 +6,15 @@ import io.dropwizard.Configuration
 import io.dropwizard.setup.Bootstrap
 import io.dropwizard.setup.Environment
 import ru.vyarus.dropwizard.guice.GuiceBundle
-import ru.vyarus.dropwizard.guice.test.spock.ConfigOverride
-import ru.vyarus.dropwizard.guice.test.spock.UseDropwizardApp
+import ru.vyarus.dropwizard.guice.test.jupiter.TestDropwizardApp
+
+import javax.ws.rs.core.MediaType
 
 /**
  * @author Vyacheslav Rusakov
  * @since 05.04.2017
  */
-@UseDropwizardApp(value = App, configOverride = [
-        @ConfigOverride(key = "server.rootPath", value = "/rest/*")
-])
+@TestDropwizardApp(value = App, restMapping = "/rest/*")
 class MultipleBundlesMappingTest extends AbstractTest {
 
     def "Check spa mappings"() {
@@ -53,38 +52,35 @@ class MultipleBundlesMappingTest extends AbstractTest {
     }
 
     def "Check cache header"() {
-        def http = mainHttp
+        when: "calling index"
+        def res = client.targetMain('/1').request(MediaType.TEXT_HTML).get()
+        then: "cache disabled"
+        res.getHeaderString(HttpHeaders.CACHE_CONTROL) == 'must-revalidate,no-cache,no-store'
 
-        expect: "calling index"
-        http.get(path: '/1') { resp, reader ->
-            assert resp.headers.(HttpHeaders.CACHE_CONTROL) == 'must-revalidate,no-cache,no-store'
-            true
-        }
-        http.get(path: '/2') { resp, reader ->
-            assert resp.headers.(HttpHeaders.CACHE_CONTROL) == 'must-revalidate,no-cache,no-store'
-            true
-        }
+        when: "calling index 1"
+        res = client.targetMain('/2').request(MediaType.TEXT_HTML).get()
+        then: "cache disabled"
+        res.getHeaderString(HttpHeaders.CACHE_CONTROL) == 'must-revalidate,no-cache,no-store'
 
-        and: "force redirect"
-        http.get(path: '/1/some') { resp, reader ->
-            assert resp.headers.(HttpHeaders.CACHE_CONTROL) == 'must-revalidate,no-cache,no-store'
-            true
-        }
-        http.get(path: '/2/some') { resp, reader ->
-            assert resp.headers.(HttpHeaders.CACHE_CONTROL) == 'must-revalidate,no-cache,no-store'
-            true
-        }
+        when: "force redirect"
+        res = client.targetMain('/1/some').request(MediaType.TEXT_HTML).get()
+        then: "cache disabled"
+        res.getHeaderString(HttpHeaders.CACHE_CONTROL) == 'must-revalidate,no-cache,no-store'
 
+        when: "force redirect 2"
+        res = client.targetMain('/2/some').request(MediaType.TEXT_HTML).get()
+        then: "cache disabled"
+        res.getHeaderString(HttpHeaders.CACHE_CONTROL) == 'must-revalidate,no-cache,no-store'
 
-        and: "direct index page"
-        http.get(path: '/1/index.html') { resp, reader ->
-            assert resp.headers.(HttpHeaders.CACHE_CONTROL) == null
-            true
-        }
-        http.get(path: '/2/index.html') { resp, reader ->
-            assert resp.headers.(HttpHeaders.CACHE_CONTROL) == null
-            true
-        }
+        when: "direct index page"
+        res = client.targetMain('/1/index.html').request(MediaType.TEXT_HTML).get()
+        then: "cache enabled"
+        res.getHeaderString(HttpHeaders.CACHE_CONTROL) == null
+
+        when: "direct index page 2"
+        res = client.targetMain('/2/index.html').request(MediaType.TEXT_HTML).get()
+        then: "cache enabled"
+        res.getHeaderString(HttpHeaders.CACHE_CONTROL) == null
     }
 
     static class App extends Application<Configuration> {
