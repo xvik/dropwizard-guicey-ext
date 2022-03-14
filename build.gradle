@@ -139,6 +139,11 @@ subprojects {
 
             testRuntimeOnly 'org.junit.jupiter:junit-jupiter'
         }
+    } else {
+        // don't compile and run tests for legacy junit4 and spock1 modules
+        tasks.withType(GroovyCompile)
+                .configureEach {it.onlyIf {JavaVersion.current() <= JavaVersion.VERSION_11} }
+        test.onlyIf { JavaVersion.current() <= JavaVersion.VERSION_11 }
     }
 }
 
