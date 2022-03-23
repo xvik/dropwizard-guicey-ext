@@ -22,13 +22,14 @@ Maven:
   <groupId>ru.vyarus.guicey</groupId>
   <artifactId>guicey-test-junit4</artifactId>
   <version>5.4.2-1</version>
+  <scope>test</scope>  
 </dependency>
 ```
 
 Gradle:
 
 ```groovy
-implementation 'ru.vyarus.guicey:guicey-test-junit4:5.4.2-1'
+testImplementation 'ru.vyarus.guicey:guicey-test-junit4:5.4.2-1'
 ```
 
 See the most recent version in the badge above.
@@ -172,9 +173,6 @@ System exit could be intercepted with [system rules](http://stefanbirkner.github
 Special rule provided to simplify work with system rules: `StartupErrorRule`.
 It's a combination of exit and out/err outputs interception rules.
 
-To use this rule add dependency: `com.github.stefanbirkner:system-rules:1.16.0`
-
-
 ```java
 public class MyErrTest {
 
@@ -228,7 +226,7 @@ Multiple check callbacks may be registered (even if the first one was registered
 create call).
 
 !!! note ""
-Rule works a bit differently with spock (see below).
+Rule works a bit differently [with spock 1](../guicey-test-spock/README.md#dropwizard-startup-error).
 
 ### Migrating to JUnit 5
 

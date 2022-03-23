@@ -21,13 +21,14 @@ Maven:
   <groupId>ru.vyarus.guicey</groupId>
   <artifactId>guicey-test-spock</artifactId>
   <version>5.4.2-1</version>
+  <scope>test</scope>
 </dependency>
 ```
 
 Gradle:
 
 ```groovy
-implementation 'ru.vyarus.guicey:guicey-test-spock:5.4.2-1'
+testImplementation 'ru.vyarus.guicey:guicey-test-spock:5.4.2-1'
 ```
 
 See the most recent version in the badge above.
@@ -37,6 +38,7 @@ See the most recent version in the badge above.
 OR you can use it with junit 5 vintage engine:
 
 ```groovy
+testImplementation 'ru.vyarus.guicey:guicey-test-spock:5.4.2-1'
 testImplementation 'org.junit.jupiter:junit-jupiter-api'
 testRuntimeOnly 'org.junit.jupiter:junit-jupiter'
 testRuntimeOnly 'org.junit.vintage:junit-vintage-engine'
@@ -53,7 +55,7 @@ Provided extensions:
 
 Both extensions allow using injections directly in specifications (like spock-guice).
 
-`@UseGuiceyHooks` extension could be used to apply [configuration hook](../hooks.md)
+`@UseGuiceyHooks` extension could be used to apply [configuration hook](http://xvik.github.io/dropwizard-guicey/5.4.2/guide/hooks/)
 common for all tests. But, it is deprecated in favor of native hooks support in main extensions.
 
 #### Testing core logic
@@ -405,11 +407,7 @@ class Test1 extends AbstractTest {
 
 #### Dropwizard startup error
 
-WARNING
-StartupErrorRule is deprecated, but as spock still depends on junit4
-there are no alternatives.
-
-`StartupErrorRule` may be used to intercept dropwizard `#!java System.exit(1)` call.
+`StartupErrorRule` may be used to intercept dropwizard `System.exit(1)` call.
 But it will work different then for junit:
 `then` section is always called with exception (`CheckExitCalled`).
 Also, `then` section may be used for assertion after exit calls and so there is
@@ -471,9 +469,9 @@ Setup order:
 There is no special extensions for Spock 2, instead junit 5 integrations
 must be used with it, using [special library](https://github.com/xvik/spock-junit5)
 
-Current spock extensions are almost equivalent to junit5 extensions (in features and behaviour)
+Current spock extensions are almost equivalent to junit5 extensions (in features and behaviour):
 
-* Instead of UseGuiceyApp use TestGuiceyApp
-* Instead of UseDropwizardApp use TestDropwizardApp
+* Instead of `@UseGuiceyApp` use `@TestGuiceyApp`
+* Instead of `@UseDropwizardApp` use `@TestDropwizardApp`
 * Hooks can be specified with hooks declaration [in extensions](http://xvik.github.io/dropwizard-guicey/5.4.2/guide/test/junit5/#application-test-modification) or as [test fields](http://xvik.github.io/dropwizard-guicey/5.4.2/guide/test/junit5/#hook-fields)
-* Instead of StartupErrorRule use [system-stubs](https://github.com/webcompere/system-stubs) - the successor of system rules
+* Instead of `StartupErrorRule` use [system-stubs](https://github.com/webcompere/system-stubs) - the successor of system rules
