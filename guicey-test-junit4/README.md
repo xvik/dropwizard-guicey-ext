@@ -38,6 +38,7 @@ See the most recent version in the badge above.
 OR you can use it with junit 5 vintage engine (assume BOM used for version management):
 
 ```groovy
+testImplementation 'ru.vyarus.guicey:guicey-test-junit4'
 testImplementation 'org.junit.jupiter:junit-jupiter-api'
 testRuntimeOnly 'org.junit.jupiter:junit-jupiter'
 testRuntimeOnly 'org.junit.vintage:junit-vintage-engine'
@@ -231,10 +232,10 @@ Rule works a bit differently with spock (see below).
 
 ### Migrating to JUnit 5
 
-* Instead of GuiceyAppRule use [@TestGuiceyApp](http://xvik.github.io/dropwizard-guicey/5.4.2/guide/test/junit5/#testguiceyapp) extension.
-* Instead of DropwizardAppRule use [@TestDropwizardApp](http://xvik.github.io/dropwizard-guicey/5.4.2/guide/test/junit5/#testdropwizardapp) extension.
-* GuiceyHooksRule can be substituted with hooks declaration [in extensions](http://xvik.github.io/dropwizard-guicey/5.4.2/guide/test/junit5/#application-test-modification) or as [test fields](http://xvik.github.io/dropwizard-guicey/5.4.2/guide/test/junit5/#hook-fields)
-* Instead of StartupErrorRule use [system-stubs](https://github.com/webcompere/system-stubs) - the successor of system rules
+* Instead of `GuiceyAppRule` use [@TestGuiceyApp](http://xvik.github.io/dropwizard-guicey/5.4.2/guide/test/junit5/#testguiceyapp) extension.
+* Instead of `DropwizardAppRule` use [@TestDropwizardApp](http://xvik.github.io/dropwizard-guicey/5.4.2/guide/test/junit5/#testdropwizardapp) extension.
+* `GuiceyHooksRule` can be substituted with hooks declaration [in extensions](http://xvik.github.io/dropwizard-guicey/5.4.2/guide/test/junit5/#application-test-modification) or as [test fields](http://xvik.github.io/dropwizard-guicey/5.4.2/guide/test/junit5/#hook-fields)
+* Instead of `StartupErrorRule` use [system-stubs](https://github.com/webcompere/system-stubs) - the successor of system rules
 
 In essence:
 
