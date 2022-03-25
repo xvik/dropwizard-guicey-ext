@@ -49,7 +49,7 @@ This way all existing junit 4 tests would work and new tests could use junit 5 e
 
 ### Usage
 
-Module includes:
+Provided rules:
 
 * `GuiceyAppRule` - lightweight integration tests (guice only)
 * `GuiceyHooksRule` - test-specific application modifications

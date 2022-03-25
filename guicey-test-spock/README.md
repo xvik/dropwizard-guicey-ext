@@ -113,8 +113,8 @@ NOTE
 Random ports will be applied even if configuration with exact ports provided:
 ```groovy
 @UseDropwizardApp(value = MyApplication,
-config = 'path/to/my/config.yml',
-randomPorts = true)
+        config = 'path/to/my/config.yml',
+        randomPorts = true)
 ```
 Also, random ports support both server types (default and simple)
 
@@ -475,3 +475,72 @@ Current spock extensions are almost equivalent to junit5 extensions (in features
 * Instead of `@UseDropwizardApp` use `@TestDropwizardApp`
 * Hooks can be specified with hooks declaration [in extensions](http://xvik.github.io/dropwizard-guicey/5.4.2/guide/test/junit5/#application-test-modification) or as [test fields](http://xvik.github.io/dropwizard-guicey/5.4.2/guide/test/junit5/#hook-fields)
 * Instead of `StartupErrorRule` use [system-stubs](https://github.com/webcompere/system-stubs) - the successor of system rules
+
+#### Client
+
+For `ClientSupport` object, INSTEAD of 
+
+```java
+@Inject ClientSupport client
+```
+
+use parameter injection (possibly in fixture methods too):
+
+```java
+def "Check something"(ClientSupport client) {}
+```
+
+#### Config overrides
+
+Junit extension does not require an annotation for each override, so
+INSTEAD of:
+
+```groovy
+@UseDropwizardApp(value = App, configOverride = [
+        @ConfigOverride(key = "server.rootPath", value = "/rest/*"),
+        @ConfigOverride(key = "server.applicationContextPath", value = "/prefix"),
+        @ConfigOverride(key = "server.adminContextPath", value = "/admin")
+```
+
+Use:
+
+```groovy
+@TestDropwizardApp(value = App, restMapping = "/rest/*",
+        configOverride = [
+                "server.applicationContextPath: /prefix",
+                "server.adminContextPath: /admin"])
+```
+
+Note that `server.rootPath` could be configured with `restMapping` annotation property.
+
+#### Alternative declaration
+
+You may also use [alternative declaration](https://xvik.github.io/dropwizard-guicey/5.4.1/guide/test/junit5/#alternative-declaration):
+
+```groovy
+class MyTest extends Specification {
+
+    @RegisterExtension
+    static TestDropwizardAppExtension app = TestDropwizardAppExtension.forApp(App)
+            .config("src/test/resources/ru/vyarus/dropwizard/guice/config.yml")
+            .configOverrides("foo: 2", "bar: 12")
+            .randomPorts()
+            .hooks(Hook)
+            .hooks(builder -> builder.disableExtensions(DummyManaged))
+            .create()
+}
+```
+
+This is an alternative to previous rules declaration in fields.
+It is useful when you need dynamic hook (as lambda) or configuration overrides 
+require some other extensions.
+
+Note that config override may be registered with `Supplier`:
+
+```java
+.configOverride("key", () -> { Somewhere.getValue()})
+```
+
+!!! warning
+    Don't use `@Shared` fields instead of static - it wouldn't work!
+    Also non-static field declaration is not supported by junit extension.
