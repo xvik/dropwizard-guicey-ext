@@ -4,9 +4,8 @@ import io.dropwizard.Application
 import io.dropwizard.Configuration
 import io.dropwizard.setup.Bootstrap
 import io.dropwizard.setup.Environment
-import io.dropwizard.testing.DropwizardTestSupport
 import ru.vyarus.dropwizard.guice.GuiceBundle
-import ru.vyarus.dropwizard.guice.injector.lookup.InjectorLookup
+import ru.vyarus.dropwizard.guice.test.TestSupport
 import spock.lang.Specification
 
 import javax.annotation.PostConstruct
@@ -22,15 +21,10 @@ class LazyBeansTest extends Specification {
 
     def "Check lazy initialization"() {
 
-        setup:
-        // todo use guicey test support instead (after guidey release)
-        // TestSupport.webApp(App, null)
-        DropwizardTestSupport rule = new DropwizardTestSupport(App, (String) null)
-
         when: "bean created with JIT and so being initialized AFTER events firing"
-        rule.before()
-        SampleBean bean = InjectorLookup.getInjector(rule.getApplication()).get().getInstance(SampleBean)
-        rule.after()
+        SampleBean bean = TestSupport.runWebApp(App, null) {
+            it.getInstance(SampleBean)
+        }
 
         then:
         bean.initialized

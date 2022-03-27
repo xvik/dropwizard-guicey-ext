@@ -5,9 +5,9 @@ import com.google.inject.CreationException
 import io.dropwizard.Application
 import io.dropwizard.setup.Bootstrap
 import io.dropwizard.setup.Environment
-import io.dropwizard.testing.DropwizardTestSupport
 import org.jdbi.v3.sqlobject.statement.SqlUpdate
 import ru.vyarus.dropwizard.guice.GuiceBundle
+import ru.vyarus.dropwizard.guice.test.TestSupport
 import ru.vyarus.guicey.jdbi3.installer.repository.JdbiRepository
 import ru.vyarus.guicey.jdbi3.support.SampleConfiguration
 import spock.lang.Specification
@@ -20,9 +20,7 @@ class BindingInstallationTest extends Specification {
     def "Check incorrect repo definition detection"() {
 
         when: "staring app with incorrect repo declaration"
-        // todo use guicey test support instead (after guidey release)
-        // TestSupport.runCoreApp(App, 'src/test/resources/test-config.yml')
-        new DropwizardTestSupport<>(App, 'src/test/resources/test-config.yml').before()
+        TestSupport.runCoreApp(App, 'src/test/resources/test-config.yml')
         then: "error"
         def ex = thrown(CreationException)
         ex.getCause().getMessage()

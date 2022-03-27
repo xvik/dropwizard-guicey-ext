@@ -4,8 +4,8 @@ import io.dropwizard.Application
 import io.dropwizard.Configuration
 import io.dropwizard.setup.Bootstrap
 import io.dropwizard.setup.Environment
-import io.dropwizard.testing.DropwizardTestSupport
 import ru.vyarus.dropwizard.guice.GuiceBundle
+import ru.vyarus.dropwizard.guice.test.TestSupport
 import ru.vyarus.guicey.gsp.ServerPagesBundle
 import spock.lang.Specification
 
@@ -18,9 +18,7 @@ class RendererDetectionTest extends Specification {
     def "Check renderer requirement check"() {
 
         when: "starting app"
-        // todo use guicey test support instead (after guidey release)
-//        TestSupport.webApp(App, null)
-        new DropwizardTestSupport<>(App, (String) null).before()
+        TestSupport.runWebApp(App, null)
         then: "absent renderer detected"
         def ex = thrown(IllegalStateException)
         ex.message == 'Required template engines are missed for server pages application \'app\': fooo (available engines: freemarker, mustache)'

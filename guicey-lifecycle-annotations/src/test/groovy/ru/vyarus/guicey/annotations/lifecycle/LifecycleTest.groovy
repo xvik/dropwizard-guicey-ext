@@ -4,11 +4,9 @@ import io.dropwizard.Application
 import io.dropwizard.Configuration
 import io.dropwizard.setup.Bootstrap
 import io.dropwizard.setup.Environment
-import io.dropwizard.testing.DropwizardTestSupport
 import ru.vyarus.dropwizard.guice.GuiceBundle
-import ru.vyarus.dropwizard.guice.injector.lookup.InjectorLookup
 import ru.vyarus.dropwizard.guice.module.installer.feature.eager.EagerSingleton
-import ru.vyarus.dropwizard.guice.test.TestCommand
+import ru.vyarus.dropwizard.guice.test.TestSupport
 import spock.lang.Specification
 
 import javax.annotation.PostConstruct
@@ -22,15 +20,10 @@ class LifecycleTest extends Specification {
 
     def "Check full lifecycle events"() {
 
-        setup:
-        // todo use guicey test support instead (after guidey release)
-        // TestSupport.webApp(App, null)
-        DropwizardTestSupport rule = new DropwizardTestSupport(App, (String) null)
-
         when:
-        rule.before()
-        SampleBean bean = InjectorLookup.getInjector(rule.getApplication()).get().getInstance(SampleBean)
-        rule.after()
+        SampleBean bean = TestSupport.runWebApp(App, null) {
+            it.getInstance(SampleBean)
+        }
 
         then:
         bean.initialized
@@ -41,18 +34,10 @@ class LifecycleTest extends Specification {
 
     def "Check lightweight lifecycle events"() {
 
-        setup:
-        // todo use guicey test support instead (after guidey release)
-        // TestSupport.coreApp(App, 'src/test/resources/test-config.yml')
-        TestCommand cmd
-        DropwizardTestSupport rule = new DropwizardTestSupport(App, null, (String) null,
-                (app) -> cmd = new TestCommand<>(app))
-
         when:
-        rule.before()
-        SampleBean bean = InjectorLookup.getInjector(rule.getApplication()).get().getInstance(SampleBean)
-        rule.after()
-        cmd.stop()
+        SampleBean bean = TestSupport.runCoreApp(App, null) {
+            it.getInstance(SampleBean)
+        }
 
         then:
         bean.initialized

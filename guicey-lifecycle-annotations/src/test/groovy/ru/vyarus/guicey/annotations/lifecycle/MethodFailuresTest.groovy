@@ -4,10 +4,9 @@ import io.dropwizard.Application
 import io.dropwizard.Configuration
 import io.dropwizard.setup.Bootstrap
 import io.dropwizard.setup.Environment
-import io.dropwizard.testing.DropwizardTestSupport
 import ru.vyarus.dropwizard.guice.GuiceBundle
-import ru.vyarus.dropwizard.guice.injector.lookup.InjectorLookup
 import ru.vyarus.dropwizard.guice.module.installer.feature.eager.EagerSingleton
+import ru.vyarus.dropwizard.guice.test.TestSupport
 import spock.lang.Specification
 
 import javax.annotation.PostConstruct
@@ -21,14 +20,8 @@ class MethodFailuresTest extends Specification {
 
     def "Check PostConstruct failure"() {
 
-        setup:
-        // todo use guicey test support instead (after guidey release)
-        // TestSupport.coreApp(FailedApp, null)
-        DropwizardTestSupport rule = new DropwizardTestSupport(FailedApp, (String) null)
-
         when: 'start method throws exception'
-        rule.before()
-        rule.after() // unreachable point
+        TestSupport.runCoreApp(FailedApp, null)
 
         then: 'entire startup fails'
         def ex = thrown(IllegalStateException)
@@ -37,14 +30,8 @@ class MethodFailuresTest extends Specification {
 
     def "Check PostStartup failure"() {
 
-        setup:
-        // todo use guicey test support instead (after guidey release)
-        // TestSupport.webApp(FailedApp, null)
-        DropwizardTestSupport rule = new DropwizardTestSupport(ServerFailedApp, (String) null)
-
         when: 'start server method throws exception'
-        rule.before()
-        rule.after() // unreachable point
+        TestSupport.runWebApp(ServerFailedApp, null)
 
         then: 'entire startup fails'
         def ex = thrown(IllegalStateException)
@@ -53,15 +40,10 @@ class MethodFailuresTest extends Specification {
 
     def "Check PreDestroy failure"() {
 
-        setup:
-        // todo use guicey test support instead (after guidey release)
-        // TestSupport.coreApp(DestroyFailedApp, null)
-        DropwizardTestSupport rule = new DropwizardTestSupport(DestroyFailedApp, (String) null)
-
         when: 'destroy method throws exception'
-        rule.before()
-        DestroyFailure bean = InjectorLookup.getInjector(rule.getApplication()).get().getInstance(DestroyFailure)
-        rule.after()
+        DestroyFailure bean = TestSupport.runCoreApp(DestroyFailedApp, null) {
+            it.getInstance(DestroyFailure)
+        }
 
         then: 'exception suspended'
         bean.called
@@ -70,15 +52,10 @@ class MethodFailuresTest extends Specification {
 
     def "Check lazy PostConstruct failure"() {
 
-        setup:
-        // todo use guicey test support instead (after guidey release)
-        // TestSupport.coreApp(App, null)
-        DropwizardTestSupport rule = new DropwizardTestSupport(App, (String) null)
-
         when: 'start method throws exception, but called after event processing'
-        rule.before()
-        StartFailure bean = InjectorLookup.getInjector(rule.getApplication()).get().getInstance(StartFailure)
-        rule.after()
+        StartFailure bean = TestSupport.runCoreApp(App, null) {
+            it.getInstance(StartFailure)
+        }
 
         then: 'method called, error suppressed'
         bean.called

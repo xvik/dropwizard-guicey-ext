@@ -6,9 +6,8 @@ import io.dropwizard.Application
 import io.dropwizard.Configuration
 import io.dropwizard.setup.Bootstrap
 import io.dropwizard.setup.Environment
-import io.dropwizard.testing.DropwizardTestSupport
 import ru.vyarus.dropwizard.guice.GuiceBundle
-import ru.vyarus.dropwizard.guice.injector.lookup.InjectorLookup
+import ru.vyarus.dropwizard.guice.test.TestSupport
 import spock.lang.Specification
 
 import javax.annotation.PostConstruct
@@ -23,16 +22,13 @@ class ConfigurationTest extends Specification {
 
     def "Check bundle configuration"() {
 
-        setup:
-        // todo use guicey test support instead (after guidey release)
-        // TestSupport.webApp(App, null)
-        DropwizardTestSupport rule = new DropwizardTestSupport(App, (String) null)
-
         when:
-        rule.before()
-        SampleBean bean = InjectorLookup.getInjector(rule.getApplication()).get().getInstance(SampleBean)
-        SampleBean2 bean2 = InjectorLookup.getInjector(rule.getApplication()).get().getInstance(SampleBean2)
-        rule.after()
+        SampleBean bean
+        SampleBean2 bean2
+        TestSupport.runWebApp(App, null) {
+            bean = it.getInstance(SampleBean)
+            bean2 = it.getInstance(SampleBean2)
+        }
 
         then:
         !bean.initialized
