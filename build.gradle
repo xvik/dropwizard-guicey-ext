@@ -17,7 +17,7 @@ wrapper {
 description = 'Dropwizard-guicey extensions'
 
 ext {
-    guicey = '5.5.0-SNAPSHOT'
+    guicey = '5.5.0'
     guiceExtAnn = '1.4.0'
 }
 
@@ -133,11 +133,9 @@ subprojects {
             useJUnitPlatform()
         }
         dependencies {
+            testImplementation 'ru.vyarus:spock-junit5:1.0.0'
             testImplementation 'org.spockframework:spock-core:2.1-groovy-3.0'
             testImplementation 'org.junit.jupiter:junit-jupiter-api'
-            testImplementation 'ru.vyarus:spock-junit5:1.0.0'
-
-            testRuntimeOnly 'org.junit.jupiter:junit-jupiter'
         }
     } else {
         // don't compile and run tests for legacy junit4 and spock1 modules
