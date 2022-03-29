@@ -43,7 +43,7 @@ Maven:
         <dependency>
             <groupId>ru.vyarus.guicey</groupId>
             <artifactId>guicey-bom</artifactId>
-            <version>5.4.2-1</version>
+            <version>5.5.0-1</version>
             <type>pom</type>
             <scope>import</scope>
         </dependency>
@@ -81,7 +81,7 @@ Gradle:
 
 ```groovy
 dependencies {
-    implementation platform('ru.vyarus.guicey:guicey-bom:5.4.2-1')
+    implementation platform('ru.vyarus.guicey:guicey-bom:5.5.0-1')
     // uncomment to override dropwizard and its dependencies versions    
     //implementation platform('io.dropwizard:dropwizard-dependencies:2.0.28')
     
@@ -226,6 +226,14 @@ Correct redirect to index page for html5 client routing urls (e.g. html5 routing
 #### [Guicey Server Pages](guicey-server-pages)
 
 JSP like simplicity for dropwizard-views.
+
+#### [JUnit 4](guicey-test-junit4)
+
+JUnit 4 rules.
+
+#### [Spock 1](guicey-test-spock)
+
+Spock 1 extensions.
 
 ---
 [![java lib generator](http://img.shields.io/badge/Powered%20by-%20Java%20lib%20generator-green.svg?style=flat-square)](https://github.com/xvik/generator-lib-java)
