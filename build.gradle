@@ -26,7 +26,7 @@ dependencies {
     // inherited BOMs declaration
     api platform("ru.vyarus:dropwizard-guicey:$guicey")
     constraints {
-        api 'io.dropwizard.modules:dropwizard-jdbi:2.0.26'
+        api 'io.dropwizard.modules:dropwizard-jdbi:2.0.29'
         api "ru.vyarus:guice-ext-annotations:$guiceExtAnn"
         api 'ru.vyarus:guice-validator:2.0.1'
         api 'com.h2database:h2:1.4.200'
