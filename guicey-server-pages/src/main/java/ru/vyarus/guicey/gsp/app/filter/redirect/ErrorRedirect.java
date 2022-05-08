@@ -141,6 +141,8 @@ public class ErrorRedirect {
             final ErrorContext context = new ErrorContext(exception, request);
             CONTEXT_ERROR.set(context);
             try {
+                // clear error status
+                response.reset();
                 request.getRequestDispatcher(path).forward(request, response);
                 // if error page rendering will fail, forward will not throw an exception, so this message
                 // will be incorrect

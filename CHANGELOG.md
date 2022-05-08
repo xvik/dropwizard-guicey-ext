@@ -1,3 +1,8 @@
+* [gsp, spa]
+    - Support new asset servlet behaviour (dw 2.1.0): direct status used instead of sendError when asset not found
+    - Do not use sendError (in all cases), instead, just set response status (it allows all error responses 
+      modification in filters) 
+
 ### 5.5.0-1 (2022-03-30)
 * New test modules, extracted from guicey core (preserving package):
   - guicey-test-junit4  

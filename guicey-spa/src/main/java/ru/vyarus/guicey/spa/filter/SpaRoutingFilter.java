@@ -1,6 +1,11 @@
 package ru.vyarus.guicey.spa.filter;
 
-import javax.servlet.*;
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -60,25 +65,18 @@ public class SpaRoutingFilter implements Filter {
                                final HttpServletResponse resp,
                                final FilterChain chain) throws IOException, ServletException {
         // wrap request to intercept errors
-        final ResponseWrapper wrapper = new ResponseWrapper(resp);
-        chain.doFilter(req, wrapper);
+        chain.doFilter(req, resp);
 
-        final int error = wrapper.getError();
+        final int error = resp.getStatus();
 
         if (error != HttpServletResponse.SC_NOT_FOUND) {
-            if (error != 0) {
-                // if error
-                resp.sendError(error);
-            }
+            // nothing to do
             return;
         }
 
         if (SpaUtils.isSpaRoute(req, noRedirect)) {
             // redirect to root
             SpaUtils.doRedirect(req, resp, target);
-        } else {
-            // bypass resource not found
-            resp.sendError(error);
         }
     }
 }

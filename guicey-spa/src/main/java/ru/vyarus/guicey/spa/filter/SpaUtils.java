@@ -100,6 +100,8 @@ public final class SpaUtils {
     public static void doRedirect(final HttpServletRequest req,
                                   final HttpServletResponse res,
                                   final String target) throws IOException, ServletException {
+        // remove previous error (404)
+        res.reset();
         // redirect to root
         noCache(res);
         req.getRequestDispatcher(target).forward(req, res);

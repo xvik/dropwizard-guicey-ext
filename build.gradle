@@ -17,8 +17,12 @@ wrapper {
 description = 'Dropwizard-guicey extensions'
 
 ext {
-    guicey = '5.5.0'
+    guicey = 'master-SNAPSHOT'
     guiceExtAnn = '1.4.0'
+}
+
+configurations.all {
+    resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
 }
 
 // root project is a BOM (like maven)
@@ -61,7 +65,7 @@ allprojects {
     apply plugin: 'ru.vyarus.java-lib'
     apply plugin: 'signing'
 
-    repositories { mavenLocal(); mavenCentral() }
+    repositories { mavenLocal(); mavenCentral(); maven { url 'https://jitpack.io' } }
 
     group = 'ru.vyarus.guicey'
 
@@ -156,6 +160,9 @@ nexusPublishing {
         }
     }
 }
+
+// skip signing for jitpack (snapshots)
+tasks.withType(Sign) {onlyIf { !System.getenv('JITPACK') }}
 
 // Required signing properties for release: signing.keyId, signing.password and signing.secretKeyRingFile
 // (https://docs.gradle.org/current/userguide/signing_plugin.html#sec:signatory_credentials)

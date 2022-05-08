@@ -9,11 +9,16 @@ import ru.vyarus.dropwizard.guice.module.installer.util.PathUtils;
 import ru.vyarus.guicey.gsp.app.filter.redirect.ErrorRedirect;
 import ru.vyarus.guicey.gsp.app.filter.redirect.SpaSupport;
 import ru.vyarus.guicey.gsp.app.filter.redirect.TemplateRedirect;
-import ru.vyarus.guicey.spa.filter.ResponseWrapper;
 
-import javax.servlet.*;
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -159,23 +164,21 @@ public class ServerPagesFilter implements Filter {
                             final HttpServletResponse resp,
                             final FilterChain chain) throws IOException, ServletException {
         // wrap request to intercept errors
-        final ResponseWrapper wrapper = new ResponseWrapper(resp);
-        chain.doFilter(req, wrapper);
-        handleError(req, resp, wrapper.getError());
+        chain.doFilter(req, resp);
+        handleError(req, resp);
     }
 
 
     private void handleError(final HttpServletRequest req,
-                             final HttpServletResponse resp,
-                             final int error) throws IOException {
-        if (error != 0) {
+                             final HttpServletResponse resp) throws IOException {
+        final int error = resp.getStatus();
+        if (error != Response.Status.OK.getStatusCode()) {
             logger.debug("Possible asset '{}' error detected: {}", req.getRequestURI(), error);
             // handle only error codes, preserving redirects (3xx)
             if (error <= ErrorRedirect.CODE_400
                     || !redirect.getErrorRedirect().redirect(req, resp, new AssetError(req, error))) {
                 // if no mapped error page or non error status returned - return error as is
                 logger.debug("Sending direct response code {} for asset '{}'", error, req.getRequestURI());
-                resp.sendError(error);
             }
         }
     }
