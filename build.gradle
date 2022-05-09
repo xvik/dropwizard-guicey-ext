@@ -17,7 +17,7 @@ wrapper {
 description = 'Dropwizard-guicey extensions'
 
 ext {
-    guicey = 'master-SNAPSHOT'
+    guicey = '5.5.0'
     guiceExtAnn = '1.4.0'
 }
 
