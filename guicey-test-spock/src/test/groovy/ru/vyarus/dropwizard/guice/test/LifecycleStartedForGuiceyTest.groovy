@@ -4,12 +4,10 @@ import io.dropwizard.Application
 import io.dropwizard.Configuration
 import io.dropwizard.setup.Bootstrap
 import io.dropwizard.setup.Environment
-import org.eclipse.jetty.util.component.AbstractLifeCycle
 import org.eclipse.jetty.util.component.LifeCycle
 import ru.vyarus.dropwizard.guice.GuiceBundle
 import ru.vyarus.dropwizard.guice.test.spock.UseGuiceyApp
 import spock.lang.Specification
-
 
 /**
  * @author Vyacheslav Rusakov
@@ -36,7 +34,7 @@ class LifecycleStartedForGuiceyTest extends Specification {
 
         @Override
         void run(Configuration configuration, Environment environment) throws Exception {
-            environment.lifecycle().addLifeCycleListener(new AbstractLifeCycle.AbstractLifeCycleListener() {
+            environment.lifecycle().addLifeCycleListener(new LifeCycle.Listener() {
                 @Override
                 void lifeCycleStarted(LifeCycle event) {
                     called = true
