@@ -90,6 +90,9 @@ allprojects {
 
     // don't publish gradle metadata artifact
     javaLib.withoutGradleMetadata()
+
+    // skip signing for jitpack (snapshots)
+    tasks.withType(Sign) {onlyIf { !System.getenv('JITPACK') }}
 }
 
 // all sub-modules are normal java modules, using root BOM (like maven)
@@ -160,9 +163,6 @@ nexusPublishing {
         }
     }
 }
-
-// skip signing for jitpack (snapshots)
-tasks.withType(Sign) {onlyIf { !System.getenv('JITPACK') }}
 
 // Required signing properties for release: signing.keyId, signing.password and signing.secretKeyRingFile
 // (https://docs.gradle.org/current/userguide/signing_plugin.html#sec:signatory_credentials)
