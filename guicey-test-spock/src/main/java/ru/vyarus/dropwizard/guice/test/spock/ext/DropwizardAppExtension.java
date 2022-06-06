@@ -1,8 +1,8 @@
 package ru.vyarus.dropwizard.guice.test.spock.ext;
 
+import com.google.common.base.Strings;
 import io.dropwizard.testing.ConfigOverride;
 import io.dropwizard.testing.DropwizardTestSupport;
-import io.dropwizard.util.Strings;
 import ru.vyarus.dropwizard.guice.hook.GuiceyConfigurationHook;
 import ru.vyarus.dropwizard.guice.module.installer.util.PathUtils;
 import ru.vyarus.dropwizard.guice.test.spock.UseDropwizardApp;

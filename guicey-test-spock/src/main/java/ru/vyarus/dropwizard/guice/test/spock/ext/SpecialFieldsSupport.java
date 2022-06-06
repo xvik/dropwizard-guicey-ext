@@ -34,7 +34,7 @@ public final class SpecialFieldsSupport {
     public static List<GuiceyConfigurationHook> findHooks(final Class<?> test) {
         final List<GuiceyConfigurationHook> hooks = new ArrayList<>();
         final List<Field> fields = findFields(test, field -> field.isAnnotationPresent(EnableHook.class));
-        HooksUtil.validateFieldHooks(fields);
+        HooksUtil.validateFieldHooks(fields, false);
         for (Field field : fields) {
             field.setAccessible(true);
             final GuiceyConfigurationHook hook = getValue(field);
