@@ -20,7 +20,7 @@ Maven:
 <dependency>
   <groupId>ru.vyarus.guicey</groupId>
   <artifactId>guicey-test-spock</artifactId>
-  <version>5.6.0-1</version>
+  <version>5.6.1-1</version>
   <scope>test</scope>
 </dependency>
 ```
@@ -28,7 +28,7 @@ Maven:
 Gradle:
 
 ```groovy
-testImplementation 'ru.vyarus.guicey:guicey-test-spock:5.6.0-1'
+testImplementation 'ru.vyarus.guicey:guicey-test-spock:5.6.1-1'
 ```
 
 See the most recent version in the badge above.
@@ -38,7 +38,7 @@ See the most recent version in the badge above.
 OR you can use it with junit 5 vintage engine:
 
 ```groovy
-testImplementation 'ru.vyarus.guicey:guicey-test-spock:5.6.0-1'
+testImplementation 'ru.vyarus.guicey:guicey-test-spock:5.6.1-1'
 testImplementation 'org.junit.jupiter:junit-jupiter-api'
 testRuntimeOnly 'org.junit.jupiter:junit-jupiter'
 testRuntimeOnly 'org.junit.vintage:junit-vintage-engine'

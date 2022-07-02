@@ -35,14 +35,14 @@ Maven:
 <dependency>
   <groupId>ru.vyarus.guicey</groupId>
   <artifactId>guicey-jdbi</artifactId>
-  <version>5.6.0-1</version>
+  <version>5.6.1-1</version>
 </dependency>
 ```
 
 Gradle:
 
 ```groovy
-implementation 'ru.vyarus.guicey:guicey-jdbi:5.6.0-1'
+implementation 'ru.vyarus.guicey:guicey-jdbi:5.6.1-1'
 ```
 
 See the most recent version in the badge above.

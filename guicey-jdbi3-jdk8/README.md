@@ -20,14 +20,14 @@ Maven:
 <dependency>
   <groupId>ru.vyarus.guicey</groupId>
   <artifactId>guicey-jdbi3-jdk8</artifactId>
-  <version>5.6.0-1</version>
+  <version>5.6.1-1</version>
 </dependency>
 ```
 
 Gradle:
 
 ```groovy
-implementation 'ru.vyarus.guicey:guicey-jdbi3-jdk8:5.6.0-1'
+implementation 'ru.vyarus.guicey:guicey-jdbi3-jdk8:5.6.1-1'
 ```
 
 It will bring in [guicey-jdbi3](../guicey-jdbi3) but without caffeine 3.

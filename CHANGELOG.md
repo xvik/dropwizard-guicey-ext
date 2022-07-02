@@ -1,3 +1,6 @@
+### 5.6.1-1 (2022-07-02)
+* No changes, except BOM versions
+
 ### 5.6.0-1 (2022-06-07)
 * [gsp, spa]
     - Support new asset servlet behaviour (dw 2.1.0): direct status used instead of sendError when asset not found
