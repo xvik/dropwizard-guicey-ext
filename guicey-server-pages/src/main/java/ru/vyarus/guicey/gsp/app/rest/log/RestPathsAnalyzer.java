@@ -70,7 +70,6 @@ public class RestPathsAnalyzer {
         return res;
     }
 
-    @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
     private static void populate(final String rootPath,
                                  final Class<?> klass,
                                  final boolean isLocator,

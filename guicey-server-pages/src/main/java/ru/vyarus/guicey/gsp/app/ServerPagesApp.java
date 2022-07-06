@@ -157,11 +157,11 @@ public class ServerPagesApp {
 
         res.setIndexFile(indexFile);
         res.setFilesRegex(fileRequestPattern);
-        res.setHasDefaultFilesRegex(fileRequestPattern.equals(ServerPagesBundle.FILE_REQUEST_PATTERN));
+        res.setHasDefaultFilesRegex(ServerPagesBundle.FILE_REQUEST_PATTERN.equals(fileRequestPattern));
 
         res.setSpa(spaSupport);
         res.setSpaRegex(spaNoRedirectRegex);
-        res.setHasDefaultSpaRegex(spaNoRedirectRegex.equals(SpaBundle.DEFAULT_PATTERN));
+        res.setHasDefaultSpaRegex(SpaBundle.DEFAULT_PATTERN.equals(spaNoRedirectRegex));
 
         res.setErrorPages(errorPages);
         res.setViewPaths(ImmutableList.copyOf(viewPaths));
@@ -177,7 +177,6 @@ public class ServerPagesApp {
         return started;
     }
 
-    @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
     private AssetLookup collectAssets(final GlobalConfig config) {
         final AssetSources ext = config.getAssetExtensions(name);
         if (ext != null) {
@@ -212,7 +211,6 @@ public class ServerPagesApp {
         return new AssetLookup(mainAssetsPath, urlsBuilder.build(), loadersBuilder.build());
     }
 
-    @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
     private ViewRestLookup collectViews(final GlobalConfig config) {
         final ViewRestSources ext = config.getViewExtensions(name);
         if (ext != null) {
@@ -276,7 +274,6 @@ public class ServerPagesApp {
                 .addMappingForServletNames(types, false, name);
     }
 
-    @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
     private void analyzePaths(final RestPathsAnalyzer analyzer) {
         viewPaths = new ArrayList<>();
         hiddenViewPaths = new ArrayList<>();

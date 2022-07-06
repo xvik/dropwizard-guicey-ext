@@ -52,7 +52,6 @@ public class LifecycleAnnotationsModule extends AbstractModule {
      * @param annotations annotation types to search in beans
      */
     @SafeVarargs
-    @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
     private final void register(final MethodsCollector collector,
                                 final Class<? extends Annotation>... annotations) {
         for (Class<? extends Annotation> ann : annotations) {

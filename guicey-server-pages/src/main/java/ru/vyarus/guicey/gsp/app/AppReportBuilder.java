@@ -150,7 +150,7 @@ public final class AppReportBuilder {
     private static void reportSpaSupport(final StringBuilder res, final ServerPagesApp app) {
         if (app.spaSupport) {
             res.append(NEWLINE).append(TAB).append("SPA routing enabled");
-            if (!app.spaNoRedirectRegex.equals(SpaBundle.DEFAULT_PATTERN)) {
+            if (!SpaBundle.DEFAULT_PATTERN.equals(app.spaNoRedirectRegex)) {
                 res.append(" (with custom pattern)");
             }
             res.append(NEWLINE);

@@ -198,7 +198,6 @@ public class GlobalConfig {
      *
      * @param environment environment
      */
-    @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
     public void applyDelayedExtensions(final GuiceyEnvironment environment) {
         for (ExtendedConfiguration ext : delayedExtensions) {
             final String app = ext.getName();
