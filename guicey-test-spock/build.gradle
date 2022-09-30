@@ -2,6 +2,6 @@ description = 'Spock 1 test support'
 
 dependencies {
     implementation 'io.dropwizard:dropwizard-testing'
-    implementation 'org.spockframework:spock-core:2.2-groovy-4.0'
+    implementation 'org.spockframework:spock-core:2.3-groovy-4.0'
     implementation project(':guicey-test-junit4')
 }
