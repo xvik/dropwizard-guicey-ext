@@ -1,6 +1,7 @@
 plugins {
     id 'ru.vyarus.github-info' version '1.4.0' apply false
     id 'ru.vyarus.quality' version '4.8.0' apply false
+    id 'org.cyclonedx.bom' version '1.7.3' apply false
 
     id 'jacoco'
     id 'java-platform'
@@ -101,6 +102,7 @@ subprojects {
     apply plugin: 'jacoco'
     apply plugin: 'ru.vyarus.quality'
     apply plugin: 'com.github.ben-manes.versions'
+    apply plugin: 'org.cyclonedx.bom'
 
     sourceCompatibility = 1.8
 
@@ -149,6 +151,24 @@ subprojects {
         tasks.withType(GroovyCompile)
                 .configureEach {it.onlyIf {JavaVersion.current() <= JavaVersion.VERSION_11} }
         test.onlyIf { JavaVersion.current() <= JavaVersion.VERSION_11 }
+    }
+
+    // SBOM
+    cyclonedxBom {
+        includeConfigs = ["runtimeClasspath"]
+        destination = file("build/reports")
+        outputName = "bom"
+        outputFormat = "all"
+    }
+    publishing.publications.maven {
+        artifact(file('build/reports/bom.json')) {
+            classifier = 'cyclonedx'
+            builtBy cyclonedxBom
+        }
+        artifact(file('build/reports/bom.xml')) {
+            classifier = 'cyclonedx'
+            builtBy cyclonedxBom
+        }
     }
 }
 
