@@ -15,6 +15,8 @@ import ru.vyarus.guicey.jdbi.module.NoSyntheticMatcher;
 
 import javax.inject.Singleton;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Recognize classes annotated with {@link JdbiRepository} and register them. Such classes may be then
@@ -79,6 +81,11 @@ public class RepositoryInstaller implements FeatureInstaller, BindingInstaller {
     @Override
     public void report() {
         reporter.report();
+    }
+
+    @Override
+    public List<String> getRecognizableSigns() {
+        return Collections.singletonList("@" + JdbiRepository.class + " on class");
     }
 
     private UnitHandleDing getDing(final Binder binder) {

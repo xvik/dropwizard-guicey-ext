@@ -24,7 +24,9 @@ import ru.vyarus.java.generics.resolver.GenericsResolver;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -94,6 +96,11 @@ public class RepositoryInstaller implements FeatureInstaller, BindingInstaller {
     @Override
     public void report() {
         reporter.report();
+    }
+
+    @Override
+    public List<String> getRecognizableSigns() {
+        return Collections.singletonList("@" + JdbiRepository.class + " on class");
     }
 
     @SuppressWarnings({"unchecked", "checkstyle:Indentation"})

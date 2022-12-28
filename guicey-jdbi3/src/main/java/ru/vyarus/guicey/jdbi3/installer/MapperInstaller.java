@@ -13,6 +13,8 @@ import ru.vyarus.guicey.jdbi3.module.MapperBinder;
 import ru.vyarus.java.generics.resolver.GenericsResolver;
 
 import javax.inject.Singleton;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Recognize classes implementing JDBI's {@link org.jdbi.v3.core.mapper.RowMapper} and register them.
@@ -63,5 +65,10 @@ public class MapperInstaller implements FeatureInstaller, BindingInstaller {
     @Override
     public void report() {
         reporter.report();
+    }
+
+    @Override
+    public List<String> getRecognizableSigns() {
+        return Collections.singletonList("implements " + RowMapper.class.getSimpleName());
     }
 }

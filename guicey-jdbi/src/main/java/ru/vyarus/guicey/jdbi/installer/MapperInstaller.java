@@ -12,6 +12,8 @@ import ru.vyarus.dropwizard.guice.module.installer.util.Reporter;
 import ru.vyarus.java.generics.resolver.GenericsResolver;
 
 import javax.inject.Singleton;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Recognize classes implementing JDBI's {@link ResultSetMapper} and register them. Register mappers as singletons.
@@ -61,5 +63,10 @@ public class MapperInstaller implements FeatureInstaller, BindingInstaller {
     @Override
     public void report() {
         reporter.report();
+    }
+
+    @Override
+    public List<String> getRecognizableSigns() {
+        return Collections.singletonList("implements " + ResultSetMapper.class.getSimpleName());
     }
 }
