@@ -1,3 +1,4 @@
+### 5.7.0-1 (2022-12-29)
 * Add SBOM (json and xml with cyclonedx classifier)
 
 ### 5.6.1-1 (2022-07-02)
