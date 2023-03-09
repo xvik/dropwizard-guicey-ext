@@ -21,7 +21,7 @@ Maven:
 <dependency>
   <groupId>ru.vyarus.guicey</groupId>
   <artifactId>guicey-test-junit4</artifactId>
-  <version>5.7.0-1</version>
+  <version>5.7.1-1</version>
   <scope>test</scope>  
 </dependency>
 ```
@@ -29,7 +29,7 @@ Maven:
 Gradle:
 
 ```groovy
-testImplementation 'ru.vyarus.guicey:guicey-test-junit4:5.7.0-1'
+testImplementation 'ru.vyarus.guicey:guicey-test-junit4:5.7.1-1'
 ```
 
 See the most recent version in the badge above.

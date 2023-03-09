@@ -43,7 +43,7 @@ Maven:
         <dependency>
             <groupId>ru.vyarus.guicey</groupId>
             <artifactId>guicey-bom</artifactId>
-            <version>5.7.0-1</version>
+            <version>5.7.1-1</version>
             <type>pom</type>
             <scope>import</scope>
         </dependency>
@@ -51,7 +51,7 @@ Maven:
         <dependency>
             <groupId>io.dropwizard/groupId>
             <artifactId>dropwizard-dependencies</artifactId>
-            <version>2.1.4</version>
+            <version>2.1.5</version>
             <type>pom</type>
             <scope>import</scope>
         </dependency> --> 
@@ -81,9 +81,9 @@ Gradle:
 
 ```groovy
 dependencies {
-    implementation platform('ru.vyarus.guicey:guicey-bom:5.7.0-1')
+    implementation platform('ru.vyarus.guicey:guicey-bom:5.7.1-1')
     // uncomment to override dropwizard and its dependencies versions    
-    //implementation platform('io.dropwizard:dropwizard-dependencies:2.1.4')
+    //implementation platform('io.dropwizard:dropwizard-dependencies:2.1.5')
     
     // declare guice and ext modules without versions 
     implementation 'ru.vyarus:dropwizard-guicey'

@@ -1,3 +1,4 @@
+### 5.7.1-1 (2023-02-09)
 * [jdbi3]
   - Fix dropwizard 2.1.5 compatibility
 
