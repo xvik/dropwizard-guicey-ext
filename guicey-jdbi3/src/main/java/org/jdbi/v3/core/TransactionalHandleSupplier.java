@@ -1,6 +1,7 @@
 package org.jdbi.v3.core;
 
 import org.jdbi.v3.core.config.ConfigRegistry;
+import org.jdbi.v3.core.extension.ExtensionContext;
 import org.jdbi.v3.core.extension.ExtensionMethod;
 import org.jdbi.v3.core.extension.HandleSupplier;
 
@@ -41,23 +42,23 @@ public class TransactionalHandleSupplier implements HandleSupplier {
     @Override
     public <V> V invokeInContext(final ExtensionMethod extensionMethod,
                                  final ConfigRegistry config,
-                                 final Callable<V> task)
+                                 final Callable<V> task) throws Exception {
+        // deprecated, not called due to overridden method for context
+        return null;
+    }
+
+    @Override
+    public <V> V invokeInContext(final ExtensionContext extensionContext, final Callable<V> task)
             throws Exception {
         // implementation copied from ConstantHandleSupplier
         final Handle handle = getHandle();
-        final ExtensionMethod oldExtensionMethod = handle.getExtensionMethod();
+        final ExtensionContext oldExtensionContext = new ExtensionContext(
+                handle.getConfig(), handle.getExtensionMethod());
         try {
-            handle.setExtensionMethod(extensionMethod);
-
-            final ConfigRegistry oldConfig = handle.getConfig();
-            try {
-                handle.setConfig(config);
-                return task.call();
-            } finally {
-                handle.setConfig(oldConfig);
-            }
+            handle.acceptExtensionContext(extensionContext);
+            return task.call();
         } finally {
-            handle.setExtensionMethod(oldExtensionMethod);
+            handle.acceptExtensionContext(oldExtensionContext);
         }
     }
 

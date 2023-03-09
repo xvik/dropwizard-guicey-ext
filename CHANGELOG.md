@@ -1,3 +1,6 @@
+* [jdbi3]
+  - Fix dropwizard 2.1.5 compatibility
+
 ### 5.7.0-1 (2022-12-29)
 * Add SBOM (json and xml with cyclonedx classifier)
 
