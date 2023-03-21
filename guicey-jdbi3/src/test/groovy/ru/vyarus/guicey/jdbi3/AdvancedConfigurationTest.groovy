@@ -1,8 +1,8 @@
 package ru.vyarus.guicey.jdbi3
 
-import io.dropwizard.Application
-import io.dropwizard.setup.Bootstrap
-import io.dropwizard.setup.Environment
+import io.dropwizard.core.Application
+import io.dropwizard.core.setup.Bootstrap
+import io.dropwizard.core.setup.Environment
 import org.jdbi.v3.core.array.SqlArrayArgumentStrategy
 import org.jdbi.v3.core.array.SqlArrayTypes
 import org.jdbi.v3.core.h2.H2DatabasePlugin

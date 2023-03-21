@@ -1,6 +1,6 @@
 package ru.vyarus.dropwizard.guice.test.spock;
 
-import io.dropwizard.Application;
+import io.dropwizard.core.Application;
 import org.spockframework.runtime.extension.ExtensionAnnotation;
 import ru.vyarus.dropwizard.guice.hook.GuiceyConfigurationHook;
 import ru.vyarus.dropwizard.guice.test.spock.ext.GuiceyAppExtension;

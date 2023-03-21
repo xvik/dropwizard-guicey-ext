@@ -3,7 +3,7 @@ package ru.vyarus.guicey.gsp.info;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import io.dropwizard.views.ViewRenderer;
+import io.dropwizard.views.common.ViewRenderer;
 import ru.vyarus.guicey.gsp.app.GlobalConfig;
 import ru.vyarus.guicey.gsp.app.ServerPagesApp;
 import ru.vyarus.guicey.gsp.info.model.GspApp;

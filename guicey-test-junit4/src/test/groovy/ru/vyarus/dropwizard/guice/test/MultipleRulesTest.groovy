@@ -1,7 +1,7 @@
 package ru.vyarus.dropwizard.guice.test
 
 import com.google.inject.Injector
-import io.dropwizard.setup.Environment
+import io.dropwizard.core.setup.Environment
 import org.junit.Rule
 import ru.vyarus.dropwizard.guice.injector.lookup.InjectorLookup
 import ru.vyarus.dropwizard.guice.module.context.SharedConfigurationState

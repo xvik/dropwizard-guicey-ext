@@ -1,6 +1,6 @@
 package ru.vyarus.guicey.gsp.info;
 
-import io.dropwizard.setup.Environment;
+import io.dropwizard.core.setup.Environment;
 import ru.vyarus.dropwizard.guice.module.context.SharedConfigurationState;
 import ru.vyarus.dropwizard.guice.module.context.unique.item.UniqueModule;
 import ru.vyarus.dropwizard.guice.module.support.EnvironmentAwareModule;

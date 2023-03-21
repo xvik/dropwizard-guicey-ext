@@ -33,8 +33,8 @@ import java.lang.reflect.Method;
  * <p>
  * WARNING: do not obtain validator directly from {@link javax.validation.ValidatorFactory} because it will not
  * be able to wire guice injections for validators requiring it. Module substitute {@link Validator} instance in
- * dropwizard {@link io.dropwizard.setup.Environment} so custom guice-aware validators may be used on rest resources
- * too,
+ * dropwizard {@link io.dropwizard.core.setup.Environment} so custom guice-aware validators may be used on rest
+ * resources too,
  *
  * @author Vyacheslav Rusakov
  * @since 26.12.2019

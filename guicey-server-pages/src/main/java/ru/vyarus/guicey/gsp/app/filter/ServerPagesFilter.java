@@ -1,8 +1,8 @@
 package ru.vyarus.guicey.gsp.app.filter;
 
 import com.google.common.base.Preconditions;
-import io.dropwizard.views.View;
-import io.dropwizard.views.ViewRenderer;
+import io.dropwizard.views.common.View;
+import io.dropwizard.views.common.ViewRenderer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.vyarus.dropwizard.guice.module.installer.util.PathUtils;

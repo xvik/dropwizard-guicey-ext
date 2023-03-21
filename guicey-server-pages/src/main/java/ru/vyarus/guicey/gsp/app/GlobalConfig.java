@@ -2,9 +2,9 @@ package ru.vyarus.guicey.gsp.app;
 
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Multimap;
-import io.dropwizard.Configuration;
-import io.dropwizard.views.ViewConfigurable;
-import io.dropwizard.views.ViewRenderer;
+import io.dropwizard.core.Configuration;
+import io.dropwizard.views.common.ViewConfigurable;
+import io.dropwizard.views.common.ViewRenderer;
 import ru.vyarus.dropwizard.guice.module.installer.bundle.GuiceyEnvironment;
 import ru.vyarus.guicey.gsp.app.asset.AssetSources;
 import ru.vyarus.guicey.gsp.app.ext.ExtendedConfiguration;

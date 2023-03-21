@@ -1,8 +1,8 @@
 package ru.vyarus.guicey.admin
 
 import ch.qos.logback.classic.Level
-import io.dropwizard.logging.BootstrapLogging
-import io.dropwizard.logging.LoggingUtil
+import io.dropwizard.logging.common.BootstrapLogging
+import io.dropwizard.logging.common.LoggingUtil
 import ru.vyarus.dropwizard.guice.bundle.lookup.PropertyBundleLookup
 import ru.vyarus.dropwizard.guice.module.context.SharedConfigurationState
 import spock.lang.Specification

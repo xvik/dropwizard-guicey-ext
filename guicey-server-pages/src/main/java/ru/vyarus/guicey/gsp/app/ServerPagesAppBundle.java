@@ -1,7 +1,7 @@
 package ru.vyarus.guicey.gsp.app;
 
 import com.google.common.base.Preconditions;
-import io.dropwizard.views.ViewRenderer;
+import io.dropwizard.views.common.ViewRenderer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.vyarus.dropwizard.guice.module.installer.bundle.GuiceyBootstrap;
@@ -320,9 +320,9 @@ public class ServerPagesAppBundle implements GuiceyBundle {
         /**
          * Dropwizard views configuration modification. Views configuration could be bound only in global server pages
          * support bundle
-         * ({@link ServerPagesBundle.ViewsBuilder#viewsConfiguration(io.dropwizard.views.ViewConfigurable)}). But its
-         * often required to "tune" template engine specifically for application. This method allows global views
-         * configuration modification for exact server pages application.
+         * ({@link ServerPagesBundle.ViewsBuilder#viewsConfiguration(io.dropwizard.views.common.ViewConfigurable)}).
+         * But it's often required to "tune" template engine specifically for application. This method allows global
+         * views configuration modification for exact server pages application.
          * <p>
          * The main use case is configuration of the exact template engine. For example, in case of freemarker
          * this could be used to apply auto includes:

@@ -1,3 +1,8 @@
+* Update to dropwizard 3
+* Remove jdbi3-jdk8 module (dropwizard drops java 8 support)
+* Remove jdbi (v2) module (no longer supported by dropwizard)
+* Remove io.dropwizard.modules:dropwizard-flyway and com.h2database:h2 from BOM
+
 ### 5.7.1-1 (2023-02-09)
 * [jdbi3]
   - Fix dropwizard 2.1.5 compatibility

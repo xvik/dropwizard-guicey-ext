@@ -1,7 +1,7 @@
 package ru.vyarus.dropwizard.guice.test
 
 import com.google.inject.Key
-import io.dropwizard.setup.Environment
+import io.dropwizard.core.setup.Environment
 import org.junit.Rule
 import ru.vyarus.dropwizard.guice.support.AutoScanApplication
 import ru.vyarus.dropwizard.guice.support.TestConfiguration

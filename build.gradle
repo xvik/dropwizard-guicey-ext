@@ -18,12 +18,8 @@ wrapper {
 description = 'Dropwizard-guicey extensions'
 
 ext {
-    guicey = '5.7.1'
+    guicey = 'master-SNAPSHOT'
     guiceExtAnn = '1.4.0'
-}
-
-configurations.all {
-    resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
 }
 
 // root project is a BOM (like maven)
@@ -34,8 +30,6 @@ dependencies {
         api 'io.dropwizard.modules:dropwizard-jdbi:2.1.4'
         api "ru.vyarus:guice-ext-annotations:$guiceExtAnn"
         api 'ru.vyarus:guice-validator:2.0.1'
-        api 'com.h2database:h2:1.4.200'
-        api 'io.dropwizard.modules:dropwizard-flyway:2.1.0-3'
 
         // add subprojects to BOM
         project.subprojects.each { api it }
@@ -67,6 +61,10 @@ allprojects {
     apply plugin: 'signing'
 
     repositories { mavenLocal(); mavenCentral(); maven { url 'https://jitpack.io' } }
+
+    configurations.all {
+        resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
+    }
 
     group = 'ru.vyarus.guicey'
 
@@ -104,7 +102,7 @@ subprojects {
     apply plugin: 'com.github.ben-manes.versions'
     apply plugin: 'org.cyclonedx.bom'
 
-    sourceCompatibility = 1.8
+    sourceCompatibility = 11
 
     // common dependencies for all modules
     dependencies {

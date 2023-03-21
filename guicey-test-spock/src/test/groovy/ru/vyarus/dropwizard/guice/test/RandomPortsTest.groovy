@@ -1,8 +1,8 @@
 package ru.vyarus.dropwizard.guice.test
 
-import io.dropwizard.Configuration
+import io.dropwizard.core.Configuration
 import io.dropwizard.jetty.HttpConnectorFactory
-import io.dropwizard.server.DefaultServerFactory
+import io.dropwizard.core.server.DefaultServerFactory
 import ru.vyarus.dropwizard.guice.support.AutoScanApplication
 import ru.vyarus.dropwizard.guice.test.spock.UseDropwizardApp
 import spock.lang.Specification

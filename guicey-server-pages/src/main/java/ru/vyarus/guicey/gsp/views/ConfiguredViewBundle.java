@@ -1,7 +1,7 @@
 package ru.vyarus.guicey.gsp.views;
 
-import io.dropwizard.Configuration;
-import io.dropwizard.views.ViewBundle;
+import io.dropwizard.core.Configuration;
+import io.dropwizard.views.common.ViewBundle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.vyarus.guicey.gsp.app.GlobalConfig;

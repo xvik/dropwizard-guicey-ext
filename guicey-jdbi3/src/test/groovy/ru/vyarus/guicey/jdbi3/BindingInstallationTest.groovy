@@ -2,9 +2,9 @@ package ru.vyarus.guicey.jdbi3
 
 import com.google.inject.AbstractModule
 import com.google.inject.CreationException
-import io.dropwizard.Application
-import io.dropwizard.setup.Bootstrap
-import io.dropwizard.setup.Environment
+import io.dropwizard.core.Application
+import io.dropwizard.core.setup.Bootstrap
+import io.dropwizard.core.setup.Environment
 import org.jdbi.v3.sqlobject.statement.SqlUpdate
 import ru.vyarus.dropwizard.guice.GuiceBundle
 import ru.vyarus.dropwizard.guice.test.TestSupport

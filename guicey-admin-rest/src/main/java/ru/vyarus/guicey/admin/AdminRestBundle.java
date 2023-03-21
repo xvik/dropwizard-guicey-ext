@@ -3,7 +3,7 @@ package ru.vyarus.guicey.admin;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import io.dropwizard.lifecycle.Managed;
-import io.dropwizard.setup.Environment;
+import io.dropwizard.core.setup.Environment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.vyarus.dropwizard.guice.module.context.unique.item.UniqueGuiceyBundle;

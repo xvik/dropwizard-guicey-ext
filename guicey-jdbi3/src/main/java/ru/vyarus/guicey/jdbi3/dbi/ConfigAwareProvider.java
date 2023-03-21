@@ -1,7 +1,7 @@
 package ru.vyarus.guicey.jdbi3.dbi;
 
-import io.dropwizard.Configuration;
-import io.dropwizard.setup.Environment;
+import io.dropwizard.core.Configuration;
+import io.dropwizard.core.setup.Environment;
 
 /**
  * Helper for implementing lazy initialization. Useful in initialization part where bundles are configured.

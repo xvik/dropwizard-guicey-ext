@@ -171,7 +171,7 @@ You will need to add dependency to one of them (or both) in order to activate it
 * implementation (`io.dropwizard:dropwizard-views-mustache`)
 
 Other template engines available as 3rd party modules. If your template engine is not yet supported
-then simply implement `io.dropwizard.views.ViewRenderer` in order to support it.
+then simply implement `io.dropwizard.views.common.ViewRenderer` in order to support it.
 
 `ViewRenderer` implementations are loaded automatically using ServiceLoader mechanism. 
 If your renderer is not declared as service then simply add it directly:
@@ -202,7 +202,7 @@ views:
 ```
 
 Where `freemarker` and `mustache` are keys from installed template renderer 
-`io.dropwizard.views.ViewRenderer#getConfigurationKey()`. 
+`io.dropwizard.views.common.ViewRenderer#getConfigurationKey()`. 
 
 ```java
 public class AppConfig extends Configuration {
@@ -320,7 +320,7 @@ For example, this application requires freemarker:
                     .build())
 ```
 
-Template engine name is declared in `io.dropwizard.views.ViewRenderer#getConfigurationKey()` (same name used in configuration).   
+Template engine name is declared in `io.dropwizard.views.common.ViewRenderer#getConfigurationKey()` (same name used in configuration).   
 
 #### Templates support
 

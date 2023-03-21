@@ -1,6 +1,6 @@
 package ru.vyarus.guicey.jdbi3.support
 
-import io.dropwizard.Configuration
+import io.dropwizard.core.Configuration
 import io.dropwizard.db.DataSourceFactory
 
 import javax.validation.Valid
