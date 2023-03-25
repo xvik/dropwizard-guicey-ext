@@ -34,7 +34,7 @@ class LifecycleStartedForGuiceyTest extends Specification {
 
         @Override
         void run(Configuration configuration, Environment environment) throws Exception {
-            environment.lifecycle().addLifeCycleListener(new LifeCycle.Listener() {
+            environment.lifecycle().addEventListener(new LifeCycle.Listener() {
                 @Override
                 void lifeCycleStarted(LifeCycle event) {
                     called = true
