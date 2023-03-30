@@ -25,7 +25,7 @@ ext {
 // root project is a BOM (like maven)
 dependencies {
     // inherited BOMs declaration
-    api platform("ru.vyarus:dropwizard-guicey:$guicey")
+    api platform("ru.vyarus.guicey:guicey-bom:$guicey")
     constraints {
         api "ru.vyarus:guice-ext-annotations:$guiceExtAnn"
         api 'ru.vyarus:guice-validator:2.0.1'
