@@ -6,6 +6,9 @@
 
 ### About
 
+**IMPORTANT** Modules were moved into the [core repository](https://github.com/xvik/dropwizard-guicey/)
+in order to unify versions and release cycles (for guicey 6, dropwizard 3 and beyond)
+
 [Dropwizard-guicey 5.x](https://github.com/xvik/dropwizard-guicey) extensions and integrations. 
 Provided modules may be used directly and for educational purposes (as examples for custom integrations).
 
@@ -17,6 +20,7 @@ Also, guicey base package `ru.vyarus.dropwizard.guice` is different from extensi
 
 Older versions:
 
+* [Dropwizard 2.1 (guicey 5.x)](https://github.com/xvik/dropwizard-guicey-ext/tree/dw-2.1)
 * [Guicey 4.x extensions branch](https://github.com/xvik/dropwizard-guicey-ext/tree/guicey-4)
 
 ### Setup
