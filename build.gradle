@@ -19,7 +19,7 @@ description = 'Dropwizard-guicey extensions'
 
 ext {
     guicey = '6.0.0-beta.1'
-    guiceExtAnn = '1.4.0'
+    guiceExtAnn = '2.0.1'
 }
 
 // root project is a BOM (like maven)
