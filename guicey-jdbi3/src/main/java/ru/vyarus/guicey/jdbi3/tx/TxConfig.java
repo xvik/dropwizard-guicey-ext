@@ -15,6 +15,8 @@ public final class TxConfig {
     private TransactionIsolationLevel level = TransactionIsolationLevel.UNKNOWN;
     private boolean readOnly;
 
+    private int msIsolationLevelCacheTime;
+
     /**
      * @return configured isolation level
      */
@@ -37,6 +39,11 @@ public final class TxConfig {
     }
 
     /**
+     * @return configured isolation level cache time in ms
+     */
+    public int getMsIsolationLevelCacheTime() { return msIsolationLevelCacheTime; }
+
+    /**
      * @param level transaction isolation level
      * @return config itself for chained calls
      */
@@ -51,6 +58,11 @@ public final class TxConfig {
      */
     public TxConfig readOnly(final boolean readOnly) {
         this.readOnly = readOnly;
+        return this;
+    }
+
+    public TxConfig msIsolationLevelCacheTime(final int msIsolationLevelCacheTime) {
+        this.msIsolationLevelCacheTime = msIsolationLevelCacheTime;
         return this;
     }
 }

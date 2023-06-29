@@ -2,6 +2,11 @@ package ru.vyarus.guicey.jdbi3.tx;
 
 
 import com.google.common.base.Throwables;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
+import org.apache.commons.lang3.tuple.Pair;
 import org.jdbi.v3.core.Handle;
 import org.jdbi.v3.core.HandleCallback;
 import org.jdbi.v3.core.transaction.TransactionException;
@@ -10,6 +15,10 @@ import ru.vyarus.guicey.jdbi3.unit.UnitManager;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import java.time.Duration;
+import java.util.Collections;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Transaction template used to both declare unit of work and start transaction.
@@ -31,9 +40,20 @@ public class TransactionTemplate {
 
     private final UnitManager manager;
 
+    private final LoadingCache<Handle, Pair<TransactionIsolationLevel, Long>> isolationLevelCache;
+
     @Inject
     public TransactionTemplate(final UnitManager manager) {
         this.manager = manager;
+        CacheLoader<Handle, Pair<TransactionIsolationLevel, Long>> loader = new CacheLoader<>() {
+            @Override
+            public Pair<TransactionIsolationLevel, Long> load(final Handle key) {
+                return Pair.of(key.getTransactionIsolationLevel(), System.currentTimeMillis());
+            }
+        };
+
+        // cache 8 handles at a time for a maximum of 3 minutes
+        this.isolationLevelCache = CacheBuilder.newBuilder().maximumSize(8).expireAfterWrite(Duration.ofMinutes(3)).build(loader);
     }
 
     /**
@@ -81,17 +101,42 @@ public class TransactionTemplate {
         }
     }
 
+
     private <T> T inCurrentTransaction(final TxConfig config, final TxAction<T> action) throws Exception {
         // mostly copies org.jdbi.v3.sqlobject.transaction.internal.TransactionDecorator logic
         final Handle h = manager.get();
-        final TransactionIsolationLevel currentLevel = h.getTransactionIsolationLevel();
+
+        TransactionIsolationLevel currentLevel;
+
+        // if isolation levels are configured to be cached, then do so and update the cache appropriately
+        if (config.getMsIsolationLevelCacheTime() > 0) {
+            // this bit of logic is a workaround to the fact that we cannot access the requested transaction isolation
+            // level cache time at the time we construct the TransactionTemplate and so must expire values from our cache
+            // manually.
+
+            // first use the cache to get or insert the current connection's isolation level
+            final Pair<TransactionIsolationLevel, Long> isolationLevelDetails = isolationLevelCache.get(h);
+            final Long cachedTimeLevel = isolationLevelDetails.getRight();
+
+            // if we have a cache length time, and it has been more than that many ms since the isolation level was polled
+            // from the connection, then refresh the cache by querying the connection
+            if (config.getMsIsolationLevelCacheTime() > 0 &&
+                    ((System.currentTimeMillis() - cachedTimeLevel) > config.getMsIsolationLevelCacheTime())) {
+                isolationLevelCache.refresh(h);
+            }
+
+            // pull from the cache which is either the previously cached value or the recently refreshed one
+            currentLevel = isolationLevelCache.get(h).getLeft();
+        } else {
+            // default behavior: always get the transaction isolation level from the underlying connection
+            currentLevel = h.getTransactionIsolationLevel();
+        }
+
         if (config.isLevelSet() && currentLevel != config.getLevel()) {
-            throw new TransactionException("Tried to execute nested @Transaction(" + config.getLevel() + "), "
-                    + "but already running in a transaction with isolation level " + currentLevel + ".");
+            throw new TransactionException("Tried to execute nested @Transaction(" + config.getLevel() + "), " + "but already running in a transaction with isolation level " + currentLevel + ".");
         }
         if (h.isReadOnly() && !config.isReadOnly()) {
-            throw new TransactionException("Tried to execute a nested @Transaction(readOnly=false) "
-                    + "inside a readOnly transaction");
+            throw new TransactionException("Tried to execute a nested @Transaction(readOnly=false) " + "inside a readOnly transaction");
         }
         return action.execute(h);
     }

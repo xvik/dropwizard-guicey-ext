@@ -18,6 +18,7 @@ public class InTransactionTxConfigFactory implements TxConfigFactory<InTransacti
     public TxConfig build(final InTransaction annotation) {
         return new TxConfig()
                 .level(annotation.value())
-                .readOnly(annotation.readOnly());
+                .readOnly(annotation.readOnly())
+                .msIsolationLevelCacheTime(annotation.msIsolationLevelCacheTime());
     }
 }

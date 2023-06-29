@@ -27,6 +27,11 @@ class IncompatibleTxConfigTest extends AbstractAppTest {
         service.readOnlyErr()
         then:
         true // error not thrown because h2 ignores readonly flag!
+
+        when: "teste"
+        service.cacheLevel()
+        then:
+        true
     }
 
     @InTransaction
@@ -47,5 +52,15 @@ class IncompatibleTxConfigTest extends AbstractAppTest {
 
         void nonReadOnly() {
         }
+
+        @InTransaction
+        void cacheLevel() {
+            withExpiration()
+        }
+
+        @InTransaction(msIsolationLevelCacheTime = 1)
+        void withExpiration() {
+        }
+
     }
 }

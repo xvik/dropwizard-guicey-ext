@@ -35,10 +35,23 @@ public @interface InTransaction {
      * @return the transaction isolation level.  If not specified, invoke with the default isolation level.
      */
     TransactionIsolationLevel value() default TransactionIsolationLevel.UNKNOWN;
+
     /**
      * Set the connection readOnly property before the transaction starts, and restore it before it returns.
      * Databases may use this as a performance or concurrency hint.
+     *
      * @return whether the transaction is read only
      */
     boolean readOnly() default false;
+
+    /**
+     * Set the time in ms to cache the value of the transaction's isolation level as reported by
+     * the database when determining if the level specified in this annotation is compatible with
+     * the current transaction's isolation level.
+     *
+     * @return the time in ms to cache the current transaction's isolation level.
+     * Anything 0 or below will not cache.
+     * All items are removed from the cache after a maximum time of 3 minutes.
+     */
+    int msIsolationLevelCacheTime() default 0;
 }
