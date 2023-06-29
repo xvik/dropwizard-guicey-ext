@@ -41,7 +41,9 @@ public final class TxConfig {
     /**
      * @return configured isolation level cache time in ms
      */
-    public int getMsIsolationLevelCacheTime() { return msIsolationLevelCacheTime; }
+    public int getMsIsolationLevelCacheTime() {
+        return msIsolationLevelCacheTime;
+    }
 
     /**
      * @param level transaction isolation level

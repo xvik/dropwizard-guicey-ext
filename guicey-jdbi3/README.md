@@ -158,6 +158,27 @@ When `action()` method called new transaction is created with default level
 (usually READ_COMMITTED). When 'nestedAction()' is called exception will be thrown
 because it's transaction level requirement (READ_UNCOMMITTED) contradict with current transaction.
 
+###### Transaction isolation level configuration
+In some databases, such as postgres, when determining whether to run a `nestedAction()` from a parent `action()`, 
+the template must check that the isolation level requested by the annotation is compatible with the one in use by the 
+shared transaction. In some database connection implementations, this will execute a query to get that isolation level
+from the underlying connection. To provide some control over this, you may opt into caching the value for the isolation
+level for a number of ms and otherwise get it from the handle only when the cache is expired. 
+
+Note that the underlying cache holds a maximum of 8 handles in the cache for a maximum of 3 minutes to ensure that all 
+handles are cleaned up and released.
+
+```java
+@InTransaction()
+public void action() {
+    nestedAction()
+}
+
+@InTransaction(msIsolationLevelCacheTime = 100)
+public void nestedAction() {
+...
+}
+```
 ###### Custom transactional annotation
 
 If required, you may use your own annotation for transaction definition:

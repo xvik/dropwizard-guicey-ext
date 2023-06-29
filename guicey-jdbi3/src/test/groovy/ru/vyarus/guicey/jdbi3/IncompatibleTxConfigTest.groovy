@@ -28,7 +28,7 @@ class IncompatibleTxConfigTest extends AbstractAppTest {
         then:
         true // error not thrown because h2 ignores readonly flag!
 
-        when: "teste"
+        when: "inTransaction with cache configured works"
         service.cacheLevel()
         then:
         true
